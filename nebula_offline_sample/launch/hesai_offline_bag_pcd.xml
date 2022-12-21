@@ -14,6 +14,7 @@
     <arg name="format" default="cdr"/>
     <arg name="target_topic" default="/pandar_packets"/>
     <arg name="out_num" default="5"/>
+    <arg name="skip_num" default="3"/>
 
 
     <node pkg="nebula_offline_sample" exec="hesai_ros_offline_extract_bag_pcd_node"
@@ -30,5 +31,6 @@
         <param name="format" value="$(var format)"/>
         <param name="target_topic" value="$(var target_topic)"/>
         <param name="out_num" value="$(var out_num)"/>
+        <param name="skip_num" value="$(var skip_num)"/>
     </node>
 </launch>

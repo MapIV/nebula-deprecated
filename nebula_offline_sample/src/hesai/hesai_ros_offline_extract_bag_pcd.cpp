@@ -208,6 +208,15 @@ Status HesaiRosOfflineExtractBag::GetParameters(
   }
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = 2;
+    descriptor.read_only = true;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "";
+    this->declare_parameter<uint16_t>("skip_num", 3, descriptor);
+    skip_num = this->get_parameter("skip_num").as_int();
+  }
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
     descriptor.type = 4;
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
@@ -268,6 +277,7 @@ Status HesaiRosOfflineExtractBag::ReadBag()
   std::cout << format << std::endl;
   std::cout << target_topic << std::endl;
   std::cout << out_num << std::endl;
+  std::cout << skip_num << std::endl;
 
 
   rcpputils::fs::path o_dir(out_path);
@@ -284,6 +294,8 @@ Status HesaiRosOfflineExtractBag::ReadBag()
 
   pcl::PCDWriter writer;
 
+  std::unique_ptr<rosbag2_cpp::writers::SequentialWriter> writer_;
+  bool needs_open = true;
   storage_options.uri = bag_path;
   storage_options.storage_id = storage_id;
   converter_options.output_serialization_format = format;//"cdr";
@@ -292,13 +304,14 @@ Status HesaiRosOfflineExtractBag::ReadBag()
     // reader.open(rosbag_directory.string());
     reader.open(storage_options, converter_options);
     int cnt = 0;
+    int out_cnt = 0;
     while (reader.has_next()) {
       auto bag_message = reader.read_next();
 
       std::cout<<"Found topic name " << bag_message->topic_name << std::endl;
 
       if (bag_message->topic_name == target_topic) {
-        std::cout << (cnt + 1) << "/" << out_num << std::endl;
+        std::cout << (cnt + 1) << ", "  << (out_cnt + 1) << "/" << out_num << std::endl;
         hesai_msgs::msg::PandarScan extracted_msg;
         rclcpp::Serialization<hesai_msgs::msg::PandarScan> serialization;
         rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
@@ -310,18 +323,22 @@ Status HesaiRosOfflineExtractBag::ReadBag()
         nebula::drivers::PointCloudXYZIRADTPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(std::make_shared<hesai_msgs::msg::PandarScan>(extracted_msg));
         auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
 //        pcl::io::savePCDFileBinary((o_dir / fn).string(), *pointcloud);
-        writer.writeBinary((o_dir / fn).string(), *pointcloud);
 
-        std::unique_ptr<rosbag2_cpp::writers::SequentialWriter> writer_; 
-        const rosbag2_storage::StorageOptions storage_options_w({(o_dir / std::to_string(bag_message->time_stamp)).string(), "sqlite3"});
-        const rosbag2_cpp::ConverterOptions converter_options_w({rmw_get_serialization_format(), rmw_get_serialization_format()});
-        writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
-        writer_->open(storage_options_w, converter_options_w);
-        writer_->create_topic({bag_message->topic_name, "hesai_msgs/msg/PandarScan", rmw_get_serialization_format(), ""});
+        if(needs_open){
+          const rosbag2_storage::StorageOptions storage_options_w({(o_dir / std::to_string(bag_message->time_stamp)).string(), "sqlite3"});
+          const rosbag2_cpp::ConverterOptions converter_options_w({rmw_get_serialization_format(), rmw_get_serialization_format()});
+          writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
+          writer_->open(storage_options_w, converter_options_w);
+          writer_->create_topic({bag_message->topic_name, "hesai_msgs/msg/PandarScan", rmw_get_serialization_format(), ""});
+          needs_open = false;
+        }
         writer_->write(bag_message);
-
         cnt++;
-        if(out_num <= cnt){
+        if(skip_num < cnt){
+          out_cnt++;
+          writer.writeBinary((o_dir / fn).string(), *pointcloud);
+        }
+        if(out_num <= out_cnt){
           break;
         }
       }

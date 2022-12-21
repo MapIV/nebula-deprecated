@@ -65,6 +65,7 @@ private:
   std::string target_topic;
   std::string correction_file_path;
   int out_num;
+  int skip_num;
 };
 
 }  // namespace ros

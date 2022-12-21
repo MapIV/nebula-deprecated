@@ -167,8 +167,7 @@ Status HesaiRosDecorderTest::GetParameters(
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
 //    this->declare_parameter<std::string>("bag_path", "", descriptor);
-//    this->declare_parameter<std::string>("bag_path", "/home/kyutoku/kyutoku_ws/ros2/testing_pcd/pandar_packets/1671446145045082648", descriptor);
-    this->declare_parameter<std::string>("bag_path", "/home/kyutoku/kyutoku_ws/ros2/testing_pcd/pandar_packets_bak/1671446145151249251", descriptor);
+    this->declare_parameter<std::string>("bag_path", "/home/kyutoku/kyutoku_ws/ros2/testing_pcd/pandar_packets/1671446145045082648", descriptor);
     bag_path = this->get_parameter("bag_path").as_string();
   }
   {
@@ -275,7 +274,7 @@ void printPCD(nebula::drivers::PointCloudXYZIRADTPtr pp){
 
 void checkPCDs(nebula::drivers::PointCloudXYZIRADTPtr pp1, nebula::drivers::PointCloudXYZIRADTPtr pp2){
   EXPECT_EQ(pp1->points.size(), pp2->points.size());
-  for(int i=0;i<pp1->points.size();i++){
+  for(uint32_t i=0;i<pp1->points.size();i++){
     auto p1 = pp1->points[i];
     auto p2 = pp2->points[i];
     EXPECT_FLOAT_EQ(p1.x, p2.x);
@@ -312,9 +311,10 @@ void HesaiRosDecorderTest::ReadBag()
   target_topic_name = std::regex_replace(target_topic_name, std::regex("/"), "_");
 
   pcl::PCDReader pcd_reader;
-  nebula::drivers::PointCloudXYZIRADTPtr ref_pointcloud(new nebula::drivers::PointCloudXYZIRADT);
-  pcd_reader.read(pcd_path, *ref_pointcloud);
-  printPCD(ref_pointcloud);
+
+  rcpputils::fs::path bag_dir(bag_path);
+  rcpputils::fs::path pcd_dir = bag_dir.parent_path();
+  int check_cnt = 0;
 
   storage_options.uri = bag_path;
   storage_options.storage_id = storage_id;
@@ -338,14 +338,23 @@ void HesaiRosDecorderTest::ReadBag()
         std::cout<<"Found data in topic " << bag_message->topic_name << ": " << bag_message->time_stamp << std::endl;
 
         nebula::drivers::PointCloudXYZIRADTPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(std::make_shared<hesai_msgs::msg::PandarScan>(extracted_msg));
-        printPCD(pointcloud);
-        
-        checkPCDs(pointcloud, ref_pointcloud);
+        auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
+//        printPCD(pointcloud);
 
-        break;
+        auto target_pcd_path = (pcd_dir / fn);
+        std::cout << target_pcd_path << std::endl;
+        if(target_pcd_path.exists()){
+          std::cout << "exists: " << target_pcd_path << std::endl;
+          nebula::drivers::PointCloudXYZIRADTPtr ref_pointcloud(new nebula::drivers::PointCloudXYZIRADT);
+          pcd_reader.read(target_pcd_path.string(), *ref_pointcloud);
+          std::cout << "loaded: " << target_pcd_path << std::endl;
+//          printPCD(ref_pointcloud);
+          checkPCDs(pointcloud, ref_pointcloud);
+          check_cnt++;
+        }
       }
-
     }
+    EXPECT_GT(check_cnt, 0);
     // close on scope exit
   }
 }
