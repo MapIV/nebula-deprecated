@@ -54,7 +54,7 @@ bool PandarQTDecoder::hasScanned() { return has_scanned_; }
 
 drivers::PointCloudXYZIRADTPtr PandarQTDecoder::get_pointcloud() { return scan_pc_; }
 
-void PandarQTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
+void PandarQTDecoder::unpack(const hesai_msgs::msg::PandarPacket & pandar_packet)
 {
   if (!parsePacket(pandar_packet)) {
     return;
@@ -199,7 +199,7 @@ drivers::PointCloudXYZIRADTPtr PandarQTDecoder::convert_dual(size_t block_id)
   return block_pc;
 }
 
-bool PandarQTDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet)
+bool PandarQTDecoder::parsePacket(const hesai_msgs::msg::PandarPacket & pandar_packet)
 {
   if (pandar_packet.size != PACKET_SIZE && pandar_packet.size != PACKET_WITHOUT_UDPSEQ_SIZE) {
     return false;

@@ -40,7 +40,7 @@ HesaiDriverRosWrapper::HesaiDriverRosWrapper(const rclcpp::NodeOptions & options
   }
 
   RCLCPP_INFO_STREAM(this->get_logger(), this->get_name() << "Wrapper=" << wrapper_status_);
-  pandar_scan_sub_ = create_subscription<pandar_msgs::msg::PandarScan>(
+  pandar_scan_sub_ = create_subscription<hesai_msgs::msg::PandarScan>(
     "pandar_packets", rclcpp::SensorDataQoS(),
     std::bind(&HesaiDriverRosWrapper::ReceiveScanMsgCallback, this, std::placeholders::_1));
   pandar_points_pub_ =
@@ -48,10 +48,10 @@ HesaiDriverRosWrapper::HesaiDriverRosWrapper(const rclcpp::NodeOptions & options
 }
 
 void HesaiDriverRosWrapper::ReceiveScanMsgCallback(
-  const pandar_msgs::msg::PandarScan::SharedPtr scan_msg)
+  const hesai_msgs::msg::PandarScan::SharedPtr scan_msg)
 {
   // take packets out of scan msg
-  std::vector<pandar_msgs::msg::PandarPacket> pkt_msgs = scan_msg->packets;
+  std::vector<hesai_msgs::msg::PandarPacket> pkt_msgs = scan_msg->packets;
 
   nebula::drivers::PointCloudXYZIRADTPtr pointcloud =
     driver_ptr_->ConvertScanToPointcloud(scan_msg);

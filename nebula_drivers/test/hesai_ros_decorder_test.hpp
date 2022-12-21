@@ -1,5 +1,5 @@
-#ifndef NEBULA_HesaiRosOfflineExtractBag_H
-#define NEBULA_HesaiRosOfflineExtractBag_H
+#ifndef NEBULA_HesaiRosDecorderTest_H
+#define NEBULA_HesaiRosDecorderTest_H
 
 #include "common/nebula_common.hpp"
 #include "common/nebula_driver_ros_wrapper_base.hpp"
@@ -14,16 +14,16 @@
 #include "hesai_msgs/msg/pandar_packet.hpp"
 #include "hesai_msgs/msg/pandar_scan.hpp"
 
+#include <gtest/gtest.h>
+
 namespace nebula
 {
 namespace ros
 {
-class HesaiRosOfflineExtractBag final : public rclcpp::Node, NebulaDriverRosWrapperBase
+class HesaiRosDecorderTest final : public rclcpp::Node, NebulaDriverRosWrapperBase//, testing::Test
 {
   std::shared_ptr<drivers::HesaiDriver> driver_ptr_;
   Status wrapper_status_;
-//  rclcpp::Subscription<hesai_msgs::msg::PandarScan>::SharedPtr pandar_scan_sub_;
-//  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pandar_points_pub_;
 
   std::shared_ptr<drivers::HesaiCalibrationConfiguration> calibration_cfg_ptr_;
   std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr_;
@@ -51,23 +51,32 @@ class HesaiRosOfflineExtractBag final : public rclcpp::Node, NebulaDriverRosWrap
   }
 
 public:
-  explicit HesaiRosOfflineExtractBag(
+  explicit HesaiRosDecorderTest(
     const rclcpp::NodeOptions & options, const std::string & node_name);
 
   void ReceiveScanMsgCallback(const hesai_msgs::msg::PandarScan::SharedPtr scan_msg);
   Status GetStatus();
-  Status ReadBag();
+  void ReadBag();
+/*
+  void SetUp() override {
+    // Setup things that should occur before every test instance should go here
+    RCLCPP_ERROR_STREAM(this->get_logger(), "DONE WITH SETUP!!");
+  }
+
+  void TearDown() override {
+    std::cout << "DONE WITH TEARDOWN" << std::endl;
+  }
+*/
 private:
   std::string bag_path;
   std::string storage_id;
-  std::string out_path;
+  std::string pcd_path;
   std::string format;
   std::string target_topic;
   std::string correction_file_path;
-  int out_num;
 };
 
 }  // namespace ros
 }  // namespace nebula
 
-#endif  // NEBULA_HesaiRosOfflineExtractBag_H
+#endif  // NEBULA_HesaiRosDecorderTest_H
