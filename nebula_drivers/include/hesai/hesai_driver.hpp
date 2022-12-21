@@ -8,9 +8,9 @@
 #include "hesai/hesai_common.hpp"
 #include "common/point_types.hpp"
 
-#include "pandar_msgs/msg/pandar_jumbo_packet.hpp"
-#include "pandar_msgs/msg/pandar_packet.hpp"
-#include "pandar_msgs/msg/pandar_scan.hpp"
+#include "hesai_msgs/msg/pandar_jumbo_packet.hpp"
+#include "hesai_msgs/msg/pandar_packet.hpp"
+#include "hesai_msgs/msg/pandar_scan.hpp"
 
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -40,7 +40,7 @@ public:
     const CalibrationConfigurationBase & calibration_configuration) override;
 
   PointCloudXYZIRADTPtr ConvertScanToPointcloud(
-    const std::shared_ptr<pandar_msgs::msg::PandarScan>& pandar_scan);
+    const std::shared_ptr<hesai_msgs::msg::PandarScan>& pandar_scan);
 };
 
 }  // namespace drivers
