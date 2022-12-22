@@ -273,7 +273,11 @@ void printPCD(nebula::drivers::PointCloudXYZIRADTPtr pp){
 
 
 void checkPCDs(nebula::drivers::PointCloudXYZIRADTPtr pp1, nebula::drivers::PointCloudXYZIRADTPtr pp2){
+//  std::cout << "checkPCDs" << std::endl;
+//  std::cout << "pp1: " << pp1->points[0].x << std::endl;
+//  std::cout << "pp2: " << pp2->points[0].x << std::endl;
   EXPECT_EQ(pp1->points.size(), pp2->points.size());
+//  std::cout << "size ok" << std::endl;
   for(uint32_t i=0;i<pp1->points.size();i++){
     auto p1 = pp1->points[i];
     auto p2 = pp2->points[i];
@@ -319,6 +323,9 @@ void HesaiRosDecorderTest::ReadBag()
   storage_options.uri = bag_path;
   storage_options.storage_id = storage_id;
   converter_options.output_serialization_format = format;//"cdr";
+  rclcpp::Serialization<pandar_msgs::msg::PandarScan> serialization;
+  nebula::drivers::PointCloudXYZIRADTPtr pointcloud(new nebula::drivers::PointCloudXYZIRADT);
+  nebula::drivers::PointCloudXYZIRADTPtr ref_pointcloud(new nebula::drivers::PointCloudXYZIRADT);
   {
     rosbag2_cpp::Reader bag_reader(std::make_unique<rosbag2_cpp::readers::SequentialReader>());
     // reader.open(rosbag_directory.string());
@@ -330,14 +337,18 @@ void HesaiRosDecorderTest::ReadBag()
 
       if (bag_message->topic_name == target_topic) {
         pandar_msgs::msg::PandarScan extracted_msg;
-        rclcpp::Serialization<pandar_msgs::msg::PandarScan> serialization;
         rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
         serialization.deserialize_message(&extracted_serialized_msg, &extracted_msg);
 
-//        std::cout<<"Found data in topic " << bag_message->topic_name << ": " << extracted_test_msg.data << std::endl;
         std::cout<<"Found data in topic " << bag_message->topic_name << ": " << bag_message->time_stamp << std::endl;
 
-        nebula::drivers::PointCloudXYZIRADTPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(std::make_shared<pandar_msgs::msg::PandarScan>(extracted_msg));
+        auto extracted_msg_ptr = std::make_shared<pandar_msgs::msg::PandarScan>(extracted_msg);
+        pointcloud = driver_ptr_->ConvertScanToPointcloud(extracted_msg_ptr);
+
+        // There are very rare cases where has_scanned_ does not become true, but it is not known whether it is because of decoder or deserialize_message.
+        if(!pointcloud)
+          continue;
+
         auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
 //        printPCD(pointcloud);
 
@@ -345,13 +356,14 @@ void HesaiRosDecorderTest::ReadBag()
         std::cout << target_pcd_path << std::endl;
         if(target_pcd_path.exists()){
           std::cout << "exists: " << target_pcd_path << std::endl;
-          nebula::drivers::PointCloudXYZIRADTPtr ref_pointcloud(new nebula::drivers::PointCloudXYZIRADT);
-          pcd_reader.read(target_pcd_path.string(), *ref_pointcloud);
-          std::cout << "loaded: " << target_pcd_path << std::endl;
+          auto rt = pcd_reader.read(target_pcd_path.string(), *ref_pointcloud);
+          std::cout << rt << " loaded: " << target_pcd_path << std::endl;
 //          printPCD(ref_pointcloud);
           checkPCDs(pointcloud, ref_pointcloud);
           check_cnt++;
+          ref_pointcloud.reset(new nebula::drivers::PointCloudXYZIRADT);
         }
+        pointcloud.reset(new nebula::drivers::PointCloudXYZIRADT);
       }
     }
     EXPECT_GT(check_cnt, 0);

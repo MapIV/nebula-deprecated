@@ -156,11 +156,6 @@ rclcpp_components_register_node(velodyne_driver_ros_wrapper
         EXECUTABLE velodyne_driver_ros_wrapper_node
         )
 
-# TEST
-ament_auto_add_library(hesai_ros_decorder_test SHARED
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decorder_test.cpp
-        )
-target_link_libraries(hesai_ros_decorder_test ${PCL_LIBRARIES})
 
 ## NEW SENSOR
 # HwInterfaces Lib
@@ -174,11 +169,49 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
 #  find_package(ament_cmake_auto REQUIRED)
 
-#find_package(launch_testing_ament_cmake)    
-#add_launch_test(test/hesai_ros_decorder_test_launch.py)
+find_package(launch_testing_ament_cmake)    
+add_launch_test(test/hesai_ros_decorder_test_launch.py)
 
   ament_lint_auto_find_test_dependencies()
 
+# TEST
+ament_auto_add_library(hesai_ros_decorder_test SHARED
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decorder_test.cpp
+        )
+target_link_libraries(hesai_ros_decorder_test ${PCL_LIBRARIES})
+ament_auto_add_executable(hesai_ros_decorder_test_node
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decorder_test_main.cpp
+        )
+target_link_libraries(hesai_ros_decorder_test_node ${PCL_LIBRARIES} gtest)
+#[[
+target_link_libraries(hesai_ros_decorder_test_node ${PCL_LIBRARIES} gtest)
+ament_auto_add_executable(hesai_ros_decorder_test_node_py
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decorder_test_main4py.cpp
+        )
+target_link_libraries(hesai_ros_decorder_test_node_py ${PCL_LIBRARIES})# gtest)
+#target_link_libraries(hesai_ros_decorder_test_node ${PCL_LIBRARIES} gtest_main)
+#ament_target_dependencies(hesai_ros_decorder_test_node ament_cmake_gtest)
+#]]
+
+    set(TEST_FILES
+        hesai_ros_decorder_test_main.cpp
+    )
+
+  foreach(file ${TEST_FILES})
+    get_filename_component(name "${file}" NAME_WE)
+    set(TEST_DECORDER_EXE ${name})
+
+    ament_add_gtest(${TEST_DECORDER_EXE}
+    test/${name}.cpp)
+    ament_target_dependencies(${TEST_DECORDER_EXE}
+      rclcpp
+      rosbag2_cpp
+      )
+target_include_directories(${TEST_DECORDER_EXE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/pandar_msgs/include include )
+target_link_libraries(${TEST_DECORDER_EXE} ${PCL_LIBRARIES} hesai_ros_decorder_test)
+endforeach()
+
+#[[
   set(TEST_FILES
 #    hesai_ros_decorder_test.cpp
     hesai_ros_decorder_test_main.cpp
@@ -203,6 +236,7 @@ if(BUILD_TESTING)
 #    target_link_libraries(${TEST_DECORDER_EXE} ${PROJECT_NAME} ${PCL_LIBRARIES})
 #    target_link_libraries(${TEST_TCP_DRIVER_EXE} ${PROJECT_NAME} ${PROJECT_NAME}_nodes)
   endforeach()
+#]]
 endif()
 
 ament_auto_package(
