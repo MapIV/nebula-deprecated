@@ -185,17 +185,6 @@ Status HesaiRosDecorderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-//    this->declare_parameter<std::string>("pcd_path", "", descriptor);
-//    this->declare_parameter<std::string>("pcd_path", "/home/kyutoku/kyutoku_ws/ros2/testing_pcd/pandar_packets/1671446145045082648.pcd", descriptor);
-    this->declare_parameter<std::string>("pcd_path", "/home/kyutoku/kyutoku_ws/ros2/testing_pcd/pandar_packets_bak/1671446145151249251.pcd", descriptor);
-    pcd_path = this->get_parameter("pcd_path").as_string();
-  }
-  {
-    rcl_interfaces::msg::ParameterDescriptor descriptor;
-    descriptor.type = 4;
-    descriptor.read_only = true;
-    descriptor.dynamic_typing = false;
-    descriptor.additional_constraints = "";
     this->declare_parameter<std::string>("format", "cdr", descriptor);
     format = this->get_parameter("format").as_string();
   }
@@ -265,7 +254,6 @@ struct PointXYZIRADT
 } EIGEN_ALIGN16;
 */
 void printPCD(nebula::drivers::PointCloudXYZIRADTPtr pp){
-//  for(int i=0;i<pp->points.size();i++){
   for(auto p: pp->points){
     std::cout << "(" << p.x << ", " << p.y << "," << p.z << "): " << p.intensity << ", " << p.ring << ", " << p.azimuth << ", " << p.distance << ", " << p.return_type << ", " << p.time_stamp << std::endl;
   }
@@ -303,7 +291,6 @@ void HesaiRosDecorderTest::ReadBag()
 
   std::cout << bag_path << std::endl;
   std::cout << storage_id << std::endl;
-  std::cout << pcd_path << std::endl;
   std::cout << format << std::endl;
   std::cout << target_topic << std::endl;
 
@@ -328,7 +315,6 @@ void HesaiRosDecorderTest::ReadBag()
   nebula::drivers::PointCloudXYZIRADTPtr ref_pointcloud(new nebula::drivers::PointCloudXYZIRADT);
   {
     rosbag2_cpp::Reader bag_reader(std::make_unique<rosbag2_cpp::readers::SequentialReader>());
-    // reader.open(rosbag_directory.string());
     bag_reader.open(storage_options, converter_options);
     while (bag_reader.has_next()) {
       auto bag_message = bag_reader.read_next();

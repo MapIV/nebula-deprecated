@@ -18,6 +18,5 @@
 
     bag_path: "/home/kyutoku/kyutoku_ws/ros2/testing_pcd/pandar_packets/1671446145045082648"
     storage_id: "sqlite3"
-    pcd_path: "/home/kyutoku/kyutoku_ws/ros2/testing_pcd/pandar_packets/1671446145045082648.pcd"
     format: "cdr"
     target_topic: "/pandar_packets"

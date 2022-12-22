@@ -70,7 +70,6 @@ public:
 private:
   std::string bag_path;
   std::string storage_id;
-  std::string pcd_path;
   std::string format;
   std::string target_topic;
   std::string correction_file_path;
