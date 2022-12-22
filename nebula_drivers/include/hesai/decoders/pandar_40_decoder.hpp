@@ -3,8 +3,8 @@
 #include <hesai/decoders/hesai_scan_decoder.hpp>
 #include <hesai/decoders/pandar_40.hpp>
 
-#include "hesai_msgs/msg/pandar_packet.hpp"
-#include "hesai_msgs/msg/pandar_scan.hpp"
+#include "pandar_msgs/msg/pandar_packet.hpp"
+#include "pandar_msgs/msg/pandar_scan.hpp"
 
 #include <array>
 
@@ -19,12 +19,12 @@ class Pandar40Decoder : public HesaiScanDecoder
 public:
   explicit Pandar40Decoder(const std::shared_ptr<drivers::HesaiSensorConfiguration> & sensor_configuration,
                            const std::shared_ptr<drivers::HesaiCalibrationConfiguration> & calibration_configuration);
-  void unpack(const hesai_msgs::msg::PandarPacket & pandar_packet) override;
+  void unpack(const pandar_msgs::msg::PandarPacket & pandar_packet) override;
   bool hasScanned() override;
   drivers::PointCloudXYZIRADTPtr get_pointcloud() override;
 
 private:
-  bool parsePacket(const hesai_msgs::msg::PandarPacket & pandar_packet) override;
+  bool parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet) override;
   drivers::PointXYZIRADT build_point(size_t block_id, size_t unit_id, ReturnMode return_type);
   drivers::PointCloudXYZIRADTPtr convert(size_t block_id) override;
   drivers::PointCloudXYZIRADTPtr convert_dual(size_t block_id) override;

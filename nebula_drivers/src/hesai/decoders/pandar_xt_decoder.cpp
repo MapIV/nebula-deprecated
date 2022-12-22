@@ -49,7 +49,7 @@ bool PandarXTDecoder::hasScanned() { return has_scanned_; }
 
 drivers::PointCloudXYZIRADTPtr PandarXTDecoder::get_pointcloud() { return scan_pc_; }
 
-void PandarXTDecoder::unpack(const hesai_msgs::msg::PandarPacket & pandar_packet)
+void PandarXTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
   if (!parsePacket(pandar_packet)) {
     return;
@@ -184,7 +184,7 @@ drivers::PointCloudXYZIRADTPtr PandarXTDecoder::convert_dual(size_t block_id)
   return block_pc;
 }
 
-bool PandarXTDecoder::parsePacket(const hesai_msgs::msg::PandarPacket & pandar_packet)
+bool PandarXTDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
   if (pandar_packet.size != PACKET_SIZE) {
     return false;

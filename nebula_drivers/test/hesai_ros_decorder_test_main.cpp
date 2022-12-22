@@ -35,15 +35,16 @@ int main(int argc, char * argv[])
 
   RCLCPP_INFO_STREAM(rclcpp::get_logger(node_name), "Get Status");
   nebula::Status driver_status = hesai_driver->GetStatus();
+  int result = 0;
   if (driver_status == nebula::Status::OK) {
     RCLCPP_INFO_STREAM(rclcpp::get_logger(node_name), "Reading Started");
 //    hesai_driver->ReadBag();
-    int result = RUN_ALL_TESTS();
+    result = RUN_ALL_TESTS();
   } else {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(node_name), driver_status);
   }
   RCLCPP_INFO_STREAM(rclcpp::get_logger(node_name), "Ending");
   rclcpp::shutdown();
 
-  return 0;
+  return result;
 }

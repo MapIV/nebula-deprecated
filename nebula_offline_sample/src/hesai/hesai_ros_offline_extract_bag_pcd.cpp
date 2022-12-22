@@ -58,7 +58,7 @@ HesaiRosOfflineExtractBag::HesaiRosOfflineExtractBag(
 
   RCLCPP_INFO_STREAM(this->get_logger(), this->get_name() << "Wrapper=" << wrapper_status_);
   /*
-  pandar_scan_sub_ = create_subscription<hesai_msgs::msg::PandarScan>(
+  pandar_scan_sub_ = create_subscription<pandar_msgs::msg::PandarScan>(
     "pandar_packets", rclcpp::SensorDataQoS(),
     std::bind(&HesaiDriverRosOfflineWrapper::ReceiveScanMsgCallback, this, std::placeholders::_1));
   pandar_points_pub_ =
@@ -67,7 +67,7 @@ HesaiRosOfflineExtractBag::HesaiRosOfflineExtractBag(
 }
 
 void HesaiRosOfflineExtractBag::ReceiveScanMsgCallback(
-  const hesai_msgs::msg::PandarScan::SharedPtr scan_msg)
+  const pandar_msgs::msg::PandarScan::SharedPtr scan_msg)
 {
 }
 
@@ -312,15 +312,15 @@ Status HesaiRosOfflineExtractBag::ReadBag()
 
       if (bag_message->topic_name == target_topic) {
         std::cout << (cnt + 1) << ", "  << (out_cnt + 1) << "/" << out_num << std::endl;
-        hesai_msgs::msg::PandarScan extracted_msg;
-        rclcpp::Serialization<hesai_msgs::msg::PandarScan> serialization;
+        pandar_msgs::msg::PandarScan extracted_msg;
+        rclcpp::Serialization<pandar_msgs::msg::PandarScan> serialization;
         rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
         serialization.deserialize_message(&extracted_serialized_msg, &extracted_msg);
 
 //        std::cout<<"Found data in topic " << bag_message->topic_name << ": " << extracted_test_msg.data << std::endl;
         std::cout<<"Found data in topic " << bag_message->topic_name << ": " << bag_message->time_stamp << std::endl;
 
-        nebula::drivers::PointCloudXYZIRADTPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(std::make_shared<hesai_msgs::msg::PandarScan>(extracted_msg));
+        nebula::drivers::PointCloudXYZIRADTPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(std::make_shared<pandar_msgs::msg::PandarScan>(extracted_msg));
         auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
 //        pcl::io::savePCDFileBinary((o_dir / fn).string(), *pointcloud);
 
@@ -329,7 +329,7 @@ Status HesaiRosOfflineExtractBag::ReadBag()
           const rosbag2_cpp::ConverterOptions converter_options_w({rmw_get_serialization_format(), rmw_get_serialization_format()});
           writer_ = std::make_unique<rosbag2_cpp::writers::SequentialWriter>();
           writer_->open(storage_options_w, converter_options_w);
-          writer_->create_topic({bag_message->topic_name, "hesai_msgs/msg/PandarScan", rmw_get_serialization_format(), ""});
+          writer_->create_topic({bag_message->topic_name, "pandar_msgs/msg/PandarScan", rmw_get_serialization_format(), ""});
           needs_open = false;
         }
         writer_->write(bag_message);

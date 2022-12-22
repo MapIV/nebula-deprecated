@@ -198,7 +198,7 @@ if(BUILD_TESTING)
       )
 
 #    target_include_directories(${TEST_DECORDER_EXE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src PRIVATE include )
-    target_include_directories(${TEST_DECORDER_EXE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/hesai_msgs/include include )
+    target_include_directories(${TEST_DECORDER_EXE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/pandar_msgs/include include )
     target_link_libraries(${TEST_DECORDER_EXE} ${PCL_LIBRARIES} hesai_ros_decorder_test)
 #    target_link_libraries(${TEST_DECORDER_EXE} ${PROJECT_NAME} ${PCL_LIBRARIES})
 #    target_link_libraries(${TEST_TCP_DRIVER_EXE} ${PROJECT_NAME} ${PROJECT_NAME}_nodes)

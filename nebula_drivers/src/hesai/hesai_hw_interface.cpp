@@ -1,8 +1,8 @@
 #include "hesai/hesai_hw_interface.hpp"
 
-#include <hesai_msgs/msg/pandar_jumbo_packet.hpp>
-#include <hesai_msgs/msg/pandar_packet.hpp>
-#include <hesai_msgs/msg/pandar_scan.hpp>
+#include <pandar_msgs/msg/pandar_jumbo_packet.hpp>
+#include <pandar_msgs/msg/pandar_packet.hpp>
+#include <pandar_msgs/msg/pandar_scan.hpp>
 
 #include <memory>
 
@@ -28,7 +28,7 @@ HesaiHwInterface::HesaiHwInterface()
   tcp_driver_{new ::drivers::tcp_driver::TcpDriver(m_owned_ctx)},
   tcp_driver_s_{new ::drivers::tcp_driver::TcpDriver(m_owned_ctx_s)},
 //  tcp_driver_s_{new ::drivers::tcp_driver::TcpDriver(m_owned_ctx)},
-  scan_cloud_ptr_{std::make_unique<hesai_msgs::msg::PandarScan>()}
+  scan_cloud_ptr_{std::make_unique<pandar_msgs::msg::PandarScan>()}
 {
 }
 
@@ -104,7 +104,7 @@ Status HesaiHwInterface::CloudInterfaceStart()
 }
 
 Status HesaiHwInterface::RegisterScanCallback(
-  std::function<void(std::unique_ptr<hesai_msgs::msg::PandarScan>)> scan_callback)
+  std::function<void(std::unique_ptr<pandar_msgs::msg::PandarScan>)> scan_callback)
 {
   scan_reception_callback_ = std::move(scan_callback);
   return Status::OK;
@@ -117,7 +117,7 @@ void HesaiHwInterface::ReceiveCloudPacketCallback(const std::vector<uint8_t> & b
     uint32_t buffer_size = buffer.size();
     std::array<uint8_t, 1500> packet_data{};
     std::copy_n(std::make_move_iterator(buffer.begin()), buffer_size, packet_data.begin());
-    hesai_msgs::msg::PandarPacket pandar_packet;
+    pandar_msgs::msg::PandarPacket pandar_packet;
     pandar_packet.data = packet_data;
     pandar_packet.size = buffer_size;
     auto now = std::chrono::system_clock::now();
@@ -167,7 +167,7 @@ void HesaiHwInterface::ReceiveCloudPacketCallback(const std::vector<uint8_t> & b
       scan_cloud_ptr_->header.stamp = scan_cloud_ptr_->packets.front().stamp;
       // Callback
       scan_reception_callback_(std::move(scan_cloud_ptr_));
-      scan_cloud_ptr_ = std::make_unique<hesai_msgs::msg::PandarScan>();
+      scan_cloud_ptr_ = std::make_unique<pandar_msgs::msg::PandarScan>();
     }
   }
 }

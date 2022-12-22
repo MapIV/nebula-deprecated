@@ -11,9 +11,9 @@
 #include <rclcpp_components/register_node_macro.hpp>
 #include <ament_index_cpp/get_package_prefix.hpp>
 
-#include "hesai_msgs/msg/pandar_jumbo_packet.hpp"
-#include "hesai_msgs/msg/pandar_packet.hpp"
-#include "hesai_msgs/msg/pandar_scan.hpp"
+#include "pandar_msgs/msg/pandar_jumbo_packet.hpp"
+#include "pandar_msgs/msg/pandar_packet.hpp"
+#include "pandar_msgs/msg/pandar_scan.hpp"
 
 #include <boost/asio.hpp>
 #include "tcp_driver/tcp_driver.hpp"
@@ -44,11 +44,11 @@ class HesaiHwInterfaceRosWrapper final : public rclcpp::Node, NebulaHwInterfaceW
 
   drivers::HesaiSensorConfiguration sensor_configuration_;
 
-  rclcpp::Publisher<hesai_msgs::msg::PandarScan>::SharedPtr pandar_scan_pub_;
+  rclcpp::Publisher<pandar_msgs::msg::PandarScan>::SharedPtr pandar_scan_pub_;
 
   Status InitializeHwInterface(
     const drivers::SensorConfigurationBase & sensor_configuration) override;
-  void ReceiveScanDataCallback(std::unique_ptr<hesai_msgs::msg::PandarScan> scan_buffer);
+  void ReceiveScanDataCallback(std::unique_ptr<pandar_msgs::msg::PandarScan> scan_buffer);
 
 public:
   explicit HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions & options);

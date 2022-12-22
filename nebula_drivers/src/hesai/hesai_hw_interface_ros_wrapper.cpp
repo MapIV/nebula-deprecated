@@ -64,7 +64,7 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(
   hw_interface_.RegisterScanCallback(
     std::bind(&HesaiHwInterfaceRosWrapper::ReceiveScanDataCallback, this, std::placeholders::_1));
   pandar_scan_pub_ =
-    this->create_publisher<hesai_msgs::msg::PandarScan>("pandar_packets", rclcpp::SensorDataQoS());
+    this->create_publisher<pandar_msgs::msg::PandarScan>("pandar_packets", rclcpp::SensorDataQoS());
 
 #if not defined(TEST_PCAP)
   set_param_res_ = this->add_on_set_parameters_callback(
@@ -485,7 +485,7 @@ Status HesaiHwInterfaceRosWrapper::GetParameters(
 }
 
 void HesaiHwInterfaceRosWrapper::ReceiveScanDataCallback(
-  std::unique_ptr<hesai_msgs::msg::PandarScan> scan_buffer)
+  std::unique_ptr<pandar_msgs::msg::PandarScan> scan_buffer)
 {
   // Publish
   scan_buffer->header.frame_id = sensor_configuration_.frame_id;

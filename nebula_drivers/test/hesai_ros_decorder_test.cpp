@@ -61,7 +61,7 @@ HesaiRosDecorderTest::HesaiRosDecorderTest(
 }
 
 void HesaiRosDecorderTest::ReceiveScanMsgCallback(
-  const hesai_msgs::msg::PandarScan::SharedPtr scan_msg)
+  const pandar_msgs::msg::PandarScan::SharedPtr scan_msg)
 {
 }
 
@@ -329,15 +329,15 @@ void HesaiRosDecorderTest::ReadBag()
       std::cout<<"Found topic name " << bag_message->topic_name << std::endl;
 
       if (bag_message->topic_name == target_topic) {
-        hesai_msgs::msg::PandarScan extracted_msg;
-        rclcpp::Serialization<hesai_msgs::msg::PandarScan> serialization;
+        pandar_msgs::msg::PandarScan extracted_msg;
+        rclcpp::Serialization<pandar_msgs::msg::PandarScan> serialization;
         rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
         serialization.deserialize_message(&extracted_serialized_msg, &extracted_msg);
 
 //        std::cout<<"Found data in topic " << bag_message->topic_name << ": " << extracted_test_msg.data << std::endl;
         std::cout<<"Found data in topic " << bag_message->topic_name << ": " << bag_message->time_stamp << std::endl;
 
-        nebula::drivers::PointCloudXYZIRADTPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(std::make_shared<hesai_msgs::msg::PandarScan>(extracted_msg));
+        nebula::drivers::PointCloudXYZIRADTPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(std::make_shared<pandar_msgs::msg::PandarScan>(extracted_msg));
         auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
 //        printPCD(pointcloud);
 

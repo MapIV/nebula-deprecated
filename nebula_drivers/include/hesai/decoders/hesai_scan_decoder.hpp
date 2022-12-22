@@ -4,8 +4,8 @@
 #include "hesai/hesai_common.hpp"
 #include "common/point_types.hpp"
 
-#include "hesai_msgs/msg/pandar_packet.hpp"
-#include "hesai_msgs/msg/pandar_scan.hpp"
+#include "pandar_msgs/msg/pandar_packet.hpp"
+#include "pandar_msgs/msg/pandar_scan.hpp"
 
 namespace nebula
 {
@@ -36,8 +36,8 @@ public:
   virtual ~HesaiScanDecoder() = default;
   HesaiScanDecoder() = default;
 
-  virtual void unpack(const hesai_msgs::msg::PandarPacket & pandar_packet) = 0;
-  virtual bool parsePacket(const hesai_msgs::msg::PandarPacket & pandar_packet) = 0;
+  virtual void unpack(const pandar_msgs::msg::PandarPacket & pandar_packet) = 0;
+  virtual bool parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet) = 0;
 
   virtual drivers::PointCloudXYZIRADTPtr convert(size_t block_id) = 0;
   virtual drivers::PointCloudXYZIRADTPtr convert_dual(size_t block_id) = 0;

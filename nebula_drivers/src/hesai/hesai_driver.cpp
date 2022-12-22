@@ -61,7 +61,7 @@ HesaiDriver::HesaiDriver(
 }
 
 PointCloudXYZIRADTPtr HesaiDriver::ConvertScanToPointcloud(
-  const std::shared_ptr<hesai_msgs::msg::PandarScan>& pandar_scan)
+  const std::shared_ptr<pandar_msgs::msg::PandarScan>& pandar_scan)
 {
   PointCloudXYZIRADTPtr pointcloud;
   if(driver_status_ == nebula::Status::OK)

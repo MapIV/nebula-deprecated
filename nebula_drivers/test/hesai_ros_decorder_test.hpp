@@ -11,8 +11,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
-#include "hesai_msgs/msg/pandar_packet.hpp"
-#include "hesai_msgs/msg/pandar_scan.hpp"
+#include "pandar_msgs/msg/pandar_packet.hpp"
+#include "pandar_msgs/msg/pandar_scan.hpp"
 
 #include <gtest/gtest.h>
 
@@ -54,7 +54,7 @@ public:
   explicit HesaiRosDecorderTest(
     const rclcpp::NodeOptions & options, const std::string & node_name);
 
-  void ReceiveScanMsgCallback(const hesai_msgs::msg::PandarScan::SharedPtr scan_msg);
+  void ReceiveScanMsgCallback(const pandar_msgs::msg::PandarScan::SharedPtr scan_msg);
   Status GetStatus();
   void ReadBag();
 /*
