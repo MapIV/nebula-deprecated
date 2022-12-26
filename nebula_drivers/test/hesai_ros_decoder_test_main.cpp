@@ -1,5 +1,5 @@
-//#include "hesai/hesai_ros_decorder_test.hpp"
-#include "hesai_ros_decorder_test.hpp"
+//#include "hesai/hesai_ros_decoder_test.hpp"
+#include "hesai_ros_decoder_test.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -10,7 +10,7 @@
 
 
 
-std::shared_ptr<nebula::ros::HesaiRosDecorderTest> hesai_driver;
+std::shared_ptr<nebula::ros::HesaiRosDecoderTest> hesai_driver;
 
 TEST(TestDecorder, TestPcd){
   std::cout << "TEST(TestDecorder, TestPcd)" << std::endl;
@@ -19,10 +19,10 @@ TEST(TestDecorder, TestPcd){
 
 int main(int argc, char * argv[])
 {
-  std::cout << "hesai_ros_decorder_test_main.cpp" << std::endl;
+  std::cout << "hesai_ros_decoder_test_main.cpp" << std::endl;
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-  std::string node_name = "nebula_hesai_decorder_test";
+  std::string node_name = "nebula_hesai_decoder_test";
 
   rclcpp::init(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
@@ -30,7 +30,7 @@ int main(int argc, char * argv[])
   rclcpp::NodeOptions options;
 
 
-  hesai_driver = std::make_shared<nebula::ros::HesaiRosDecorderTest>(options, node_name);
+  hesai_driver = std::make_shared<nebula::ros::HesaiRosDecoderTest>(options, node_name);
   exec.add_node(hesai_driver->get_node_base_interface());
 
   RCLCPP_INFO_STREAM(rclcpp::get_logger(node_name), "Get Status");

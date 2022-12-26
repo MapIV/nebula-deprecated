@@ -47,12 +47,12 @@ ament_auto_add_executable(hesai_ros_offline_extract_bag_pcd_node
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/hesai_ros_offline_extract_bag_pcd_main.cpp
         )
 # TEST
-#ament_auto_add_library(hesai_ros_decorder_test SHARED
-#        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/hesai_ros_decorder_test.cpp
+#ament_auto_add_library(hesai_ros_decoder_test SHARED
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/hesai_ros_decoder_test.cpp
 #        )
-#target_link_libraries(hesai_ros_decorder_test ${PCL_LIBRARIES})
-#ament_auto_add_executable(hesai_ros_decorder_test_node
-#        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/hesai_ros_decorder_test_main.cpp
+#target_link_libraries(hesai_ros_decoder_test ${PCL_LIBRARIES})
+#ament_auto_add_executable(hesai_ros_decoder_test_node
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/hesai_ros_decoder_test_main.cpp
 #        )
 
 ## Velodyne

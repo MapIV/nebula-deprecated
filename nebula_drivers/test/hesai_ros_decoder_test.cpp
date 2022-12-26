@@ -1,5 +1,5 @@
-//#include "hesai/hesai_ros_decorder_test.hpp"
-#include "hesai_ros_decorder_test.hpp"
+//#include "hesai/hesai_ros_decoder_test.hpp"
+#include "hesai_ros_decoder_test.hpp"
 
 
 #include "rclcpp/serialization.hpp"
@@ -23,7 +23,7 @@ namespace nebula
 {
 namespace ros
 {
-HesaiRosDecorderTest::HesaiRosDecorderTest(
+HesaiRosDecoderTest::HesaiRosDecoderTest(
   const rclcpp::NodeOptions & options, const std::string & node_name)
 : rclcpp::Node(node_name, options)
 {
@@ -60,12 +60,12 @@ HesaiRosDecorderTest::HesaiRosDecorderTest(
   RCLCPP_INFO_STREAM(this->get_logger(), this->get_name() << "Wrapper=" << wrapper_status_);
 }
 
-void HesaiRosDecorderTest::ReceiveScanMsgCallback(
+void HesaiRosDecoderTest::ReceiveScanMsgCallback(
   const pandar_msgs::msg::PandarScan::SharedPtr scan_msg)
 {
 }
 
-Status HesaiRosDecorderTest::InitializeDriver(
+Status HesaiRosDecoderTest::InitializeDriver(
   std::shared_ptr<drivers::SensorConfigurationBase> sensor_configuration,
   std::shared_ptr<drivers::CalibrationConfigurationBase> calibration_configuration)
 {
@@ -76,7 +76,7 @@ Status HesaiRosDecorderTest::InitializeDriver(
   return driver_ptr_->GetStatus();
 }
 
-Status HesaiRosDecorderTest::InitializeDriver(
+Status HesaiRosDecoderTest::InitializeDriver(
   std::shared_ptr<drivers::SensorConfigurationBase> sensor_configuration,
   std::shared_ptr<drivers::CalibrationConfigurationBase> calibration_configuration,
   std::shared_ptr<drivers::HesaiCorrection> correction_configuration)
@@ -89,9 +89,9 @@ Status HesaiRosDecorderTest::InitializeDriver(
   return driver_ptr_->GetStatus();
 }
 
-Status HesaiRosDecorderTest::GetStatus() { return wrapper_status_; }
+Status HesaiRosDecoderTest::GetStatus() { return wrapper_status_; }
 
-Status HesaiRosDecorderTest::GetParameters(
+Status HesaiRosDecoderTest::GetParameters(
   drivers::HesaiSensorConfiguration & sensor_configuration,
   drivers::HesaiCalibrationConfiguration & calibration_configuration,
   drivers::HesaiCorrection & correction_configuration)
@@ -283,7 +283,7 @@ void checkPCDs(nebula::drivers::PointCloudXYZIRADTPtr pp1, nebula::drivers::Poin
 
 
 
-void HesaiRosDecorderTest::ReadBag()
+void HesaiRosDecoderTest::ReadBag()
 {
   
   rosbag2_storage::StorageOptions storage_options;

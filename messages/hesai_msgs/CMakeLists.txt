@@ -23,8 +23,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         )
 
 if (BUILD_TESTING)
-    find_package(ament_lint_auto REQUIRED)
-    ament_lint_auto_find_test_dependencies()
+    find_package(ament_cmake_clang_format REQUIRED)
+    ament_clang_format()
 endif ()
 
 ament_package()

@@ -15,9 +15,7 @@
     <arg name="target_topic" default="/pandar_packets"/>
 
 
-    <!--<node pkg="nebula_offline_sample" exec="libhesai_ros_decorder_test"-->
-    <!--<node pkg="nebula_lidar_driver" exec="hesai_ros_decorder_test"-->
-    <test pkg="nebula_lidar_driver" test-name="hesai_ros_decorder_test"
+    <test pkg="nebula_lidar_driver" test-name="hesai_ros_decoder_test"
           name="hesai_cloud" output="screen">
         <param name="sensor_model" value="$(var sensor_model)"/>
         <param name="return_mode" value="$(var return_mode)"/>

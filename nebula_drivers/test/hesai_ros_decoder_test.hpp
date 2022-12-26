@@ -1,5 +1,5 @@
-#ifndef NEBULA_HesaiRosDecorderTest_H
-#define NEBULA_HesaiRosDecorderTest_H
+#ifndef NEBULA_HesaiRosDecoderTest_H
+#define NEBULA_HesaiRosDecoderTest_H
 
 #include "common/nebula_common.hpp"
 #include "common/nebula_driver_ros_wrapper_base.hpp"
@@ -20,7 +20,7 @@ namespace nebula
 {
 namespace ros
 {
-class HesaiRosDecorderTest final : public rclcpp::Node, NebulaDriverRosWrapperBase//, testing::Test
+class HesaiRosDecoderTest final : public rclcpp::Node, NebulaDriverRosWrapperBase//, testing::Test
 {
   std::shared_ptr<drivers::HesaiDriver> driver_ptr_;
   Status wrapper_status_;
@@ -51,7 +51,7 @@ class HesaiRosDecorderTest final : public rclcpp::Node, NebulaDriverRosWrapperBa
   }
 
 public:
-  explicit HesaiRosDecorderTest(
+  explicit HesaiRosDecoderTest(
     const rclcpp::NodeOptions & options, const std::string & node_name);
 
   void ReceiveScanMsgCallback(const pandar_msgs::msg::PandarScan::SharedPtr scan_msg);
@@ -78,4 +78,4 @@ private:
 }  // namespace ros
 }  // namespace nebula
 
-#endif  // NEBULA_HesaiRosDecorderTest_H
+#endif  // NEBULA_HesaiRosDecoderTest_H

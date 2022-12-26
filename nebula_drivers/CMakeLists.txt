@@ -166,39 +166,31 @@ rclcpp_components_register_node(velodyne_driver_ros_wrapper
 
 
 if(BUILD_TESTING)
-        find_package(ament_lint_auto REQUIRED)
-        ament_lint_auto_find_test_dependencies()
         find_package(launch_testing_ament_cmake)
-        add_launch_test(test/hesai_ros_decorder_test_launch.py)
+        add_launch_test(test/hesai_ros_decoder_test_launch.py)
 
         # lib for TEST
-        ament_auto_add_library(hesai_ros_decorder_test SHARED
-                ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decorder_test.cpp
+        ament_auto_add_library(hesai_ros_decoder_test SHARED
+                ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decoder_test.cpp
                 )
-        target_link_libraries(hesai_ros_decorder_test ${PCL_LIBRARIES})
+        target_link_libraries(hesai_ros_decoder_test ${PCL_LIBRARIES})
         # standalone node for TEST
-        ament_auto_add_executable(hesai_ros_decorder_test_node
-                ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decorder_test_main.cpp
+        ament_auto_add_executable(hesai_ros_decoder_test_node
+                ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decoder_test_main.cpp
                 )
-        target_link_libraries(hesai_ros_decorder_test_node ${PCL_LIBRARIES} gtest)
+        target_link_libraries(hesai_ros_decoder_test_node ${PCL_LIBRARIES} gtest)
 
-        set(TEST_FILES
-                hesai_ros_decorder_test_main.cpp
-        )
 
-        foreach(file ${TEST_FILES})
-                get_filename_component(name "${file}" NAME_WE)
-                set(TEST_DECORDER_EXE ${name})
 
-                ament_add_gtest(${TEST_DECORDER_EXE}
-                        test/${name}.cpp)
-                ament_target_dependencies(${TEST_DECORDER_EXE}
-                        rclcpp
-                        rosbag2_cpp
-                        )
-                target_include_directories(${TEST_DECORDER_EXE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/pandar_msgs/include include )
-                target_link_libraries(${TEST_DECORDER_EXE} ${PCL_LIBRARIES} hesai_ros_decorder_test)
-        endforeach()
+        ament_add_gtest(hesai_ros_decoder_test_main
+                test/hesai_ros_decoder_test_main.cpp)
+        ament_target_dependencies(hesai_ros_decoder_test_main
+                rclcpp
+                rosbag2_cpp
+                pandar_msgs
+                )
+        target_include_directories(hesai_ros_decoder_test_main PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src include )
+        target_link_libraries(hesai_ros_decoder_test_main ${PCL_LIBRARIES} hesai_ros_decoder_test)
 endif()
 
 ament_auto_package(

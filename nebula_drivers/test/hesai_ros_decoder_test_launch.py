@@ -12,9 +12,9 @@ import pytest
 def generate_test_description():
     test_node = launch_ros.actions.Node(
         package='nebula_lidar_driver',
-#        executable='hesai_ros_decorder_test_node',
-        executable='hesai_ros_decorder_test_node_standalone',
-        parameters=['test/hesai_ros_decorder_test.yaml'],
+#        executable='hesai_ros_decoder_test_node',
+        executable='hesai_ros_decoder_test_node_standalone',
+        parameters=['test/hesai_ros_decoder_test.yaml'],
     )
     '''
     return launch.LaunchDescription([
@@ -108,8 +108,8 @@ class TestProcessOutput(unittest.TestCase):
         # Read input data that is send to dut
         INPUT_DATA_PATH = os.path.join(
         ament_index_python.get_package_prefix('nebula_lidar_driver'),
-        'lib/hesai_ros_decorder_test',
-        'hesai_ros_decorder_test_param.yaml'
+        'lib/hesai_ros_decoder_test',
+        'hesai_ros_decoder_test_param.yaml'
         )
         
         with open(INPUT_DATA_PATH) as f:
