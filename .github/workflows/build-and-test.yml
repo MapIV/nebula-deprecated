@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 2 # https://github.com/codecov/codecov-action/issues/190#issuecomment-790729633
 
       - name: run vcs
-        run: mkdir $GITHUB_WORKSPACE/src && cd $GITHUB_WORKSPACE && mv `find -maxdepth 1 -not -name . -not -name src` src/$GITHUB_WORKSPACE && vcs import --force --recursive $GITHUB_WORKSPACE/src < build_depends.repo
+        run: mkdir -p src_tmp/$GITHUB_WORKSPACE && mv `find -maxdepth 1 -not -name . -not -name src_tmp` src_tmp/$GITHUB_WORKSPACE && mv src_tmp src
       - name: Install Dependencies
         run: cd $GITHUB_WORKSPACE && rosdep install --from-paths src --ignore-src -y
       - name: Build
