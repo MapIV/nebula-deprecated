@@ -28,6 +28,7 @@
     <depend>libpcl-all-dev</depend>
     <depend>curl</depend>
     <depend>angles</depend>
+    <depend>yaml-cpp</depend>
 
     <depend>rosbag2_cpp</depend>
 
