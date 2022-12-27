@@ -41,10 +41,8 @@ jobs:
           fetch-depth: 2 # https://github.com/codecov/codecov-action/issues/190#issuecomment-790729633
       - name: Update image
         run: apt update && apt upgrade -y && rosdep update
-      - name: Prepare Workspace
-        run: mkdir -p src_tmp/$GITHUB_WORKSPACE && mv `find -maxdepth 1 -not -name . -not -name src_tmp` src_tmp/$GITHUB_WORKSPACE && mv src_tmp src
       - name: Run VCS
-        run: cd $GITHUB_WORKSPACE/src && ls -alh && vcs import --force --recursive < nebula/build_depends.repo
+        run: ls -alh && vcs import --force --recursive < build_depends.repo
       - name: Install Dependencies
         run: cd $GITHUB_WORKSPACE && rosdep install --from-paths src --ignore-src -y
       - name: Build
