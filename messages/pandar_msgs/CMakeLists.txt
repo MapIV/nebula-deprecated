@@ -22,9 +22,4 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         std_msgs
         )
 
-if (BUILD_TESTING)
-    find_package(ament_cmake_clang_format REQUIRED)
-    ament_clang_format()
-endif ()
-
 ament_package()
