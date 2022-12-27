@@ -41,12 +41,17 @@ jobs:
           fetch-depth: 2 # https://github.com/codecov/codecov-action/issues/190#issuecomment-790729633
       - name: Update image
         run: apt update && apt upgrade -y && rosdep update
+        shell: bash
       - name: Prepare Workspace
         run: mkdir -p src && mv `find -maxdepth 1 -not -name . -not -name src` src/
+        shell: bash
       - name: Run VCS
         run: cd src && vcs import --force --recursive < build_depends.repos && cd ..
+        shell: bash
       - name: Install Dependencies
         run: source /opt/ros/${{ matrix.ros_distribution }}/setup.bash && DEBIAN_FRONTEND=noninteractive rosdep install --from-paths src --ignore-src -y
+        shell: bash
       - name: Build
         run: colcon build
+        shell: bash
 
