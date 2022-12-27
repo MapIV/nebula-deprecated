@@ -44,7 +44,7 @@ jobs:
       - name: Prepare Workspace
         run: mkdir -p src_tmp/$GITHUB_WORKSPACE && mv `find -maxdepth 1 -not -name . -not -name src_tmp` src_tmp/$GITHUB_WORKSPACE && mv src_tmp src
       - name: Run VCS
-        run: cd $GITHUB_WORKSPACE && vcs import --force --recursive src/ < build_depends.repo
+        run: cd $GITHUB_WORKSPACE && ls -alh && vcs import --force --recursive src/ < build_depends.repo
       - name: Install Dependencies
         run: cd $GITHUB_WORKSPACE && rosdep install --from-paths src --ignore-src -y
       - name: Build
