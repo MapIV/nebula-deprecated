@@ -54,7 +54,6 @@ public:
   explicit HesaiRosOfflineExtractSample(
     const rclcpp::NodeOptions & options, const std::string & node_name);
 
-  void ReceiveScanMsgCallback(const pandar_msgs::msg::PandarScan::SharedPtr scan_msg);
   Status GetStatus();
   Status ReadBag();
 private:

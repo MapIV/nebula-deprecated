@@ -55,18 +55,6 @@ HesaiRosOfflineExtractSample::HesaiRosOfflineExtractSample(
   }
 
   RCLCPP_INFO_STREAM(this->get_logger(), this->get_name() << "Wrapper=" << wrapper_status_);
-  /*
-  pandar_scan_sub_ = create_subscription<pandar_msgs::msg::PandarScan>(
-    "pandar_packets", rclcpp::SensorDataQoS(),
-    std::bind(&HesaiDriverRosOfflineWrapper::ReceiveScanMsgCallback, this, std::placeholders::_1));
-  pandar_points_pub_ =
-    this->create_publisher<sensor_msgs::msg::PointCloud2>("pandar_points", rclcpp::SensorDataQoS());
-    */
-}
-
-void HesaiRosOfflineExtractSample::ReceiveScanMsgCallback(
-  const pandar_msgs::msg::PandarScan::SharedPtr scan_msg)
-{
 }
 
 Status HesaiRosOfflineExtractSample::InitializeDriver(
