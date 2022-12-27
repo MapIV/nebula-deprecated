@@ -46,7 +46,7 @@ jobs:
       - name: Run VCS
         run: cd src && vcs import --force --recursive < build_depends.repos && cd ..
       - name: Install Dependencies
-        run: rosdep install --from-paths src --ignore-src -y
+        run: source /opt/ros/${{ matrix.ros_distribution }}/setup.bash && DEBIAN_FRONTEND=noninteractive rosdep install --from-paths src --ignore-src -y
       - name: Build
         run: colcon build
 
