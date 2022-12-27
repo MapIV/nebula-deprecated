@@ -26,7 +26,6 @@ PandarATDecoder::PandarATDecoder(
     elev_angle_[laser] = calibration_configuration->elev_angle_map[laser];
     azimuth_offset_[laser] = calibration_configuration->azimuth_offset_map[laser];
   }
-  */
   /////////////////
 
   for (size_t laser = 0; laser < LASER_COUNT; ++laser) {

@@ -498,7 +498,6 @@ private:
     /** response body */
     string body;
 
-    // TIP: CURLOPT_WRITEFUNCTION ÅÍ øÆÈéÖÉ static µ©ó¯t¯È¢ÌÅ­øÉ static cast µÄ¢Ü·:
     // see: https://curl.se/docs/faq.html#Using_C_non_static_functions_f
     static size_t invoke_write_data(char *buffer, size_t size, size_t nmemb, void *f) {
         // Call non-static member function.
@@ -506,7 +505,7 @@ private:
     }
 
     /** a callback function for libcurl request */
-    size_t write_data(char *buffer, size_t size, size_t nmemb, void *f) {
+    size_t write_data(char *buffer, size_t size, size_t nmemb, void *) {
         int dataLength = size * nmemb;
         this->body.append(buffer, dataLength);
         return dataLength;

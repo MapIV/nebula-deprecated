@@ -118,8 +118,6 @@ drivers::PointCloudXYZIRADTPtr PandarXTDecoder::convert(size_t block_id)
 {
   PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
 
-  auto unix_second = static_cast<double>(timegm(&packet_.t));
-
   const auto & block = packet_.blocks[block_id];
   for (size_t unit_id = 0; unit_id < LASER_COUNT; ++unit_id) {
     const auto & unit = block.units[unit_id];
