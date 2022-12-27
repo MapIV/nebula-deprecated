@@ -49,7 +49,7 @@ jobs:
         run: cd src && vcs import --force --recursive < build_depends.repos && cd ..
         shell: bash
       - name: Install Dependencies
-        run: source /opt/ros/${{ matrix.ros_distribution }}/setup.bash && DEBIAN_FRONTEND=noninteractive rosdep install --from-paths src --ignore-src -y -r
+        run: source /opt/ros/${{ matrix.ros_distribution }}/setup.bash && DEBIAN_FRONTEND=noninteractive rosdep install --include-eol-distros --from-paths src --ignore-src -y -r
         shell: bash
       - name: Build
         run: source /opt/ros/${{ matrix.ros_distribution }}/setup.bash &&  colcon build
