@@ -44,7 +44,7 @@ jobs:
       - name: Prepare Workspace
         run: mkdir -p src && mv `find -maxdepth 1 -not -name . -not -name src` src/
       - name: Run VCS
-        run: vcs import --force --recursive < src/build_depends.repos
+        run: cd src && vcs import --force --recursive < build_depends.repos && cd ..
       - name: Install Dependencies
         run: rosdep install --from-paths src --ignore-src -y
       - name: Build
