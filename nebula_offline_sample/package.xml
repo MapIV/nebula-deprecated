@@ -24,6 +24,7 @@
     <depend>pcl_msgs</depend>
     <depend>libpcl-all-dev</depend>
     <depend>nebula_lidar_driver</depend>
+    <depend>yaml-cpp</depend>
 
     <depend>rosbag2_cpp</depend>
 
