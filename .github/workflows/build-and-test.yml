@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 2 # https://github.com/codecov/codecov-action/issues/190#issuecomment-790729633
 
       - name: run vcs
-        run: vcs import --force --recursive src/ < build_depends.repo
+        run: ls -alh $GITHUB_WORKSPACE && vcs import --force --recursive $GITHUB_WORKSPACE < build_depends.repo
       - name: Install Dependencies
         run: rosdep install --from-paths src --ignore-src -y
       - name: Build
