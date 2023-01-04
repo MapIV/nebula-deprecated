@@ -1,5 +1,3 @@
-//#include "hesai/hesai_ros_decoder_test.hpp"
-//#include "hesai_ros_decoder_test.hpp"
 #include "hesai_ros_decoder_test_at128.hpp"
 
 #include <gtest/gtest.h>
@@ -58,11 +56,6 @@ HesaiRosDecoderTest::HesaiRosDecoderTest(
   RCLCPP_INFO_STREAM(this->get_logger(), this->get_name() << "Wrapper=" << wrapper_status_);
 }
 
-void HesaiRosDecoderTest::ReceiveScanMsgCallback(
-  const pandar_msgs::msg::PandarScan::SharedPtr scan_msg)
-{
-}
-
 Status HesaiRosDecoderTest::InitializeDriver(
   std::shared_ptr<drivers::SensorConfigurationBase> sensor_configuration,
   std::shared_ptr<drivers::CalibrationConfigurationBase> calibration_configuration)
@@ -107,7 +100,6 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    //    this->declare_parameter<std::string>("sensor_model", "");
     this->declare_parameter<std::string>("sensor_model", "PandarAT128");
     sensor_configuration.sensor_model =
       nebula::drivers::SensorModelFromString(this->get_parameter("sensor_model").as_string());
@@ -118,12 +110,9 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    //    this->declare_parameter<std::string>("return_mode", "", descriptor);
     this->declare_parameter<std::string>("return_mode", "LastStrongest", descriptor);
-    sensor_configuration.return_mode =
-      //      nebula::drivers::ReturnModeFromString(this->get_parameter("return_mode").as_string());
-      nebula::drivers::ReturnModeFromStringHesai(
-        this->get_parameter("return_mode").as_string(), sensor_configuration.sensor_model);
+    sensor_configuration.return_mode = nebula::drivers::ReturnModeFromStringHesai(
+      this->get_parameter("return_mode").as_string(), sensor_configuration.sensor_model);
   }
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
@@ -131,7 +120,6 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    //    this->declare_parameter<std::string>("frame_id", "pandar", descriptor);
     this->declare_parameter<std::string>("frame_id", "hesai", descriptor);
     sensor_configuration.frame_id = this->get_parameter("frame_id").as_string();
   }
@@ -153,7 +141,6 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    //    this->declare_parameter<std::string>("calibration_file", "", descriptor);
     this->declare_parameter<std::string>(
       "calibration_file", (calib_dir / "PandarAT128.csv").string(), descriptor);
     calibration_configuration.calibration_file =
@@ -165,7 +152,6 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    //    this->declare_parameter<std::string>("correction_file", "", descriptor);
     this->declare_parameter<std::string>(
       "correction_file", (calib_dir / "PandarAT128.dat").string(), descriptor);
     correction_file_path = this->get_parameter("correction_file").as_string();
@@ -176,7 +162,6 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    //    this->declare_parameter<std::string>("bag_path", "", descriptor);
     this->declare_parameter<std::string>(
       "bag_path", (bag_root_dir / "at128" / "1671446145045082648").string(), descriptor);
     bag_path = this->get_parameter("bag_path").as_string();
@@ -206,7 +191,6 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    //    this->declare_parameter<std::string>("target_topic", "", descriptor);
     this->declare_parameter<std::string>("target_topic", "/pandar_packets", descriptor);
     target_topic = this->get_parameter("target_topic").as_string();
   }
@@ -249,19 +233,6 @@ Status HesaiRosDecoderTest::GetParameters(
   return Status::OK;
 }
 
-/*
-struct PointXYZIRADT
-{
-  PCL_ADD_POINT4D;
-  float intensity;
-  uint16_t ring;
-  float azimuth;
-  float distance;
-  uint8_t return_type;
-  double time_stamp;
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-} EIGEN_ALIGN16;
-*/
 void printPCD(nebula::drivers::PointCloudXYZIRADTPtr pp)
 {
   for (auto p : pp->points) {
@@ -274,11 +245,7 @@ void printPCD(nebula::drivers::PointCloudXYZIRADTPtr pp)
 void checkPCDs(
   nebula::drivers::PointCloudXYZIRADTPtr pp1, nebula::drivers::PointCloudXYZIRADTPtr pp2)
 {
-  //  std::cout << "checkPCDs" << std::endl;
-  //  std::cout << "pp1: " << pp1->points[0].x << std::endl;
-  //  std::cout << "pp2: " << pp2->points[0].x << std::endl;
   EXPECT_EQ(pp1->points.size(), pp2->points.size());
-  //  std::cout << "size ok" << std::endl;
   for (uint32_t i = 0; i < pp1->points.size(); i++) {
     auto p1 = pp1->points[i];
     auto p2 = pp2->points[i];
@@ -345,7 +312,6 @@ void HesaiRosDecoderTest::ReadBag()
         if (!pointcloud) continue;
 
         auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
-        //        printPCD(pointcloud);
 
         auto target_pcd_path = (pcd_dir / fn);
         std::cout << target_pcd_path << std::endl;
@@ -353,7 +319,6 @@ void HesaiRosDecoderTest::ReadBag()
           std::cout << "exists: " << target_pcd_path << std::endl;
           auto rt = pcd_reader.read(target_pcd_path.string(), *ref_pointcloud);
           std::cout << rt << " loaded: " << target_pcd_path << std::endl;
-          //          printPCD(ref_pointcloud);
           checkPCDs(pointcloud, ref_pointcloud);
           check_cnt++;
           ref_pointcloud.reset(new nebula::drivers::PointCloudXYZIRADT);
