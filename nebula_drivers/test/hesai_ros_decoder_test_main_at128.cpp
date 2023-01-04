@@ -41,6 +41,7 @@ int main(int argc, char * argv[])
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(node_name), driver_status);
   }
   RCLCPP_INFO_STREAM(rclcpp::get_logger(node_name), "Ending");
+  hesai_driver.reset();
   rclcpp::shutdown();
 
   return result;
