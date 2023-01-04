@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
 #include <regex>
 
 #include "rclcpp/serialization.hpp"
@@ -94,10 +95,12 @@ Status HesaiRosDecoderTest::GetParameters(
   drivers::HesaiCalibrationConfiguration & calibration_configuration,
   drivers::HesaiCorrection & correction_configuration)
 {
-  auto pk_dir = rcpputils::fs::current_path().parent_path().parent_path();
-  auto calib_dir = pk_dir / "install" / "nebula_lidar_driver" / "share" / "nebula_lidar_driver" /
-                   "calibration" / "hesai";
-  auto bag_root_dir = pk_dir / "src" / "nebula" / "nebula_drivers" / "test" / "data" / "hesai";
+  std::filesystem::path calib_dir =
+    _SRC_CALIBRATION_DIR_PATH;  // variable defined in CMakeLists.txt;
+  calib_dir /= "hesai";
+  std::filesystem::path bag_root_dir =
+    _SRC_RESOURCES_DIR_PATH;  // variable defined in CMakeLists.txt;
+  bag_root_dir /= "hesai";
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
     descriptor.type = 4;

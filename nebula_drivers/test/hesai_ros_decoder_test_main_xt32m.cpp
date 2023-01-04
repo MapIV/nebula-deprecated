@@ -1,5 +1,3 @@
-//#include "hesai/hesai_ros_decoder_test.hpp"
-//#include "hesai_ros_decoder_test.hpp"
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -9,15 +7,14 @@
 
 std::shared_ptr<nebula::ros::HesaiRosDecoderTest> hesai_driver;
 
-TEST(TestDecorder, TestPcd)
+TEST(TestDecoder, TestPcd)
 {
-  std::cout << "TEST(TestDecorder, TestPcd)" << std::endl;
+  std::cout << "TEST(TestDecoder, TestPcd)" << std::endl;
   hesai_driver->ReadBag();
 }
 
 int main(int argc, char * argv[])
 {
-  //  std::cout << "hesai_ros_decoder_test_main.cpp" << std::endl;
   std::cout << "hesai_ros_decoder_test_main_xt32m.cpp" << std::endl;
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
