@@ -3,7 +3,7 @@ project(nebula_lidar_driver)
 
 # Default to C++14
 if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
 endif ()
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -35,18 +35,6 @@ else()
     message(FATAL_ERROR "Could not find curl.")
 endif()
 
-
-#message(STATUS "Looking for curlpp...")
-#find_package(CURLPP REQUIRED)
-
-#if (CURLPP_FOUND)
-#    message(STATUS "Found curlpp version: ${CURLPP_VERSION}")
-#    message(STATUS "Using curlpp include dir: ${CURLPP_INCLUDE_DIR}")
-#    message(STATUS "Using curlpp libraries: ${CURLPP_LIBRARY}\n")
-#    list(APPEND Project_INCLUDE_DIRS ${CURLPP_INCLUDE_DIR})
-#else()
-#    message(FATAL_ERROR "Could not find curlpp.")
-#endif()
 
 include_directories(
         include
