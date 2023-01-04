@@ -157,6 +157,8 @@ rclcpp_components_register_node(velodyne_driver_ros_wrapper
 if(BUILD_TESTING)
 #        find_package(launch_testing_ament_cmake)
 #        add_launch_test(test/hesai_ros_decoder_test_launch.py)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
 
         # lib for TEST
         ament_auto_add_library(hesai_ros_decoder_test_at128 SHARED
