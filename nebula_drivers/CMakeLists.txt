@@ -3,7 +3,7 @@ project(nebula_lidar_driver)
 
 # Default to C++14
 if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
 endif ()
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -35,18 +35,6 @@ else()
     message(FATAL_ERROR "Could not find curl.")
 endif()
 
-
-#message(STATUS "Looking for curlpp...")
-#find_package(CURLPP REQUIRED)
-
-#if (CURLPP_FOUND)
-#    message(STATUS "Found curlpp version: ${CURLPP_VERSION}")
-#    message(STATUS "Using curlpp include dir: ${CURLPP_INCLUDE_DIR}")
-#    message(STATUS "Using curlpp libraries: ${CURLPP_LIBRARY}\n")
-#    list(APPEND Project_INCLUDE_DIRS ${CURLPP_INCLUDE_DIR})
-#else()
-#    message(FATAL_ERROR "Could not find curlpp.")
-#endif()
 
 include_directories(
         include
@@ -155,9 +143,11 @@ rclcpp_components_register_node(velodyne_driver_ros_wrapper
 # RosDriver
 
 if(BUILD_TESTING)
-#        find_package(launch_testing_ament_cmake)
-#        add_launch_test(test/hesai_ros_decoder_test_launch.py)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
 
+        add_definitions(-D_SRC_RESOURCES_DIR_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test/data/")
+        add_definitions(-D_SRC_CALIBRATION_DIR_PATH="${CMAKE_CURRENT_SOURCE_DIR}/calibration/")
         # lib for TEST
         ament_auto_add_library(hesai_ros_decoder_test_at128 SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decoder_test_at128.cpp
@@ -167,15 +157,6 @@ if(BUILD_TESTING)
         ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decoder_test_xt32m.cpp
         )
         target_link_libraries(hesai_ros_decoder_test_xt32m ${PCL_LIBRARIES})
-
-        # standalone node for TEST
-#        ament_auto_add_executable(hesai_ros_decoder_test_node
-#                ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decoder_test_main.cpp
-#                )
-#        target_link_libraries(hesai_ros_decoder_test_node
-#                ${PCL_LIBRARIES}
-#                gtest
-#                )
 
         find_package(ament_cmake_gtest)
         ament_add_gtest(hesai_ros_decoder_test_main_at128

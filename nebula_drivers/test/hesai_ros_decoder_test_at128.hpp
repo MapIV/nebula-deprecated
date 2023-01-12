@@ -3,26 +3,25 @@
 #ifndef NEBULA_HesaiRosDecoderTestAt128_H
 #define NEBULA_HesaiRosDecoderTestAt128_H
 
-#include "common/nebula_common.hpp"
-#include "common/nebula_driver_ros_wrapper_base.hpp"
-#include "common/nebula_status.hpp"
-#include "hesai/hesai_common.hpp"
-#include "hesai/hesai_driver.hpp"
+#include <gtest/gtest.h>
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
+#include "common/nebula_common.hpp"
+#include "common/nebula_driver_ros_wrapper_base.hpp"
+#include "common/nebula_status.hpp"
+#include "hesai/hesai_common.hpp"
+#include "hesai/hesai_driver.hpp"
 #include "pandar_msgs/msg/pandar_packet.hpp"
 #include "pandar_msgs/msg/pandar_scan.hpp"
-
-#include <gtest/gtest.h>
 
 namespace nebula
 {
 namespace ros
 {
-class HesaiRosDecoderTest final : public rclcpp::Node, NebulaDriverRosWrapperBase//, testing::Test
+class HesaiRosDecoderTest final : public rclcpp::Node, NebulaDriverRosWrapperBase  //, testing::Test
 {
   std::shared_ptr<drivers::HesaiDriver> driver_ptr_;
   Status wrapper_status_;
@@ -40,7 +39,6 @@ class HesaiRosDecoderTest final : public rclcpp::Node, NebulaDriverRosWrapperBas
     std::shared_ptr<drivers::CalibrationConfigurationBase> calibration_configuration,
     std::shared_ptr<drivers::HesaiCorrection> correction_configuration);
 
-
   Status GetParameters(
     drivers::HesaiSensorConfiguration & sensor_configuration,
     drivers::HesaiCalibrationConfiguration & calibration_configuration,
@@ -53,13 +51,12 @@ class HesaiRosDecoderTest final : public rclcpp::Node, NebulaDriverRosWrapperBas
   }
 
 public:
-  explicit HesaiRosDecoderTest(
-    const rclcpp::NodeOptions & options, const std::string & node_name);
+  explicit HesaiRosDecoderTest(const rclcpp::NodeOptions & options, const std::string & node_name);
 
   void ReceiveScanMsgCallback(const pandar_msgs::msg::PandarScan::SharedPtr scan_msg);
   Status GetStatus();
   void ReadBag();
-/*
+  /*
   void SetUp() override {
     // Setup things that should occur before every test instance should go here
     RCLCPP_ERROR_STREAM(this->get_logger(), "DONE WITH SETUP!!");

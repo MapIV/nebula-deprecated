@@ -1,26 +1,22 @@
 //#include "hesai/hesai_ros_decoder_test.hpp"
 //#include "hesai_ros_decoder_test.hpp"
-#include "hesai_ros_decoder_test_at128.hpp"
-
-#include <rclcpp/rclcpp.hpp>
-
-#include <memory>
-
 #include <gtest/gtest.h>
 
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
 
-
+#include "hesai_ros_decoder_test_at128.hpp"
 
 std::shared_ptr<nebula::ros::HesaiRosDecoderTest> hesai_driver;
 
-TEST(TestDecorder, TestPcd){
-  std::cout << "TEST(TestDecorder, TestPcd)" << std::endl;
+TEST(TestDecoder, TestPcd)
+{
+  std::cout << "TEST(TestDecoder, TestPcd)" << std::endl;
   hesai_driver->ReadBag();
 }
 
 int main(int argc, char * argv[])
 {
-//  std::cout << "hesai_ros_decoder_test_main.cpp" << std::endl;
   std::cout << "hesai_ros_decoder_test_main_at128.cpp" << std::endl;
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
@@ -31,7 +27,6 @@ int main(int argc, char * argv[])
   rclcpp::executors::SingleThreadedExecutor exec;
   rclcpp::NodeOptions options;
 
-
   hesai_driver = std::make_shared<nebula::ros::HesaiRosDecoderTest>(options, node_name);
   exec.add_node(hesai_driver->get_node_base_interface());
 
@@ -40,12 +35,13 @@ int main(int argc, char * argv[])
   int result = 0;
   if (driver_status == nebula::Status::OK) {
     RCLCPP_INFO_STREAM(rclcpp::get_logger(node_name), "Reading Started");
-//    hesai_driver->ReadBag();
+    //    hesai_driver->ReadBag();
     result = RUN_ALL_TESTS();
   } else {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(node_name), driver_status);
   }
   RCLCPP_INFO_STREAM(rclcpp::get_logger(node_name), "Ending");
+  hesai_driver.reset();
   rclcpp::shutdown();
 
   return result;
