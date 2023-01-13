@@ -173,6 +173,10 @@ if(BUILD_TESTING)
         ${CMAKE_CURRENT_SOURCE_DIR}/test/hesai_ros_decoder_test_xt32.cpp
         )
         target_link_libraries(hesai_ros_decoder_test_xt32 ${PCL_LIBRARIES})
+        ament_auto_add_library(velodyne_ros_decoder_test_vlp16 SHARED
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/velodyne_ros_decoder_test_vlp16.cpp
+        )
+        target_link_libraries(velodyne_ros_decoder_test_vlp16 ${PCL_LIBRARIES})
 
         find_package(ament_cmake_gtest)
         ament_add_gtest(hesai_ros_decoder_test_main_at128
@@ -270,6 +274,22 @@ if(BUILD_TESTING)
         target_link_libraries(hesai_ros_decoder_test_main_xt32
                 ${PCL_LIBRARIES}
                 hesai_ros_decoder_test_xt32
+                )
+        ament_add_gtest(velodyne_ros_decoder_test_main_vlp16
+                test/velodyne_ros_decoder_test_main_vlp16.cpp
+                )
+        ament_target_dependencies(velodyne_ros_decoder_test_main_vlp16
+                rclcpp
+                rosbag2_cpp
+                pandar_msgs
+                )
+        target_include_directories(velodyne_ros_decoder_test_main_vlp16 PUBLIC
+                ${CMAKE_CURRENT_SOURCE_DIR}/src
+                include
+                )
+        target_link_libraries(velodyne_ros_decoder_test_main_vlp16
+                ${PCL_LIBRARIES}
+                velodyne_ros_decoder_test_vlp16
                 )
 endif()
 
