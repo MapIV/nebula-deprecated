@@ -10,9 +10,10 @@ namespace nebula
 {
 namespace drivers
 {
-// COMMON
+/// @brief Coordinate mode for Velodyne's setting (need to check)
 enum class CoordinateMode { UNKNOWN = 0, CARTESIAN, SPHERICAL, CYLINDRICAL };
 
+/// @brief Return mode of each LiDAR
 enum class ReturnMode {
   UNKNOWN = 0,
   SINGLE_FIRST,
@@ -35,6 +36,9 @@ enum class ReturnMode {
   DUAL
 };
 
+/// @brief Convert ReturnMode enum to integer
+/// @param mode 
+/// @return Corresponding number
 inline uint8_t ReturnModeToInt(const ReturnMode & mode)
 {
   switch (mode) {
@@ -100,6 +104,10 @@ inline uint8_t ReturnModeToInt(const ReturnMode & mode)
   }
 }
 
+/// @brief Convert ReturnMode enum to string (Overloading the << operator)
+/// @param os 
+/// @param arg 
+/// @return stream
 inline std::ostream & operator<<(std::ostream & os, nebula::drivers::ReturnMode const & arg)
 {
   switch (arg) {
@@ -166,6 +174,8 @@ inline std::ostream & operator<<(std::ostream & os, nebula::drivers::ReturnMode 
 }
 
 // SENSOR_CONFIGURATION
+
+/// @brief Type of sensor
 enum class SensorModel {
   UNKNOWN = 0,
   HESAI_PANDAR64,
@@ -186,6 +196,7 @@ enum class SensorModel {
   VELODYNE_VLP16,
 };
 
+/// @brief not used?
 enum class datatype {
   INT8 = 1,
   UINT8 = 2,
@@ -197,6 +208,7 @@ enum class datatype {
   FLOAT64 = 8
 };
 
+/// @brief not used?
 struct PointField
 {
   std::string name;
@@ -205,6 +217,10 @@ struct PointField
   uint32_t count;
 };
 
+/// @brief Convert SensorModel enum to string (Overloading the << operator)
+/// @param os 
+/// @param arg 
+/// @return stream
 inline std::ostream & operator<<(std::ostream & os, nebula::drivers::SensorModel const & arg)
 {
   switch (arg) {
@@ -263,6 +279,7 @@ inline std::ostream & operator<<(std::ostream & os, nebula::drivers::SensorModel
   return os;
 }
 
+/// @brief Base struct for Sensor configuration
 struct SensorConfigurationBase
 {
   SensorModel sensor_model;
@@ -279,6 +296,11 @@ struct SensorConfigurationBase
   bool remove_nans;  /// todo: consider changing to only_finite
   std::vector<PointField> fields;
 };
+
+/// @brief Convert SensorConfigurationBase to string (Overloading the << operator)
+/// @param os 
+/// @param arg 
+/// @return stream
 inline std::ostream & operator<<(
   std::ostream & os, nebula::drivers::SensorConfigurationBase const & arg)
 {
@@ -289,11 +311,15 @@ inline std::ostream & operator<<(
   return os;
 }
 
+/// @brief Base struct for Calibration configuration (Requires extensions in child struct)
 struct CalibrationConfigurationBase
 {
   std::string calibration_file;
 };
 
+/// @brief Convert sensor name to SensorModel enum (Upper and lower case letters must match)
+/// @param sensor_model Sensor name (Upper and lower case letters must match)
+/// @return Corresponding SensorModel
 inline SensorModel SensorModelFromString(const std::string & sensor_model)
 {
   // Hesai
@@ -316,6 +342,9 @@ inline SensorModel SensorModelFromString(const std::string & sensor_model)
   return SensorModel::UNKNOWN;
 }
 
+/// @brief Convert return mode name to ReturnMode enum
+/// @param return_mode Return mode name (Upper and lower case letters must match)
+/// @return Corresponding ReturnMode
 inline ReturnMode ReturnModeFromString(const std::string & return_mode)
 {
   if (return_mode == "SingleFirst") return ReturnMode::SINGLE_FIRST;
