@@ -19,7 +19,7 @@ class NebulaHwInterfaceBase
 protected:
   /**
    * Callback function to receive the Cloud Packet data from the UDP Driver
-   * @param buffer buffer containing the data received from the UDP socket
+   * @param buffer Buffer containing the data received from the UDP socket
    * @return Status::OK if no error occured.
    */
   virtual void ReceiveCloudPacketCallback(const std::vector<uint8_t> & buffer) = 0;
@@ -44,20 +44,18 @@ public:
   // You may want to also implement GpsInterfaceStart() and ReceiveGpsCallback, but that is sensor
   // specific.
 
-
-  /// @brief Virtual function for setting sensor configuration 
+  /// @brief Virtual function for setting sensor configuration
   /// @param sensor_configuration SensorConfiguration for this interface
   /// @return Resulting status
   virtual Status SetSensorConfiguration(
     std::shared_ptr<SensorConfigurationBase> sensor_configuration) = 0;
 
-  /// @brief Virtual function for printing sensor configuration 
+  /// @brief Virtual function for printing sensor configuration
   /// @param sensor_configuration SensorConfiguration for the checking
   /// @return Resulting status
   virtual Status GetSensorConfiguration(SensorConfigurationBase & sensor_configuration) = 0;
 
-
-  /// @brief Virtual function for printing calibration configuration 
+  /// @brief Virtual function for printing calibration configuration
   /// @param calibration_configuration CalibrationConfiguration for the checking
   /// @return Resulting status
   virtual Status GetCalibrationConfiguration(

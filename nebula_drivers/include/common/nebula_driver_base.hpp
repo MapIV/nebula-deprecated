@@ -23,7 +23,7 @@ public:
 
   NebulaDriverBase() = default;
 
-  /// @brief Virtual function for setting calibration configuration 
+  /// @brief Virtual function for setting calibration configuration
   /// @param calibration_configuration CalibrationConfiguration including file path
   /// @return Resulting status
   virtual Status SetCalibrationConfiguration(

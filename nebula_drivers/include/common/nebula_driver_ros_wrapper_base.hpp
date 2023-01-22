@@ -37,7 +37,7 @@ private:
 
   //  status ReceiveScanMsgCallback(void * ScanMsg);  // ROS message callback for individual packet
   //  type
-  
+
   /// @brief Point cloud publisher
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr cloud_pub_;
 };

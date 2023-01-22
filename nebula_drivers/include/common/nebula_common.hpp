@@ -37,7 +37,7 @@ enum class ReturnMode {
 };
 
 /// @brief Convert ReturnMode enum to integer
-/// @param mode 
+/// @param mode
 /// @return Corresponding number
 inline uint8_t ReturnModeToInt(const ReturnMode & mode)
 {
@@ -105,8 +105,8 @@ inline uint8_t ReturnModeToInt(const ReturnMode & mode)
 }
 
 /// @brief Convert ReturnMode enum to string (Overloading the << operator)
-/// @param os 
-/// @param arg 
+/// @param os
+/// @param arg
 /// @return stream
 inline std::ostream & operator<<(std::ostream & os, nebula::drivers::ReturnMode const & arg)
 {
@@ -218,8 +218,8 @@ struct PointField
 };
 
 /// @brief Convert SensorModel enum to string (Overloading the << operator)
-/// @param os 
-/// @param arg 
+/// @param os
+/// @param arg
 /// @return stream
 inline std::ostream & operator<<(std::ostream & os, nebula::drivers::SensorModel const & arg)
 {
@@ -298,8 +298,8 @@ struct SensorConfigurationBase
 };
 
 /// @brief Convert SensorConfigurationBase to string (Overloading the << operator)
-/// @param os 
-/// @param arg 
+/// @param os
+/// @param arg
 /// @return stream
 inline std::ostream & operator<<(
   std::ostream & os, nebula::drivers::SensorConfigurationBase const & arg)
