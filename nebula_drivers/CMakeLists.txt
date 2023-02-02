@@ -77,6 +77,7 @@ ament_auto_add_library(hesai_driver SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_xt_decoder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_xtm_decoder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_at_decoder.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_128_e4x_decoder.cpp
         )
 # RosDriver
 ament_auto_add_library(hesai_driver_ros_wrapper SHARED

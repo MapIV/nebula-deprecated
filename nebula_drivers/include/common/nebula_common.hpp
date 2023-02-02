@@ -28,10 +28,10 @@ enum class ReturnMode {
   TRIPLE,
   LAST,
   STRONGEST,
-  LAST_STRONGEST,
+  DUAL_LAST_STRONGEST,
   FIRST,
-  LAST_FIRST,
-  FIRST_STRONGEST,
+  DUAL_LAST_FIRST,
+  DUAL_FIRST_STRONGEST,
   DUAL
 };
 
@@ -78,16 +78,16 @@ inline uint8_t ReturnModeToInt(const ReturnMode & mode)
     case ReturnMode::STRONGEST:
       return 13;
       break;
-    case ReturnMode::LAST_STRONGEST:
+    case ReturnMode::DUAL_LAST_STRONGEST:
       return 14;
       break;
     case ReturnMode::FIRST:
       return 15;
       break;
-    case ReturnMode::LAST_FIRST:
+    case ReturnMode::DUAL_LAST_FIRST:
       return 16;
       break;
-    case ReturnMode::FIRST_STRONGEST:
+    case ReturnMode::DUAL_FIRST_STRONGEST:
       return 17;
       break;
     case ReturnMode::DUAL:
@@ -143,16 +143,16 @@ inline std::ostream & operator<<(std::ostream & os, nebula::drivers::ReturnMode 
     case ReturnMode::STRONGEST:
       os << "Strongest";
       break;
-    case ReturnMode::LAST_STRONGEST:
+    case ReturnMode::DUAL_LAST_STRONGEST:
       os << "LastStrongest";
       break;
     case ReturnMode::FIRST:
       os << "First";
       break;
-    case ReturnMode::LAST_FIRST:
+    case ReturnMode::DUAL_LAST_FIRST:
       os << "LastFirst";
       break;
-    case ReturnMode::FIRST_STRONGEST:
+    case ReturnMode::DUAL_FIRST_STRONGEST:
       os << "FirstStrongest";
       break;
     case ReturnMode::DUAL:
@@ -176,8 +176,8 @@ enum class SensorModel {
   HESAI_PANDARXT32,
   HESAI_PANDARXT32M,
   HESAI_PANDARAT128,
-  HESAI_PANDAR128_V13,
-  HESAI_PANDAR128_V14,
+  HESAI_PANDAR128_E3X,
+  HESAI_PANDAR128_E4X,
   VELODYNE_VLS128,
   VELODYNE_HDL64,
   VELODYNE_VLP32,
@@ -232,11 +232,11 @@ inline std::ostream & operator<<(std::ostream & os, nebula::drivers::SensorModel
     case SensorModel::HESAI_PANDARAT128:
       os << "PandarAT128";
       break;
-    case SensorModel::HESAI_PANDAR128_V13:
-      os << "Pandar128_1.3";
+    case SensorModel::HESAI_PANDAR128_E3X:
+      os << "Pandar128_E3X";
       break;
-    case SensorModel::HESAI_PANDAR128_V14:
-      os << "Pandar128_1.4";
+    case SensorModel::HESAI_PANDAR128_E4X:
+      os << "Pandar128_E4X_OT";
       break;
     case SensorModel::VELODYNE_VLS128:
       os << "VLS128";
@@ -305,7 +305,7 @@ inline SensorModel SensorModelFromString(const std::string & sensor_model)
   if (sensor_model == "PandarAT128") return SensorModel::HESAI_PANDARAT128;
   if (sensor_model == "PandarQT64") return SensorModel::HESAI_PANDARQT64;
   if (sensor_model == "PandarQT128") return SensorModel::HESAI_PANDARQT128;
-  if (sensor_model == "Pandar128") return SensorModel::HESAI_PANDAR128_V14;
+  if (sensor_model == "Pandar128E4X") return SensorModel::HESAI_PANDAR128_E4X;
   // Velodyne
   if (sensor_model == "VLS128") return SensorModel::VELODYNE_VLS128;
   if (sensor_model == "HDL64") return SensorModel::VELODYNE_HDL64;
