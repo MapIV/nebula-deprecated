@@ -23,7 +23,19 @@ constexpr uint8_t DUAL_FIRST_STRONGEST_RETURN = 0x3C;
 constexpr uint8_t HIGH_RES_STATE = 0x00;
 constexpr uint8_t STANDARD_RES_STATE = 0x01;
 
-struct Header { // 6 bytes
+constexpr uint16_t MAX_AZIMUTH_STEPS = 3600; // High Res mode
+constexpr double DISTANCE_UNIT = 0.004; // 4mm
+
+constexpr uint8_t HEADER_SIZE = 12;
+constexpr uint16_t BODY_SIZE = 776;
+constexpr uint8_t TAIL_SIZE = 56;
+constexpr uint8_t FUNCTIONAL_SAFETY_SIZE = 17;
+constexpr uint16_t PACKET_SIZE = HEADER_SIZE + BODY_SIZE + FUNCTIONAL_SAFETY_SIZE + TAIL_SIZE;
+constexpr float MIN_RANGE = 0.1;
+constexpr float MAX_RANGE = 230.0;
+
+#pragma pack(push, 1)
+struct Header { // 12 bytes
   // Pre header
   uint16_t SOP;
   uint8_t ProtocolMajor;
@@ -105,6 +117,7 @@ struct PacketExtended {
   FunctionalSafety functional_safety;
   Tail tail;
 };
+#pragma pack(pop)
 
 } // namespace pandar_128_e4x
 } // namespace drivers

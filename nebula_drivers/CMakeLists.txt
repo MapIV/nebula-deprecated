@@ -15,6 +15,7 @@ find_package(PCL REQUIRED COMPONENTS common)
 find_package(PCL REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(OpenMP)
 
 if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
     add_definitions(-DHAVE_NEW_YAMLCPP)

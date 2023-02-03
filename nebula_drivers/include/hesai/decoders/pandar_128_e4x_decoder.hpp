@@ -25,12 +25,17 @@ public:
 
 private:
   bool parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet) override;
-  drivers::PointXYZIRADT build_point(size_t block_id, size_t unit_id, ReturnMode return_type);
-  drivers::PointCloudXYZIRADTPtr convert(size_t block_id) override;
-  drivers::PointCloudXYZIRADTPtr convert_dual(size_t block_id) override;
+  drivers::PointXYZIRADT build_point(const Block& block,
+                                     const size_t& laser_id,
+                                     const uint16_t& azimuth,
+                                     const double& unix_second);
+  inline drivers::PointCloudXYZIRADTPtr convert(size_t) override {};
+  inline drivers::PointCloudXYZIRADTPtr convert_dual(size_t) override {};
+  drivers::PointCloudXYZIRADTPtr convert();
+  drivers::PointCloudXYZIRADTPtr convert_dual();
 
-//  std::array<float, LASER_COUNT> elev_angle_{};
-//  std::array<float, LASER_COUNT> azimuth_offset_{};
+  std::array<double, LASER_COUNT> elev_angle_{};
+  std::array<float, LASER_COUNT> azimuth_offset_{};
 //
 //  std::array<float, LASER_COUNT> firing_offset_{};
 //  std::array<size_t, LASER_COUNT> firing_order_{};
@@ -39,7 +44,7 @@ private:
 //  std::array<float, BLOCKS_PER_PACKET> block_offset_dual_{};
 
   Packet packet_{};
-  PacketExtended packet_extended_{};
+//  PacketExtended packet_extended_{};
 };
 
 }  // namespace pandar_128_e4x
