@@ -34,8 +34,13 @@ private:
   drivers::PointCloudXYZIRADTPtr convert();
   drivers::PointCloudXYZIRADTPtr convert_dual();
 
-  std::array<double, LASER_COUNT> elev_angle_{};
+  std::array<float, LASER_COUNT> elev_angle_{};
+  std::array<float, LASER_COUNT> elev_angle_rad_{};
+  std::array<float, LASER_COUNT> cos_elev_angle_{};
+  std::array<float, LASER_COUNT> sin_elev_angle_{};
   std::array<float, LASER_COUNT> azimuth_offset_{};
+
+  std::array<float, MAX_AZIMUTH_STEPS> deg2rad_{};
 //
 //  std::array<float, LASER_COUNT> firing_offset_{};
 //  std::array<size_t, LASER_COUNT> firing_order_{};
