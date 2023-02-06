@@ -40,14 +40,6 @@ private:
   std::array<float, LASER_COUNT> sin_elev_angle_{};
   std::array<float, LASER_COUNT> azimuth_offset_{};
 
-  std::array<float, MAX_AZIMUTH_STEPS> deg2rad_{};
-//
-//  std::array<float, LASER_COUNT> firing_offset_{};
-//  std::array<size_t, LASER_COUNT> firing_order_{};
-//
-//  std::array<float, BLOCKS_PER_PACKET> block_offset_single_{};
-//  std::array<float, BLOCKS_PER_PACKET> block_offset_dual_{};
-
   Packet packet_{};
 //  PacketExtended packet_extended_{};
 };

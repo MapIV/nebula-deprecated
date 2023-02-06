@@ -102,6 +102,7 @@ drivers::PointXYZIRADT Pandar128E4XDecoder::build_point(const Block& block,
 
   float xyDistance = static_cast<float>(block.distance) * DISTANCE_UNIT * cos_elev_angle_[laser_id];
 
+  //TODO: Create HASH TABLE to accelerate deg2rad
   point.x = (
       xyDistance *
       sinf(deg2rad(azimuth_offset_[laser_id] + (static_cast<float>(azimuth)) / 100.0)));
@@ -180,6 +181,6 @@ drivers::PointCloudXYZIRADTPtr Pandar128E4XDecoder::convert_dual()
   return block_pc;
 }
 
-}  // namespace pandar_40
+}  // namespace pandar_128_e4x
 }  // namespace drivers
 }  // namespace nebula
