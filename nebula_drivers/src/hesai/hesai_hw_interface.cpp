@@ -66,7 +66,8 @@ Status HesaiHwInterface::SetSensorConfiguration(
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDAR128_E4X) {
       azimuth_index_ = 12;  // 12
       is_valid_packet_ = [](size_t packet_size) {
-        return (packet_size == 1117 || packet_size == 861); };
+        return (packet_size == 1117 || packet_size == 861);
+      };
     } else {
       status = Status::INVALID_SENSOR_MODEL;
     }

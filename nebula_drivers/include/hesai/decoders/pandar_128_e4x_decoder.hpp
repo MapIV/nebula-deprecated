@@ -25,12 +25,11 @@ public:
 
 private:
   bool parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet) override;
-  drivers::PointXYZIRADT build_point(const Block& block,
-                                     const size_t& laser_id,
-                                     const uint16_t& azimuth,
-                                     const double& unix_second);
-  inline drivers::PointCloudXYZIRADTPtr convert(size_t) override {};
-  inline drivers::PointCloudXYZIRADTPtr convert_dual(size_t) override {};
+  drivers::PointXYZIRADT build_point(
+    const Block & block, const size_t & laser_id, const uint16_t & azimuth,
+    const double & unix_second);
+  inline drivers::PointCloudXYZIRADTPtr convert(size_t) override{};
+  inline drivers::PointCloudXYZIRADTPtr convert_dual(size_t) override{};
   drivers::PointCloudXYZIRADTPtr convert();
   drivers::PointCloudXYZIRADTPtr convert_dual();
 
@@ -41,7 +40,7 @@ private:
   std::array<float, LASER_COUNT> azimuth_offset_{};
 
   Packet packet_{};
-//  PacketExtended packet_extended_{};
+  //  PacketExtended packet_extended_{};
 };
 
 }  // namespace pandar_128_e4x

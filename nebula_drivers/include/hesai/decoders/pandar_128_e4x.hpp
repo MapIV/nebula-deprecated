@@ -6,10 +6,12 @@
 #include <cstdint>
 #include <ctime>
 
-namespace nebula {
-namespace drivers {
-namespace pandar_128_e4x {
-
+namespace nebula
+{
+namespace drivers
+{
+namespace pandar_128_e4x
+{
 constexpr size_t LASER_COUNT = 128;
 
 constexpr uint8_t SINGLE_FIRST_RETURN = 0x33;
@@ -23,8 +25,8 @@ constexpr uint8_t DUAL_FIRST_STRONGEST_RETURN = 0x3C;
 constexpr uint8_t HIGH_RES_STATE = 0x00;
 constexpr uint8_t STANDARD_RES_STATE = 0x01;
 
-constexpr uint16_t MAX_AZIMUTH_STEPS = 3600; // High Res mode
-constexpr float DISTANCE_UNIT = 0.004f; // 4mm
+constexpr uint16_t MAX_AZIMUTH_STEPS = 3600;  // High Res mode
+constexpr float DISTANCE_UNIT = 0.004f;       // 4mm
 
 constexpr uint8_t HEADER_SIZE = 12;
 constexpr uint16_t BODY_SIZE = 776;
@@ -36,7 +38,8 @@ constexpr float MAX_RANGE = 230.0;
 constexpr uint16_t THREE_SIXTY = 360;
 
 #pragma pack(push, 1)
-struct Header { // 12 bytes
+struct Header
+{  // 12 bytes
   // Pre header
   uint16_t SOP;
   uint8_t ProtocolMajor;
@@ -51,38 +54,44 @@ struct Header { // 12 bytes
   uint8_t Flags;
 };
 
-struct BlockExtended { // 4 bytes
+struct BlockExtended
+{  // 4 bytes
   uint16_t distance;
   uint8_t reflectivity;
   uint8_t reserved;
 };
 
-struct Block { // 3 bytes
+struct Block
+{  // 3 bytes
   uint16_t distance;
   uint8_t reflectivity;
 };
 
-struct Body { // 776 bytes
+struct Body
+{  // 776 bytes
   uint16_t azimuth_1;
-  Block block_01[LASER_COUNT]; // 384 bytes
+  Block block_01[LASER_COUNT];  // 384 bytes
   uint16_t azimuth_2;
-  Block block_02[LASER_COUNT]; // 384 bytes
+  Block block_02[LASER_COUNT];  // 384 bytes
   uint32_t crc_1;
 };
 
-struct BodyExtended { // 1032 bytes
+struct BodyExtended
+{  // 1032 bytes
   uint16_t azimuth_1;
-  BlockExtended block_01[LASER_COUNT]; // 512 bytes
+  BlockExtended block_01[LASER_COUNT];  // 512 bytes
   uint16_t azimuth_2;
-  BlockExtended block_02[LASER_COUNT]; // 512 bytes
+  BlockExtended block_02[LASER_COUNT];  // 512 bytes
   uint32_t crc_1;
 };
 
-struct FunctionalSafety { // 17 bytes
+struct FunctionalSafety
+{  // 17 bytes
   uint8_t reserved[17];
 };
 
-struct DateTime { // 6 bytes
+struct DateTime
+{  // 6 bytes
   uint8_t year;
   uint8_t month;
   uint8_t day;
@@ -91,7 +100,8 @@ struct DateTime { // 6 bytes
   uint8_t second;
 };
 
-struct Tail { // 56
+struct Tail
+{  // 56
   uint8_t reserved_01[9];
   uint16_t azimuth_state;
   uint8_t operational_state;
@@ -105,14 +115,16 @@ struct Tail { // 56
   uint32_t crc_32;
 };
 
-struct Packet {
+struct Packet
+{
   Header header;
   Body body;
   FunctionalSafety functional_safety;
   Tail tail;
 };
 
-struct PacketExtended {
+struct PacketExtended
+{
   Header header;
   BodyExtended body;
   FunctionalSafety functional_safety;
@@ -120,6 +132,6 @@ struct PacketExtended {
 };
 #pragma pack(pop)
 
-} // namespace pandar_128_e4x
-} // namespace drivers
-} // namespace nebula
+}  // namespace pandar_128_e4x
+}  // namespace drivers
+}  // namespace nebula

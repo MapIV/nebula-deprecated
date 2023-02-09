@@ -13,7 +13,7 @@ namespace drivers
 // COMMON
 enum class CoordinateMode { UNKNOWN = 0, CARTESIAN, SPHERICAL, CYLINDRICAL };
 
-enum class ReturnType : uint8_t  {
+enum class ReturnType : uint8_t {
   UNKNOWN = 0,
   LAST,
   FIRST,
