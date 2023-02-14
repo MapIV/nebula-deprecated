@@ -36,8 +36,7 @@ PandarXTDecoder::PandarXTDecoder(
   }
 
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
-  // dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
-  dual_return_distance_threshold_=0.1;
+  dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
   last_phase_ = 0;
   has_scanned_ = false;
 
@@ -80,8 +79,7 @@ void PandarXTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
   }
 }
 
-drivers::PointXYZIRADT PandarXTDecoder::build_point(
-  int block_id, int unit_id, uint8_t return_type)
+drivers::PointXYZIRADT PandarXTDecoder::build_point(int block_id, int unit_id, uint8_t return_type)
 {
   const auto & block = packet_.blocks[block_id];
   const auto & unit = block.units[unit_id];
@@ -128,8 +126,9 @@ drivers::PointCloudXYZIRADTPtr PandarXTDecoder::convert(size_t block_id)
 
     block_pc->points.emplace_back(build_point(
       block_id, unit_id,
-      (packet_.return_mode == STRONGEST_RETURN) ? static_cast<uint8_t>(drivers::ReturnMode::SINGLE_STRONGEST)
-                                                : static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
+      (packet_.return_mode == STRONGEST_RETURN)
+        ? static_cast<uint8_t>(drivers::ReturnMode::SINGLE_STRONGEST)
+        : static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
   }
   return block_pc;
 }

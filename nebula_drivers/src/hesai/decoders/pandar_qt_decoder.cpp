@@ -41,8 +41,7 @@ PandarQTDecoder::PandarQTDecoder(
   }
 
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
-  // dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
-  dual_return_distance_threshold_=0.1;
+  dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
   last_phase_ = 0;
   has_scanned_ = false;
 
@@ -142,8 +141,9 @@ drivers::PointCloudXYZIRADTPtr PandarQTDecoder::convert(size_t block_id)
 
     block_pc->points.emplace_back(build_point(
       block_id, unit_id,
-      (packet_.return_mode == FIRST_RETURN) ? static_cast<uint8_t>(drivers::ReturnMode::SINGLE_FIRST)
-                                            : static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
+      (packet_.return_mode == FIRST_RETURN)
+        ? static_cast<uint8_t>(drivers::ReturnMode::SINGLE_FIRST)
+        : static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
   }
   return block_pc;
 }
@@ -175,24 +175,29 @@ drivers::PointCloudXYZIRADTPtr PandarQTDecoder::convert_dual(size_t block_id)
     //    if (sensor_configuration_->return_mode == drivers::ReturnMode::SINGLE_FIRST && even_usable) {
     if (sensor_return_mode == drivers::ReturnMode::FIRST && even_usable) {
       // First return is in even block
-      block_pc->push_back(build_point(even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_FIRST)));
+      block_pc->push_back(build_point(
+        even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_FIRST)));
       //    } else if (sensor_configuration_->return_mode == drivers::ReturnMode::SINGLE_LAST && even_usable) {
     } else if (sensor_return_mode == drivers::ReturnMode::LAST && even_usable) {
       // Last return is in odd block
-      block_pc->push_back(build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
+      block_pc->push_back(
+        build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
       //    } else if (sensor_configuration_->return_mode == drivers::ReturnMode::DUAL_ONLY) {
     } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
       // If the two returns are too close, only return the last one
       if (
         (abs(even_unit.distance - odd_unit.distance) < dual_return_distance_threshold_) &&
         odd_usable) {
-        block_pc->push_back(build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_ONLY)));
+        block_pc->push_back(
+          build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_ONLY)));
       } else {
         if (even_usable) {
-          block_pc->push_back(build_point(even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_FIRST)));
+          block_pc->push_back(build_point(
+            even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_FIRST)));
         }
         if (odd_usable) {
-          block_pc->push_back(build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_LAST)));
+          block_pc->push_back(build_point(
+            odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_LAST)));
         }
       }
     }
