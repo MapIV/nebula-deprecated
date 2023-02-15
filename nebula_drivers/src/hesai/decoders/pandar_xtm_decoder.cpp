@@ -44,8 +44,7 @@ PandarXTMDecoder::PandarXTMDecoder(
   }
 
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
-  // dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
-  dual_return_distance_threshold_ = 0.1;
+  dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
 
   last_phase_ = 0;
   has_scanned_ = false;

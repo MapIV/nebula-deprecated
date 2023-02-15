@@ -116,7 +116,7 @@ drivers::PointXYZIRADT PandarQTDecoder::build_point(
   point.ring = unit_id;
   point.azimuth = block.azimuth + std::round(azimuth_offset_[unit_id] * 100.0f);
   point.return_type = return_type;
-  ;
+
   point.time_stamp = unix_second + (static_cast<double>(packet_.usec)) / 1000000.0;
   point.time_stamp +=
     dual_return
@@ -172,17 +172,14 @@ drivers::PointCloudXYZIRADTPtr PandarQTDecoder::convert_dual(size_t block_id)
     bool even_usable = !(even_unit.distance <= 0.1 || even_unit.distance > 200.0);
     bool odd_usable = !(odd_unit.distance <= 0.1 || odd_unit.distance > 200.0);
 
-    //    if (sensor_configuration_->return_mode == drivers::ReturnMode::SINGLE_FIRST && even_usable) {
     if (sensor_return_mode == drivers::ReturnMode::FIRST && even_usable) {
       // First return is in even block
       block_pc->push_back(build_point(
         even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_FIRST)));
-      //    } else if (sensor_configuration_->return_mode == drivers::ReturnMode::SINGLE_LAST && even_usable) {
     } else if (sensor_return_mode == drivers::ReturnMode::LAST && even_usable) {
       // Last return is in odd block
       block_pc->push_back(
         build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
-      //    } else if (sensor_configuration_->return_mode == drivers::ReturnMode::DUAL_ONLY) {
     } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
       // If the two returns are too close, only return the last one
       if (

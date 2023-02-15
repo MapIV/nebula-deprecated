@@ -176,13 +176,10 @@ drivers::PointCloudXYZIRADTPtr Pandar40Decoder::convert_dual(size_t block_id)
         block_pc->push_back(build_point(
           odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_STRONGEST)));
       }
-    } else if (
-      //      sensor_configuration_->return_mode == drivers::ReturnMode::SINGLE_LAST && even_usable) {
-      sensor_return_mode == drivers::ReturnMode::LAST && even_usable) {
+    } else if (sensor_return_mode == drivers::ReturnMode::LAST && even_usable) {
       // Last return is always in even block
       block_pc->push_back(build_point(
         even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
-      //    } else if (sensor_configuration_->return_mode == drivers::ReturnMode::DUAL_ONLY) {
     } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
       // If the two returns are too close, only return the last one
       if (
@@ -242,12 +239,6 @@ bool Pandar40Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & raw_pac
 
       unit.distance = (static_cast<double>(range)) * LASER_RETURN_TO_DISTANCE_RATE;
       unit.intensity = (buf[index + 2] & 0xff);
-
-      // if ((unit.distance == 0x010101 && unit.intensity == 0x0101) ||
-      //     unit.distance > (200 * 1000 / 2 /* 200m -> 2mm */)) {
-      //   unit.distance = 0;
-      //   unit.intensity = 0;
-      // }
 
       index += RAW_MEASURE_SIZE;
     }
