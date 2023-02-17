@@ -32,7 +32,7 @@ protected:
   /// @brief Converts an input degree value to the radian value
   /// @param degrees
   /// @return radians
-  static inline double deg2rad(double degrees) { return degrees * M_PI / 180.0; }
+  static inline float deg2rad(double degrees) { return degrees * M_PI / 180.0; }
 
 public:
   HesaiScanDecoder(HesaiScanDecoder && c) = delete;

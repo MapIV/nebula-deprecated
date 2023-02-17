@@ -19,6 +19,7 @@ struct VelodyneSensorConfiguration : SensorConfigurationBase
   uint16_t rotation_speed;
   uint16_t cloud_min_angle;
   uint16_t cloud_max_angle;
+  double dual_return_distance_threshold;
 };
 /// @brief Convert VelodyneSensorConfiguration to string (Overloading the << operator)
 /// @param os

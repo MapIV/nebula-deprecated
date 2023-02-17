@@ -282,7 +282,19 @@ Status VelodyneHwMonitorRosWrapper::GetParameters(
     this->declare_parameter<uint16_t>("cloud_max_angle", 359, descriptor);
     sensor_configuration.cloud_max_angle = this->get_parameter("cloud_max_angle").as_int();
   }
-
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    descriptor.read_only = false;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "Dual return distance threshold [0.01, 0.5]";
+    rcl_interfaces::msg::FloatingPointRange range;
+    range.set__from_value(0.01).set__to_value(0.5).set__step(0.01);
+    descriptor.floating_point_range = {range};
+    this->declare_parameter<double>("dual_return_distance_threshold", 0.1, descriptor);
+    sensor_configuration.dual_return_distance_threshold =
+      this->get_parameter("dual_return_distance_threshold").as_double();
+  }
   if (sensor_configuration.sensor_model == nebula::drivers::SensorModel::UNKNOWN) {
     return Status::INVALID_SENSOR_MODEL;
   }
@@ -655,19 +667,19 @@ void VelodyneHwMonitorRosWrapper::OnVelodyneDiagnosticsTimer()
   } else if (false) {
     boost::asio::io_context ioc;
     boost::asio::ip::tcp::resolver resolver(ioc);
-    beast::tcp_stream stream(ioc);
+    boost::beast::tcp_stream stream(ioc);
     auto const results = resolver.resolve(sensor_configuration_.sensor_ip, "80");
 
     stream.connect(results);
 
-    boost::beast::http::request<http::string_body> req{
+    boost::beast::http::request<boost::beast::http::string_body> req{
       boost::beast::http::verb::get, "/cgi/diag.json", 11};
     req.set(boost::beast::http::field::host, sensor_configuration_.sensor_ip);
     req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
     boost::beast::http::write(stream, req);
 
-    beast::flat_buffer buffer;
+    boost::beast::flat_buffer buffer;
 
     boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
@@ -675,20 +687,20 @@ void VelodyneHwMonitorRosWrapper::OnVelodyneDiagnosticsTimer()
     boost::beast::http::read(stream, buffer, res);
 
     std::cout << res << std::endl;
-    auto m_res_string = beast::buffers_to_string(res.body().data());
+    auto m_res_string = boost::beast::buffers_to_string(res.body().data());
     current_diag_tree =
       std::make_shared<boost::property_tree::ptree>(hw_interface_.ParseJson(m_res_string));
     std::cout << "diagnostics_updater_.force_update()" << std::endl;
     diagnostics_updater_.force_update();
 
     // Gracefully close the socket
-    beast::error_code ec;
-    stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+    boost::beast::error_code ec;
+    stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 
     // not_connected happens sometimes
     // so don't bother reporting it.
     //
-    if (ec && ec != beast::errc::not_connected) throw beast::system_error{ec};
+    if (ec && ec != boost::beast::errc::not_connected) throw boost::beast::system_error{ec};
   } else {
     Curl * curl = new Curl();
     std::string url = "http://" + sensor_configuration_.sensor_ip + "/cgi/diag.json";

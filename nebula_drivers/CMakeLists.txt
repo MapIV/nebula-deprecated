@@ -15,6 +15,7 @@ find_package(PCL REQUIRED COMPONENTS common)
 find_package(PCL REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(OpenMP)
 
 if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
     add_definitions(-DHAVE_NEW_YAMLCPP)
@@ -77,6 +78,7 @@ ament_auto_add_library(hesai_driver SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_xt_decoder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_xtm_decoder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_at_decoder.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_128_e4x_decoder.cpp
         )
 # RosDriver
 ament_auto_add_library(hesai_driver_ros_wrapper SHARED
@@ -177,6 +179,10 @@ if(BUILD_TESTING)
         ${CMAKE_CURRENT_SOURCE_DIR}/test/velodyne_ros_decoder_test_vlp16.cpp
         )
         target_link_libraries(velodyne_ros_decoder_test_vlp16 ${PCL_LIBRARIES})
+        ament_auto_add_library(velodyne_ros_decoder_test_vls128 SHARED
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/velodyne_ros_decoder_test_vls128.cpp
+        )
+        target_link_libraries(velodyne_ros_decoder_test_vls128 ${PCL_LIBRARIES})
 
         find_package(ament_cmake_gtest)
         ament_add_gtest(hesai_ros_decoder_test_main_at128
@@ -290,6 +296,22 @@ if(BUILD_TESTING)
         target_link_libraries(velodyne_ros_decoder_test_main_vlp16
                 ${PCL_LIBRARIES}
                 velodyne_ros_decoder_test_vlp16
+                )
+        ament_add_gtest(velodyne_ros_decoder_test_main_vls128
+                test/velodyne_ros_decoder_test_main_vls128.cpp
+                )
+        ament_target_dependencies(velodyne_ros_decoder_test_main_vls128
+                rclcpp
+                rosbag2_cpp
+                pandar_msgs
+                )
+        target_include_directories(velodyne_ros_decoder_test_main_vls128 PUBLIC
+                ${CMAKE_CURRENT_SOURCE_DIR}/src
+                include
+                )
+        target_link_libraries(velodyne_ros_decoder_test_main_vls128
+                ${PCL_LIBRARIES}
+                velodyne_ros_decoder_test_vls128
                 )
 endif()
 

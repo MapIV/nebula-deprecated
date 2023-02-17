@@ -43,7 +43,7 @@ private:
   /// @param unit_id Target unit
   /// @param return_type Corresponding return mode
   /// @return Point cloud
-  drivers::PointXYZIRADT build_point(size_t block_id, size_t unit_id, ReturnMode return_type);
+  drivers::PointXYZIRADT build_point(size_t block_id, size_t unit_id, uint8_t return_type);
   /// @brief Convert to point cloud
   /// @param block_id target block
   /// @return Point cloud
