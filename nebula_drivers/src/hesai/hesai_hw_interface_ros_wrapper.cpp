@@ -414,7 +414,8 @@ std::vector<rcl_interfaces::msg::SetParametersResult> HesaiHwInterfaceRosWrapper
      rclcpp::Parameter("rotation_speed", sensor_configuration_.rotation_speed),
      rclcpp::Parameter("cloud_min_angle", sensor_configuration_.cloud_min_angle),
      rclcpp::Parameter("cloud_max_angle", sensor_configuration_.cloud_max_angle),
-     rclcpp::Parameter("dual_return_distance_threshold", sensor_configuration_.dual_return_distance_threshold)});
+     rclcpp::Parameter(
+       "dual_return_distance_threshold", sensor_configuration_.dual_return_distance_threshold)});
 #ifdef WITH_DEBUG_STDOUT_HesaiHwMonitorRosWrapper
   std::cout << "set_parameters fin" << std::endl;
 #endif
