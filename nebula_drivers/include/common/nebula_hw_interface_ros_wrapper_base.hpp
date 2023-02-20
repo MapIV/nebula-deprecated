@@ -43,6 +43,9 @@ protected:
     const drivers::SensorConfigurationBase & sensor_configuration) = 0;
   //  void SendDataPacket(const std::vector<uint8_t> &buffer);        // Ideally this will be
   //  implemented as specific funtions, GetFanStatus, GetEchoMode
+
+  /// @brief Enable sensor setup during initialization and set_parameters_callback
+  bool setup_sensor;
 };
 
 }  // namespace ros

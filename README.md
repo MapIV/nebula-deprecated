@@ -36,6 +36,10 @@ If you don't want to launch the hardware (i.e. working on rosbag) set the `launc
 
 ```ros2 launch nebula_lidar_driver nebula_launch.py sensor_model:=Pandar64 launch_hw:=false```
 
+If you don't want the hardware driver to perform the sensor configuration communication (i.e. limited number of connections) set the `setup_sensor` flag to false:
+
+```ros2 launch nebula_lidar_driver nebula_launch.py sensor_model:=Pandar64 setup_sensor:=false```
+
 You should ideally provide a config file for your specific sensor, but default ones are provided `nebula_drivers/config`
 
 ```ros2 launch nebula_lidar_driver nebula_launch.py sensor_model:=Pandar64 config_file:=your_sensor.yaml```

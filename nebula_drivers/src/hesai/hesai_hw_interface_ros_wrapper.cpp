@@ -27,10 +27,12 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
   hw_interface_.SetLogger(std::make_shared<rclcpp::Logger>(this->get_logger()));
   std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
     std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration_);
-  hw_interface_.SetSensorConfiguration(
-    std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
+  if (this->setup_sensor) {
+    hw_interface_.SetSensorConfiguration(
+      std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
+  }
 #if not defined(TEST_PCAP)
-  hw_interface_.InitializeTcpDriver();
+  hw_interface_.InitializeTcpDriver(this->setup_sensor);
 
   std::vector<std::thread> thread_pool{};
   thread_pool.emplace_back([this] {
@@ -46,8 +48,10 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
 #ifdef WITH_DEBUG_STDOUT_HesaiHwInterfaceRosWrapper
   std::cout << "hw_interface_.CheckAndSetConfig();";
 #endif
-  hw_interface_.CheckAndSetConfig();
-  updateParameters();
+  if (this->setup_sensor) {
+    hw_interface_.CheckAndSetConfig();
+    updateParameters();
+  }
 #endif
 
   // register scan callback and publisher
@@ -57,8 +61,10 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
     this->create_publisher<pandar_msgs::msg::PandarScan>("pandar_packets", rclcpp::SensorDataQoS());
 
 #if not defined(TEST_PCAP)
-  set_param_res_ = this->add_on_set_parameters_callback(
-    std::bind(&HesaiHwInterfaceRosWrapper::paramCallback, this, std::placeholders::_1));
+  if (this->setup_sensor) {
+    set_param_res_ = this->add_on_set_parameters_callback(
+      std::bind(&HesaiHwInterfaceRosWrapper::paramCallback, this, std::placeholders::_1));
+  }
 #endif
 
 #ifdef WITH_DEBUG_STDOUT_HesaiHwInterfaceRosWrapper
@@ -306,6 +312,15 @@ Status HesaiHwInterfaceRosWrapper::GetParameters(
     this->declare_parameter<double>("dual_return_distance_threshold", 0.1, descriptor);
     sensor_configuration.dual_return_distance_threshold =
       this->get_parameter("dual_return_distance_threshold").as_double();
+  }
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_BOOL;
+    descriptor.read_only = true;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "";
+    this->declare_parameter<bool>("setup_sensor", true, descriptor);
+    this->setup_sensor = this->get_parameter("setup_sensor").as_bool();
   }
 
   if (sensor_configuration.sensor_model == nebula::drivers::SensorModel::UNKNOWN) {

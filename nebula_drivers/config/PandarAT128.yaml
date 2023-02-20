@@ -15,5 +15,6 @@
     diag_span: 1000 # milliseconds
     calibration_file: "./install/nebula_lidar_driver/share/nebula_lidar_driver/calibration/hesai/PandarAT128.csv"
     correction_file: "./install/nebula_lidar_driver/share/nebula_lidar_driver/calibration/hesai/PandarAT128.dat"
+    setup_sensor: True
 
     online: True

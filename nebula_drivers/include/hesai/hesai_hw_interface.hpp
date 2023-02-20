@@ -103,8 +103,9 @@ public:
   /// @brief Constructor
   HesaiHwInterface();
   /// @brief Initializing tcp_driver for TCP communication
+  /// @param setup_sensor Whether to also initialize tcp_driver for sensor configuration
   /// @return Resulting status
-  Status InitializeTcpDriver();
+  Status InitializeTcpDriver(bool setup_sensor = true);
   /// @brief Parsing json string to property_tree
   /// @param str JSON string
   /// @return Parsed property_tree

@@ -6,4 +6,5 @@
     frame_id: "lidar"
     data_port: 2368
     gnss_port: 2369
+    setup_sensor: True
     online: True
