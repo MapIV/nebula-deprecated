@@ -5,6 +5,7 @@
 #include "hesai/hesai_common.hpp"
 #include "pandar_msgs/msg/pandar_packet.hpp"
 #include "pandar_msgs/msg/pandar_scan.hpp"
+#include <tuple>
 
 namespace nebula
 {
@@ -23,6 +24,8 @@ protected:
   int last_phase_{};
   bool has_scanned_{};
   double dual_return_distance_threshold_{};
+  double first_timestamp{};
+  double first_timestamp_tmp{};
 
   /// @brief SensorConfiguration for this decoder
   std::shared_ptr<drivers::HesaiSensorConfiguration> sensor_configuration_;
@@ -66,8 +69,8 @@ public:
   virtual bool hasScanned() = 0;
 
   /// @brief Virtual function for getting the constructed point cloud
-  /// @return Point cloud
-  virtual drivers::PointCloudXYZIRADTPtr get_pointcloud() = 0;
+  /// @return tuple of Point cloud and timestamp
+  virtual std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() = 0;
 };
 }  // namespace drivers
 }  // namespace nebula

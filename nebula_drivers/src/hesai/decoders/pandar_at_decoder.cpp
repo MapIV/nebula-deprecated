@@ -51,6 +51,8 @@ PandarATDecoder::PandarATDecoder(
 
   last_phase_ = 0;
   has_scanned_ = false;
+  first_timestamp_tmp = std::numeric_limits<double>::max();
+  first_timestamp = first_timestamp_tmp;
 
   scan_pc_.reset(new PointCloudXYZIRADT);
   overflow_pc_.reset(new PointCloudXYZIRADT);
@@ -58,7 +60,7 @@ PandarATDecoder::PandarATDecoder(
 
 bool PandarATDecoder::hasScanned() { return has_scanned_; }
 
-drivers::PointCloudXYZIRADTPtr PandarATDecoder::get_pointcloud() { return scan_pc_; }
+std::tuple<drivers::PointCloudXYZIRADTPtr, double> PandarATDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
 
 void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -69,6 +71,8 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
 
   if (has_scanned_) {
     scan_pc_ = overflow_pc_;
+    first_timestamp = first_timestamp_tmp;
+    first_timestamp_tmp = std::numeric_limits<double>::max();
     overflow_pc_.reset(new PointCloudXYZIRADT);
     has_scanned_ = false;
   }
@@ -175,7 +179,10 @@ void PandarATDecoder::CalcXTPointXYZIT(
 
     point.intensity = unit.intensity;
     double unix_second = packet_.unix_second;
-    point.time_stamp = unix_second + (static_cast<double>(packet_.usec)) / 1000000.0;
+    if(unix_second < first_timestamp_tmp){
+      first_timestamp_tmp = unix_second;
+    }
+    point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
     point.return_type = packet_.return_mode;
     point.ring = i;
     cld->points.emplace_back(point);

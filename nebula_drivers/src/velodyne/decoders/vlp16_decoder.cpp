@@ -16,6 +16,8 @@ Vlp16Decoder::Vlp16Decoder(
   sensor_configuration_ = sensor_configuration;
   calibration_configuration_ = calibration_configuration;
 
+  first_timestamp = std::numeric_limits<double>::max();
+
   scan_pc_.reset(new PointCloudXYZIRADT);
   overflow_pc_.reset(new PointCloudXYZIRADT);
 
@@ -31,7 +33,7 @@ Vlp16Decoder::Vlp16Decoder(
 
 bool Vlp16Decoder::hasScanned() { return has_scanned_; }
 
-drivers::PointCloudXYZIRADTPtr Vlp16Decoder::get_pointcloud()
+std::tuple<drivers::PointCloudXYZIRADTPtr, double> Vlp16Decoder::get_pointcloud()
 {
   int phase = (uint16_t)round(sensor_configuration_->scan_phase * 100);
   if (!scan_pc_->points.empty()) {
@@ -45,7 +47,7 @@ drivers::PointCloudXYZIRADTPtr Vlp16Decoder::get_pointcloud()
     }
     overflow_pc_->width = overflow_pc_->points.size();
   }
-  return scan_pc_;
+  return std::make_tuple(scan_pc_, first_timestamp);
 }
 
 int Vlp16Decoder::pointsPerPacket()
@@ -59,6 +61,7 @@ void Vlp16Decoder::reset_pointcloud(size_t n_pts)
   max_pts_ = n_pts * pointsPerPacket();
   scan_pc_->points.reserve(max_pts_);
   reset_overflow();  // transfer existing overflow points to the cleared pointcloud
+  first_timestamp = std::numeric_limits<double>::max();
 }
 
 void Vlp16Decoder::reset_overflow()
@@ -197,8 +200,12 @@ void Vlp16Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
                 const float intensity = current_block.data[k + 2];
 
                 const double time_stamp = (block * 2 + firing) * 55.296 / 1000.0 / 1000.0 +
-                                          dsr * 2.304 / 1000.0 / 1000.0 +
-                                          rclcpp::Time(velodyne_packet.stamp).seconds();
+                                          dsr * 2.304 / 1000.0 / 1000.0;// +
+//                                          rclcpp::Time(velodyne_packet.stamp).seconds();
+                auto ts = rclcpp::Time(velodyne_packet.stamp).seconds();
+                if(ts < first_timestamp){
+                  first_timestamp = ts;
+                }
 
                 // Determine return type.
                 uint8_t return_type;

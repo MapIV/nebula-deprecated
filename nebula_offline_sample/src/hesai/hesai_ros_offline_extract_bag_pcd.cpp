@@ -306,8 +306,8 @@ Status HesaiRosOfflineExtractBag::ReadBag()
         std::cout << "Found data in topic " << bag_message->topic_name << ": "
                   << bag_message->time_stamp << std::endl;
 
-        nebula::drivers::PointCloudXYZIRADTPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(
-          std::make_shared<pandar_msgs::msg::PandarScan>(extracted_msg));
+        auto pointcloud_ts = driver_ptr_->ConvertScanToPointcloud(std::make_shared<pandar_msgs::msg::PandarScan>(extracted_msg));
+        auto pointcloud = std::get<0>(pointcloud_ts);
         auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
         //        pcl::io::savePCDFileBinary((o_dir / fn).string(), *pointcloud);
 
@@ -328,6 +328,7 @@ Status HesaiRosOfflineExtractBag::ReadBag()
         if (skip_num < cnt) {
           out_cnt++;
           writer.writeBinary((o_dir / fn).string(), *pointcloud);
+//          writer.writeASCII((o_dir / fn).string(), *pointcloud);
         }
         if (out_num <= out_cnt) {
           break;

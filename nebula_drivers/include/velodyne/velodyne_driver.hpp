@@ -49,9 +49,9 @@ public:
   Status GetStatus();
 
   /// @brief Convert VelodyneScan message to point cloud
-  /// @param pandar_scan Message
-  /// @return Point cloud
-  PointCloudXYZIRADTPtr ConvertScanToPointcloud(
+  /// @param velodyne_scan Message
+  /// @return tuple of Point cloud and timestamp
+  std::tuple<drivers::PointCloudXYZIRADTPtr, double> ConvertScanToPointcloud(
     const std::shared_ptr<velodyne_msgs::msg::VelodyneScan> & velodyne_scan);
 };
 

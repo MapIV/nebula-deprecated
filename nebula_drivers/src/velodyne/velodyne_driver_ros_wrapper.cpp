@@ -42,15 +42,18 @@ void VelodyneDriverRosWrapper::ReceiveScanMsgCallback(
   // take packets out of scan msg
   std::vector<velodyne_msgs::msg::VelodynePacket> pkt_msgs = scan_msg->packets;
 
-  nebula::drivers::PointCloudXYZIRADTPtr pointcloud =
+  std::tuple<nebula::drivers::PointCloudXYZIRADTPtr, double> pointcloud_ts =
     driver_ptr_->ConvertScanToPointcloud(scan_msg);
+  nebula::drivers::PointCloudXYZIRADTPtr pointcloud = std::get<0>(pointcloud_ts);
 
   auto ros_pc_msg_ptr = std::make_unique<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pointcloud, *ros_pc_msg_ptr);
   if (!pointcloud->points.empty()) {
-    double first_point_timestamp = pointcloud->points.front().time_stamp;
+//    double first_point_timestamp = pointcloud->points.front().time_stamp;
+//    ros_pc_msg_ptr->header.stamp =
+//      rclcpp::Time(SecondsToChronoNanoSeconds(first_point_timestamp).count());
     ros_pc_msg_ptr->header.stamp =
-      rclcpp::Time(SecondsToChronoNanoSeconds(first_point_timestamp).count());
+      rclcpp::Time(SecondsToChronoNanoSeconds(std::get<1>(pointcloud_ts)).count());
   }
   ros_pc_msg_ptr->header.frame_id = sensor_cfg_ptr_->frame_id;
   velodyne_points_pub_->publish(std::move(ros_pc_msg_ptr));

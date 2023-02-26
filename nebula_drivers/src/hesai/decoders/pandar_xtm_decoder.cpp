@@ -48,6 +48,8 @@ PandarXTMDecoder::PandarXTMDecoder(
 
   last_phase_ = 0;
   has_scanned_ = false;
+  first_timestamp_tmp = std::numeric_limits<double>::max();
+  first_timestamp = first_timestamp_tmp;
 
   scan_pc_.reset(new PointCloudXYZIRADT);
   overflow_pc_.reset(new PointCloudXYZIRADT);
@@ -55,7 +57,7 @@ PandarXTMDecoder::PandarXTMDecoder(
 
 bool PandarXTMDecoder::hasScanned() { return has_scanned_; }
 
-drivers::PointCloudXYZIRADTPtr PandarXTMDecoder::get_pointcloud() { return scan_pc_; }
+std::tuple<drivers::PointCloudXYZIRADTPtr, double> PandarXTMDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
 
 void PandarXTMDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -65,6 +67,8 @@ void PandarXTMDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pack
 
   if (has_scanned_) {
     scan_pc_ = overflow_pc_;
+    first_timestamp = first_timestamp_tmp;
+    first_timestamp_tmp = std::numeric_limits<double>::max();
     overflow_pc_.reset(new PointCloudXYZIRADT);
     has_scanned_ = false;
   }
@@ -158,7 +162,10 @@ void PandarXTMDecoder::CalcXTPointXYZIT(
     point.intensity = unit.intensity;
 
     double unix_second = static_cast<double>(timegm(&packet_.t));  // sensor-time (ppt/gps)
-    point.time_stamp = unix_second + (static_cast<double>(packet_.usec)) / 1000000.0;
+    if(unix_second < first_timestamp_tmp){
+      first_timestamp_tmp = unix_second;
+    }
+    point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
     point.time_stamp +=
       (static_cast<double>(blockXTMOffsetSingle[i] + laserXTMOffset[i]) / 1000000.0f);
 

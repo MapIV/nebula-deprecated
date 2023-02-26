@@ -21,7 +21,7 @@ public:
     const std::shared_ptr<drivers::HesaiCalibrationConfiguration> & calibration_configuration);
   void unpack(const pandar_msgs::msg::PandarPacket & pandar_packet) override;
   bool hasScanned() override;
-  drivers::PointCloudXYZIRADTPtr get_pointcloud() override;
+  std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() override;
 
 private:
   bool parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet) override;

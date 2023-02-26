@@ -36,6 +36,8 @@ Pandar128E4XDecoder::Pandar128E4XDecoder(
 
   last_phase_ = 0;
   has_scanned_ = false;
+  first_timestamp_tmp = std::numeric_limits<double>::max();
+  first_timestamp = first_timestamp_tmp;
 
   scan_pc_.reset(new PointCloudXYZIRADT);
   scan_pc_->reserve(LASER_COUNT * MAX_AZIMUTH_STEPS);
@@ -45,7 +47,7 @@ Pandar128E4XDecoder::Pandar128E4XDecoder(
 
 bool Pandar128E4XDecoder::hasScanned() { return has_scanned_; }
 
-drivers::PointCloudXYZIRADTPtr Pandar128E4XDecoder::get_pointcloud() { return scan_pc_; }
+std::tuple<drivers::PointCloudXYZIRADTPtr, double> Pandar128E4XDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
 
 bool Pandar128E4XDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & raw_packet)
 {
@@ -98,6 +100,10 @@ drivers::PointXYZIRADT Pandar128E4XDecoder::build_point(
 {
   PointXYZIRADT point{};
 
+  if(unix_second < first_timestamp_tmp){
+    first_timestamp_tmp = unix_second;
+  }
+
   float xyDistance = static_cast<float>(block.distance) * DISTANCE_UNIT * cos_elev_angle_[laser_id];
 
   //TODO: Create HASH TABLE to accelerate deg2rad
@@ -112,7 +118,7 @@ drivers::PointXYZIRADT Pandar128E4XDecoder::build_point(
   point.ring = laser_id;
   point.azimuth = static_cast<float>(azimuth / 100.0f) + azimuth_offset_[laser_id];
   point.return_type = 0;  // TODO
-  point.time_stamp = unix_second + packet_.tail.timestamp_us * 1e-6;
+  point.time_stamp = packet_.tail.timestamp_us * 1e-6;
 
   return point;
 }

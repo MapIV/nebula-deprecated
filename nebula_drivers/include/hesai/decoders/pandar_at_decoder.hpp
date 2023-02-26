@@ -129,8 +129,8 @@ public:
   /// @return Readied
   bool hasScanned() override;
   /// @brief Get the constructed point cloud
-  /// @return Point cloud
-  drivers::PointCloudXYZIRADTPtr get_pointcloud() override;
+  /// @return tuple of Point cloud and timestamp
+  std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() override;
 
 private:
   /// @brief Parsing PandarPacket based on packet structure

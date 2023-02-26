@@ -16,6 +16,8 @@ Vlp32Decoder::Vlp32Decoder(
   sensor_configuration_ = sensor_configuration;
   calibration_configuration_ = calibration_configuration;
 
+  first_timestamp = std::numeric_limits<double>::max();
+
   scan_pc_.reset(new PointCloudXYZIRADT);
   overflow_pc_.reset(new PointCloudXYZIRADT);
 
@@ -30,7 +32,7 @@ Vlp32Decoder::Vlp32Decoder(
 
 bool Vlp32Decoder::hasScanned() { return has_scanned_; }
 
-drivers::PointCloudXYZIRADTPtr Vlp32Decoder::get_pointcloud()
+std::tuple<drivers::PointCloudXYZIRADTPtr, double> Vlp32Decoder::get_pointcloud()
 {
   int phase = (uint16_t)round(sensor_configuration_->scan_phase * 100);
   if (!scan_pc_->points.empty()) {
@@ -44,7 +46,7 @@ drivers::PointCloudXYZIRADTPtr Vlp32Decoder::get_pointcloud()
     }
     overflow_pc_->width = overflow_pc_->points.size();
   }
-  return scan_pc_;
+  return std::make_tuple(scan_pc_, first_timestamp);
 }
 
 int Vlp32Decoder::pointsPerPacket() { return BLOCKS_PER_PACKET * SCANS_PER_BLOCK; }
@@ -56,6 +58,7 @@ void Vlp32Decoder::reset_pointcloud(size_t n_pts)
   max_pts_ = n_pts * pointsPerPacket();
   scan_pc_->points.reserve(max_pts_);
   reset_overflow();  // transfer existing overflow points to the cleared pointcloud
+  first_timestamp = std::numeric_limits<double>::max();
 }
 
 void Vlp32Decoder::reset_overflow()
@@ -207,8 +210,13 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
           intensity = (intensity < min_intensity) ? min_intensity : intensity;
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
 
-          double time_stamp = i * 55.296 / 1000.0 / 1000.0 + j * 2.304 / 1000.0 / 1000.0 +
-                              rclcpp::Time(velodyne_packet.stamp).seconds();
+          double time_stamp = i * 55.296 / 1000.0 / 1000.0 + j * 2.304 / 1000.0 / 1000.0;// +
+//                              rclcpp::Time(velodyne_packet.stamp).seconds();
+          auto ts = rclcpp::Time(velodyne_packet.stamp).seconds();
+          if(ts < first_timestamp){
+            first_timestamp = ts;
+          }
+          
           // Temporary to stop compile error - fix to give VLP32 support
           uint8_t return_mode = velodyne_packet.data[1204];
           uint8_t return_type;

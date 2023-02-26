@@ -47,6 +47,75 @@ enum class ReturnMode : uint8_t {
   DUAL
 };
 
+
+/// @brief Convert ReturnMode enum to ReturnType enum for Pandar AT, XTM (temporary, not used)
+/// @param mode
+/// @return Corresponding mode
+inline ReturnType ReturnModeToReturnType(const ReturnMode & mode)
+{
+  switch (mode) {
+    case ReturnMode::SINGLE_STRONGEST:
+      return ReturnType::STRONGEST;
+      break;
+    case ReturnMode::SINGLE_LAST:
+      return ReturnType::LAST;
+      break;
+    case ReturnMode::DUAL_FIRST:
+      return ReturnType::FIRST;
+      break;
+    case ReturnMode::DUAL_LAST:
+      return ReturnType::LAST;
+      break;
+    case ReturnMode::DUAL_ONLY:
+      return ReturnType::LAST;
+      break;
+    case ReturnMode::SINGLE_FIRST:
+      return ReturnType::FIRST;
+      break;
+    case ReturnMode::DUAL_STRONGEST_FIRST:
+      return ReturnType::FIRST;
+      break;
+    case ReturnMode::DUAL_STRONGEST_LAST:
+      return ReturnType::LAST;
+      break;
+    case ReturnMode::DUAL_WEAK_FIRST:
+      return ReturnType::FIRST_WEAK;
+      break;
+    case ReturnMode::DUAL_WEAK_LAST:
+      return ReturnType::LAST_WEAK;
+      break;
+    case ReturnMode::TRIPLE:
+      return ReturnType::STRONGEST;
+      break;
+    // for Hesai
+    case ReturnMode::LAST:
+      return ReturnType::LAST;
+      break;
+    case ReturnMode::STRONGEST:
+      return ReturnType::STRONGEST;
+      break;
+    case ReturnMode::DUAL_LAST_STRONGEST:
+      return ReturnType::LAST;
+      break;
+    case ReturnMode::FIRST:
+      return ReturnType::FIRST;
+      break;
+    case ReturnMode::DUAL_LAST_FIRST:
+      return ReturnType::LAST;
+      break;
+    case ReturnMode::DUAL_FIRST_STRONGEST:
+      return ReturnType::FIRST;
+      break;
+    case ReturnMode::DUAL:
+      return ReturnType::LAST;
+      break;
+    default:
+    case ReturnMode::UNKNOWN:
+      return ReturnType::UNKNOWN;
+      break;
+  }
+}
+
 /// @brief Convert ReturnMode enum to integer
 /// @param mode
 /// @return Corresponding number

@@ -22,6 +22,7 @@
 #include "velodyne/velodyne_common.hpp"
 #include "velodyne_msgs/msg/velodyne_packet.hpp"
 #include "velodyne_msgs/msg/velodyne_scan.hpp"
+#include <tuple>
 
 namespace nebula
 {
@@ -147,6 +148,7 @@ protected:
   bool has_scanned_ = true;
   double
     dual_return_distance_threshold_{};  // Velodyne does this internally, this will not be implemented here
+  double first_timestamp{};
 
   /// @brief SensorConfiguration for this decoder
   std::shared_ptr<drivers::VelodyneSensorConfiguration> sensor_configuration_;
@@ -178,8 +180,8 @@ public:
   virtual int pointsPerPacket() = 0;
 
   /// @brief Virtual function for getting the constructed point cloud
-  /// @return Point cloud
-  virtual drivers::PointCloudXYZIRADTPtr get_pointcloud() = 0;
+  /// @return tuple of Point cloud and timestamp
+  virtual std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() = 0;
   /// @brief Resetting point cloud buffer
   /// @param n_pts # of points
   virtual void reset_pointcloud(size_t n_pts) = 0;

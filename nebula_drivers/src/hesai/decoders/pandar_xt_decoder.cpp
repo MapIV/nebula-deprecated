@@ -39,6 +39,8 @@ PandarXTDecoder::PandarXTDecoder(
   dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
   last_phase_ = 0;
   has_scanned_ = false;
+  first_timestamp_tmp = std::numeric_limits<double>::max();
+  first_timestamp = first_timestamp_tmp;
 
   scan_pc_.reset(new PointCloudXYZIRADT);
   overflow_pc_.reset(new PointCloudXYZIRADT);
@@ -46,7 +48,7 @@ PandarXTDecoder::PandarXTDecoder(
 
 bool PandarXTDecoder::hasScanned() { return has_scanned_; }
 
-drivers::PointCloudXYZIRADTPtr PandarXTDecoder::get_pointcloud() { return scan_pc_; }
+std::tuple<drivers::PointCloudXYZIRADTPtr, double> PandarXTDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
 
 void PandarXTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -56,6 +58,8 @@ void PandarXTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
 
   if (has_scanned_) {
     scan_pc_ = overflow_pc_;
+    first_timestamp = first_timestamp_tmp;
+    first_timestamp_tmp = std::numeric_limits<double>::max();
     overflow_pc_.reset(new PointCloudXYZIRADT);
     has_scanned_ = false;
   }
@@ -84,6 +88,9 @@ drivers::PointXYZIRADT PandarXTDecoder::build_point(int block_id, int unit_id, u
   const auto & block = packet_.blocks[block_id];
   const auto & unit = block.units[unit_id];
   auto unix_second = static_cast<double>(timegm(&packet_.t));
+  if(unix_second < first_timestamp_tmp){
+    first_timestamp_tmp = unix_second;
+  }
   bool dual_return = (packet_.return_mode == DUAL_RETURN);
   PointXYZIRADT point{};
 
@@ -102,7 +109,7 @@ drivers::PointXYZIRADT PandarXTDecoder::build_point(int block_id, int unit_id, u
   point.ring = unit_id;
   point.azimuth = static_cast<float>(block.azimuth) + std::round(azimuth_offset_[unit_id] * 100.0f);
   point.return_type = return_type;
-  point.time_stamp = unix_second + (static_cast<double>(packet_.usec)) / 1000000.0;
+  point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
   point.time_stamp +=
     dual_return
       ? (static_cast<double>(block_offset_dual_[block_id] + firing_offset_[unit_id]) / 1000000.0f)
@@ -127,8 +134,8 @@ drivers::PointCloudXYZIRADTPtr PandarXTDecoder::convert(size_t block_id)
     block_pc->points.emplace_back(build_point(
       block_id, unit_id,
       (packet_.return_mode == STRONGEST_RETURN)
-        ? static_cast<uint8_t>(drivers::ReturnMode::SINGLE_STRONGEST)
-        : static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
+        ? static_cast<uint8_t>(drivers::ReturnType::STRONGEST)//drivers::ReturnMode::SINGLE_STRONGEST
+        : static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
   }
   return block_pc;
 }
@@ -138,6 +145,9 @@ drivers::PointCloudXYZIRADTPtr PandarXTDecoder::convert_dual(size_t block_id)
   PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
 
   auto unix_second = static_cast<double>(timegm(&packet_.t));  // sensor-time (ppt/gps)
+  if(unix_second < first_timestamp_tmp){
+    first_timestamp_tmp = unix_second;
+  }
 
   auto head =
     block_id + ((sensor_configuration_->return_mode == drivers::ReturnMode::FIRST) ? 1 : 0);
@@ -168,7 +178,7 @@ drivers::PointCloudXYZIRADTPtr PandarXTDecoder::convert_dual(size_t block_id)
       point.ring = unit_id;
       point.azimuth = block.azimuth + std::round(azimuth_offset_[unit_id] * 100.0f);
 
-      point.time_stamp = unix_second + (static_cast<double>(packet_.usec)) / 1000000.0;
+      point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
 
       point.time_stamp +=
         (static_cast<double>(block_offset_dual_[block_id] + firing_offset_[unit_id]) / 1000000.0f);

@@ -45,13 +45,15 @@ Pandar64Decoder::Pandar64Decoder(
 
   last_phase_ = 0;
   has_scanned_ = false;
+  first_timestamp_tmp = std::numeric_limits<double>::max();
+  first_timestamp = first_timestamp_tmp;
   scan_pc_.reset(new PointCloudXYZIRADT);
   overflow_pc_.reset(new PointCloudXYZIRADT);
 }
 
 bool Pandar64Decoder::hasScanned() { return has_scanned_; }
 
-drivers::PointCloudXYZIRADTPtr Pandar64Decoder::get_pointcloud() { return scan_pc_; }
+std::tuple<drivers::PointCloudXYZIRADTPtr, double> Pandar64Decoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
 
 void Pandar64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -61,6 +63,8 @@ void Pandar64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
 
   if (has_scanned_) {
     scan_pc_ = overflow_pc_;
+    first_timestamp = first_timestamp_tmp;
+    first_timestamp_tmp = std::numeric_limits<double>::max();
     overflow_pc_.reset(new PointCloudXYZIRADT);
     has_scanned_ = false;
   }
@@ -97,6 +101,9 @@ drivers::PointXYZIRADT Pandar64Decoder::build_point(
   const auto & block = packet_.blocks[block_id];
   const auto & unit = block.units[unit_id];
   auto unix_second = static_cast<double>(timegm(&packet_.t));
+  if(unix_second < first_timestamp_tmp){
+    first_timestamp_tmp = unix_second;
+  }
   bool dual_return = (packet_.return_mode == DUAL_RETURN);
   PointXYZIRADT point{};
 
@@ -115,7 +122,7 @@ drivers::PointXYZIRADT Pandar64Decoder::build_point(
   point.ring = unit_id;
   point.azimuth = static_cast<float>(block.azimuth) + std::round(azimuth_offset_[unit_id] * 100.0f);
   point.return_type = return_type;
-  point.time_stamp = unix_second + (static_cast<double>(packet_.usec)) / 1000000.0;
+  point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
   point.time_stamp +=
     dual_return
       ? (static_cast<double>(block_offset_dual_[block_id] + firing_offset_[unit_id]) / 1000000.0f)
@@ -139,8 +146,8 @@ drivers::PointCloudXYZIRADTPtr Pandar64Decoder::convert(size_t block_id)
     block_pc->points.emplace_back(build_point(
       block_id, unit_id,
       (packet_.return_mode == STRONGEST_RETURN)
-        ? static_cast<uint8_t>(drivers::ReturnMode::SINGLE_STRONGEST)
-        : static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
+        ? static_cast<uint8_t>(drivers::ReturnType::STRONGEST)//drivers::ReturnMode::SINGLE_STRONGEST
+        : static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
   }
   return block_pc;
 }
@@ -172,26 +179,26 @@ drivers::PointCloudXYZIRADTPtr Pandar64Decoder::convert_dual(size_t block_id)
     if (sensor_return_mode == drivers::ReturnMode::STRONGEST && even_usable) {
       // First return is in even block
       block_pc->points.emplace_back(build_point(
-        even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_STRONGEST)));
+        even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::STRONGEST)));//drivers::ReturnMode::SINGLE_STRONGEST
     } else if (sensor_return_mode == drivers::ReturnMode::LAST && even_usable) {
       // Last return is in odd block
       block_pc->points.emplace_back(
-        build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::SINGLE_LAST)));
+        build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
     } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
       // If the two returns are too close, only return the last one
       if (
         (abs(even_unit.distance - odd_unit.distance) < dual_return_distance_threshold_) &&
         odd_usable) {
         block_pc->points.emplace_back(
-          build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_ONLY)));
+          build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::DUAL_ONLY)
       } else {
         if (even_usable) {
           block_pc->points.emplace_back(build_point(
-            even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_FIRST)));
+            even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::FIRST)));//drivers::ReturnMode::DUAL_FIRST
         }
         if (odd_usable) {
           block_pc->points.emplace_back(build_point(
-            odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnMode::DUAL_LAST)));
+            odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::DUAL_LAST
         }
       }
     }

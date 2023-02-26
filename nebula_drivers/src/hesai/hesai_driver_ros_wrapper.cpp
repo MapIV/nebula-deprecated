@@ -53,16 +53,19 @@ void HesaiDriverRosWrapper::ReceiveScanMsgCallback(
   // take packets out of scan msg
   std::vector<pandar_msgs::msg::PandarPacket> pkt_msgs = scan_msg->packets;
 
-  nebula::drivers::PointCloudXYZIRADTPtr pointcloud =
+  std::tuple<nebula::drivers::PointCloudXYZIRADTPtr, double> pointcloud_ts =
     driver_ptr_->ConvertScanToPointcloud(scan_msg);
+  nebula::drivers::PointCloudXYZIRADTPtr pointcloud = std::get<0>(pointcloud_ts);
 
   if (pointcloud == nullptr) return;
   auto ros_pc_msg_ptr = std::make_unique<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pointcloud, *ros_pc_msg_ptr);
   if (!pointcloud->points.empty()) {
-    double first_point_timestamp = pointcloud->points.front().time_stamp;
+//    double first_point_timestamp = pointcloud->points.front().time_stamp;
+//    ros_pc_msg_ptr->header.stamp =
+//      rclcpp::Time(SecondsToChronoNanoSeconds(first_point_timestamp).count());
     ros_pc_msg_ptr->header.stamp =
-      rclcpp::Time(SecondsToChronoNanoSeconds(first_point_timestamp).count());
+      rclcpp::Time(SecondsToChronoNanoSeconds(std::get<1>(pointcloud_ts)).count());
     if (ros_pc_msg_ptr->header.stamp.sec < 0)  // && false)
     {
       rclcpp::Clock system_clock(RCL_SYSTEM_TIME);

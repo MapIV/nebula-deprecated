@@ -325,7 +325,8 @@ void VelodyneRosDecoderTest::ReadBag()
                   << bag_message->time_stamp << std::endl;
 
         auto extracted_msg_ptr = std::make_shared<velodyne_msgs::msg::VelodyneScan>(extracted_msg);
-        pointcloud = driver_ptr_->ConvertScanToPointcloud(extracted_msg_ptr);
+        auto pointcloud_ts = driver_ptr_->ConvertScanToPointcloud(extracted_msg_ptr);
+        pointcloud = std::get<0>(pointcloud_ts);
 
         // There are very rare cases where has_scanned_ does not become true, but it is not known whether it is because of decoder or deserialize_message.
         if (!pointcloud) continue;
