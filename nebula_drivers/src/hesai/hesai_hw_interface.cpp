@@ -48,6 +48,9 @@ Status HesaiHwInterface::SetSensorConfiguration(
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDARQT64) {
       azimuth_index_ = 12;  // 12 + 258 * [0-3]
       is_valid_packet_ = [](size_t packet_size) { return (packet_size == 1072); };
+    } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDARQT128) {
+      azimuth_index_ = 12;  // 12 + 514 * [0-1]
+      is_valid_packet_ = [](size_t packet_size) { return (packet_size == 1127); };//1099
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDARXT32) {
       azimuth_index_ = 12;  // 12 + 130 * [0-7]
       is_valid_packet_ = [](size_t packet_size) { return (packet_size == 1080); };

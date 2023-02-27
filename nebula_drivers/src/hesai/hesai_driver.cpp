@@ -5,6 +5,7 @@
 #include "hesai/decoders/pandar_64_decoder.hpp"
 #include "hesai/decoders/pandar_at_decoder.hpp"
 #include "hesai/decoders/pandar_qt_decoder.hpp"
+#include "hesai/decoders/pandar_qt_128_decoder.hpp"
 #include "hesai/decoders/pandar_xt_decoder.hpp"
 #include "hesai/decoders/pandar_xtm_decoder.hpp"
 
@@ -37,6 +38,10 @@ HesaiDriver::HesaiDriver(
       scan_decoder_.reset(
         new drivers::pandar_qt::PandarQTDecoder(sensor_configuration, calibration_configuration));
       break;
+    case SensorModel::HESAI_PANDARQT128:
+      scan_decoder_.reset(
+        new drivers::pandar_qt_128::PandarQT128Decoder(sensor_configuration, calibration_configuration));
+      break;
     case SensorModel::HESAI_PANDARXT32:
       scan_decoder_.reset(
         new drivers::pandar_xt::PandarXTDecoder(sensor_configuration, calibration_configuration));
@@ -53,7 +58,6 @@ HesaiDriver::HesaiDriver(
       scan_decoder_.reset(new drivers::pandar_128_e4x::Pandar128E4XDecoder(
         sensor_configuration, calibration_configuration));
       break;
-    case SensorModel::HESAI_PANDARQT128:
     case SensorModel::HESAI_PANDAR128_E3X:
     default:
       driver_status_ = nebula::Status::NOT_INITIALIZED;
