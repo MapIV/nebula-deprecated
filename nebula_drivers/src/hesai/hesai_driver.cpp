@@ -4,7 +4,7 @@
 #include "hesai/decoders/pandar_40_decoder.hpp"
 #include "hesai/decoders/pandar_64_decoder.hpp"
 #include "hesai/decoders/pandar_at_decoder.hpp"
-#include "hesai/decoders/pandar_qt_decoder.hpp"
+#include "hesai/decoders/pandar_qt_64_decoder.hpp"
 #include "hesai/decoders/pandar_qt_128_decoder.hpp"
 #include "hesai/decoders/pandar_xt_decoder.hpp"
 #include "hesai/decoders/pandar_xtm_decoder.hpp"
@@ -36,7 +36,7 @@ HesaiDriver::HesaiDriver(
       break;
     case SensorModel::HESAI_PANDARQT64:
       scan_decoder_.reset(
-        new drivers::pandar_qt::PandarQTDecoder(sensor_configuration, calibration_configuration));
+        new drivers::pandar_qt_64::PandarQT64Decoder(sensor_configuration, calibration_configuration));
       break;
     case SensorModel::HESAI_PANDARQT128:
       scan_decoder_.reset(

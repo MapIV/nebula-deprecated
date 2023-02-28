@@ -1,6 +1,6 @@
 #pragma once
 /**
- * Pandar QT
+ * Pandar QT64
  */
 #include <cstddef>
 #include <cstdint>
@@ -10,7 +10,7 @@ namespace nebula
 {
 namespace drivers
 {
-namespace pandar_qt
+namespace pandar_qt_64
 {
 // Head
 constexpr size_t HEAD_SIZE = 12;
@@ -77,6 +77,6 @@ struct Packet
   uint32_t return_mode;
   tm t;
 };
-}  // namespace pandar_qt
+}  // namespace pandar_qt_64
 }  // namespace drivers
 }  // namespace nebula

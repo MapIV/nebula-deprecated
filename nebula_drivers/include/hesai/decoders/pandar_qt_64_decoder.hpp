@@ -2,7 +2,7 @@
 
 #include <array>
 #include <hesai/decoders/hesai_scan_decoder.hpp>
-#include <hesai/decoders/pandar_qt.hpp>
+#include <hesai/decoders/pandar_qt_64.hpp>
 
 #include "pandar_msgs/msg/pandar_packet.hpp"
 #include "pandar_msgs/msg/pandar_scan.hpp"
@@ -11,16 +11,16 @@ namespace nebula
 {
 namespace drivers
 {
-namespace pandar_qt
+namespace pandar_qt_64
 {
 /// @brief Hesai LiDAR decorder (QT64)
-class PandarQTDecoder : public HesaiScanDecoder
+class PandarQT64Decoder : public HesaiScanDecoder
 {
 public:
   /// @brief Constructor
   /// @param sensor_configuration SensorConfiguration for this decoder
   /// @param calibration_configuration Calibration for this decoder
-  explicit PandarQTDecoder(
+  explicit PandarQT64Decoder(
     const std::shared_ptr<drivers::HesaiSensorConfiguration> & sensor_configuration,
     const std::shared_ptr<drivers::HesaiCalibrationConfiguration> & calibration_configuration);
   /// @brief Parsing and shaping PandarPacket
@@ -64,6 +64,6 @@ private:
   Packet packet_{};
 };
 
-}  // namespace pandar_qt
+}  // namespace pandar_qt_64
 }  // namespace drivers
 }  // namespace nebula

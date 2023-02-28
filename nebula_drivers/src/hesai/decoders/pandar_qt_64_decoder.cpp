@@ -1,16 +1,16 @@
-#include "hesai/decoders/pandar_qt_decoder.hpp"
+#include "hesai/decoders/pandar_qt_64_decoder.hpp"
 
 #include <cmath>
 
-#include "hesai/decoders/pandar_qt.hpp"
+#include "hesai/decoders/pandar_qt_64.hpp"
 
 namespace nebula
 {
 namespace drivers
 {
-namespace pandar_qt
+namespace pandar_qt_64
 {
-PandarQTDecoder::PandarQTDecoder(
+PandarQT64Decoder::PandarQT64Decoder(
   const std::shared_ptr<drivers::HesaiSensorConfiguration> & sensor_configuration,
   const std::shared_ptr<drivers::HesaiCalibrationConfiguration> & calibration_configuration)
 {
@@ -51,11 +51,11 @@ PandarQTDecoder::PandarQTDecoder(
   overflow_pc_.reset(new PointCloudXYZIRADT);
 }
 
-bool PandarQTDecoder::hasScanned() { return has_scanned_; }
+bool PandarQT64Decoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> PandarQTDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
+std::tuple<drivers::PointCloudXYZIRADTPtr, double> PandarQT64Decoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
 
-void PandarQTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
+void PandarQT64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
   if (!parsePacket(pandar_packet)) {
     return;
@@ -96,7 +96,7 @@ void PandarQTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
   }
 }
 
-drivers::PointXYZIRADT PandarQTDecoder::build_point(
+drivers::PointXYZIRADT PandarQT64Decoder::build_point(
   size_t block_id, size_t unit_id, uint8_t return_type)
 {
   const auto & block = packet_.blocks[block_id];
@@ -134,7 +134,7 @@ drivers::PointXYZIRADT PandarQTDecoder::build_point(
   return point;
 }
 
-drivers::PointCloudXYZIRADTPtr PandarQTDecoder::convert(size_t block_id)
+drivers::PointCloudXYZIRADTPtr PandarQT64Decoder::convert(size_t block_id)
 {
   PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
 
@@ -155,7 +155,7 @@ drivers::PointCloudXYZIRADTPtr PandarQTDecoder::convert(size_t block_id)
   return block_pc;
 }
 
-drivers::PointCloudXYZIRADTPtr PandarQTDecoder::convert_dual(size_t block_id)
+drivers::PointCloudXYZIRADTPtr PandarQT64Decoder::convert_dual(size_t block_id)
 {
   //   Under the Dual Return mode, the ranging data from each firing is stored in two adjacent
   //   blocks:
@@ -209,7 +209,7 @@ drivers::PointCloudXYZIRADTPtr PandarQTDecoder::convert_dual(size_t block_id)
   return block_pc;
 }
 
-bool PandarQTDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet)
+bool PandarQT64Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
   if (pandar_packet.size != PACKET_SIZE && pandar_packet.size != PACKET_WITHOUT_UDPSEQ_SIZE) {
     return false;
@@ -276,6 +276,6 @@ bool PandarQTDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_
 
   return true;
 }
-}  // namespace pandar_qt
+}  // namespace pandar_qt_64
 }  // namespace drivers
 }  // namespace nebula
