@@ -108,7 +108,7 @@ void Pandar128E4XDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_p
 
   bool dual_return = is_dual_return();
 
-  NebulaPointCloudPtr block_pc = dual_return ? convert_dual() : convert();
+  NebulaPointCloudPtr block_pc = dual_return ? convert_dual(UNUSED_INT) : convert(UNUSED_INT);
 
   int current_phase = (static_cast<int>(packet_.body.azimuth_1) - scan_phase_ + 36000) % 36000;
   if (current_phase > last_phase_ && !has_scanned_) {
@@ -143,19 +143,24 @@ drivers::NebulaPoint Pandar128E4XDecoder::build_point(
   return point;
 }
 
-drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert()
+uint32_t Pandar128E4XDecoder::get_epoch_from_datetime(const DateTime &date_time)
+{
+  struct tm t = {};
+  t.tm_year =date_time.year;
+  t.tm_mon = date_time.month - 1;
+  t.tm_mday = date_time.day;
+  t.tm_hour = date_time.hour;
+  t.tm_min = date_time.minute;
+  t.tm_sec = date_time.second;
+  t.tm_isdst = 0;
+  return timegm(&t);
+}
+
+drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert([[maybe_unused]]size_t)
 {
   drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
   block_pc->reserve(LASER_COUNT * 2);
-  struct tm t = {};
-  t.tm_year = packet_.tail.date_time.year;
-  t.tm_mon = packet_.tail.date_time.month - 1;
-  t.tm_mday = packet_.tail.date_time.day;
-  t.tm_hour = packet_.tail.date_time.hour;
-  t.tm_min = packet_.tail.date_time.minute;
-  t.tm_sec = packet_.tail.date_time.second;
-  t.tm_isdst = 0;
-  current_unit_unix_second_ = timegm(&t);
+  current_unit_unix_second_ = get_epoch_from_datetime(packet_.tail.date_time);
 
   for (size_t i = 0; i < LASER_COUNT; i++) {
     auto distance = packet_.body.block_01[i].distance * DISTANCE_UNIT;
@@ -184,26 +189,26 @@ drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert()
   return block_pc;
 }
 
-drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert_dual()
+drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert_dual([[maybe_unused]]size_t)
 {
   drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
-  struct tm t = {};
-  t.tm_year = packet_.tail.date_time.year;
-  t.tm_mon = packet_.tail.date_time.month - 1;
-  t.tm_mday = packet_.tail.date_time.day;
-  t.tm_hour = packet_.tail.date_time.hour;
-  t.tm_min = packet_.tail.date_time.minute;
-  t.tm_sec = packet_.tail.date_time.second;
-  t.tm_isdst = 0;
-  current_unit_unix_second_ = timegm(&t);
+  current_unit_unix_second_ = get_epoch_from_datetime(packet_.tail.date_time);
 
   for (size_t i = 0; i < LASER_COUNT; i++) {
     auto distance = packet_.body.block_01[i].distance * DISTANCE_UNIT;
     if (distance < MIN_RANGE || distance > MAX_RANGE)
       continue ;
     float pt1_distance, pt2_distance;
-    auto block1_pt = build_point(packet_.body.block_01[i], i, packet_.body.azimuth_1, current_unit_unix_second_, pt1_distance);
-    auto block2_pt = build_point(packet_.body.block_02[i], i, packet_.body.azimuth_2, current_unit_unix_second_, pt2_distance);
+    auto block1_pt = build_point(packet_.body.block_01[i],
+                                 i,
+                                 packet_.body.azimuth_1,
+                                 current_unit_unix_second_,
+                                 pt1_distance);
+    auto block2_pt = build_point(packet_.body.block_02[i],
+                                 i,
+                                 packet_.body.azimuth_2,
+                                 current_unit_unix_second_,
+                                 pt2_distance);
     block1_pt.return_type = first_return_type_;
     block_pc->points.emplace_back(block1_pt);
     if (fabsf(pt1_distance - pt2_distance) > dual_return_distance_threshold_) {

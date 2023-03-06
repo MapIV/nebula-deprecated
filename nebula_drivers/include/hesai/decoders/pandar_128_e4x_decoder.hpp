@@ -28,11 +28,10 @@ private:
   drivers::NebulaPoint build_point(
     const Block & block, const size_t & laser_id, const uint16_t & azimuth,
     const uint32_t & unix_second, float &out_distance);
-  inline drivers::NebulaPointCloudPtr convert(size_t) override{};
-  inline drivers::NebulaPointCloudPtr convert_dual(size_t) override{};
-  drivers::NebulaPointCloudPtr convert();
-  drivers::NebulaPointCloudPtr convert_dual();
+  drivers::NebulaPointCloudPtr convert(size_t) override;
+  drivers::NebulaPointCloudPtr convert_dual(size_t) override;
   bool is_dual_return();
+  static uint32_t get_epoch_from_datetime(const DateTime& date_time);
 
   std::array<float, LASER_COUNT> elev_angle_{};
   std::array<float, LASER_COUNT> elev_angle_rad_{};
@@ -44,6 +43,7 @@ private:
   uint32_t current_unit_unix_second_{};
   uint8_t first_return_type_{};
   uint8_t second_return_type_{};
+
   //  PacketExtended packet_extended_{};
 };
 
