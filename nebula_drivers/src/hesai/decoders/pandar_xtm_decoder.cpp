@@ -49,15 +49,15 @@ PandarXTMDecoder::PandarXTMDecoder(
   last_phase_ = 0;
   has_scanned_ = false;
   first_timestamp_tmp = std::numeric_limits<double>::max();
-  first_timestamp = first_timestamp_tmp;
+  first_timestamp_ = first_timestamp_tmp;
 
-  scan_pc_.reset(new PointCloudXYZIRADT);
-  overflow_pc_.reset(new PointCloudXYZIRADT);
+  scan_pc_.reset(new NebulaPointCloud);
+  overflow_pc_.reset(new NebulaPointCloud);
 }
 
 bool PandarXTMDecoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> PandarXTMDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
+std::tuple<drivers::NebulaPointCloudPtr, double> PandarXTMDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
 
 void PandarXTMDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -67,9 +67,9 @@ void PandarXTMDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pack
 
   if (has_scanned_) {
     scan_pc_ = overflow_pc_;
-    first_timestamp = first_timestamp_tmp;
+    first_timestamp_ = first_timestamp_tmp;
     first_timestamp_tmp = std::numeric_limits<double>::max();
-    overflow_pc_.reset(new PointCloudXYZIRADT);
+    overflow_pc_.reset(new NebulaPointCloud);
     has_scanned_ = false;
   }
 
@@ -127,11 +127,11 @@ void PandarXTMDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pack
 
 #if defined(ROS_DISTRO_FOXY) || defined(ROS_DISTRO_GALACTIC)
 void PandarXTMDecoder::CalcXTPointXYZIT(
-  int blockid, char chLaserNumber, boost::shared_ptr<pcl::PointCloud<PointXYZIRADT>> cld)
+  int blockid, char chLaserNumber, boost::shared_ptr<pcl::PointCloud<NebulaPoint>> cld)
 {
 #else
 void PandarXTMDecoder::CalcXTPointXYZIT(
-  int blockid, char chLaserNumber, std::shared_ptr<pcl::PointCloud<PointXYZIRADT>> cld)
+  int blockid, char chLaserNumber, std::shared_ptr<pcl::PointCloud<NebulaPoint>> cld)
 {
 #endif
   Block * block = &packet_.blocks[blockid];
@@ -139,7 +139,7 @@ void PandarXTMDecoder::CalcXTPointXYZIT(
   for (int i = 0; i < chLaserNumber; ++i) {
     /* for all the units in a block */
     Unit & unit = block->units[i];
-    PointXYZIRADT point{};
+    NebulaPoint point{};
 
     /* skip wrong points */
     //    if (unit.distance <= 0.1 || unit.distance > 200.0) {
@@ -185,126 +185,20 @@ void PandarXTMDecoder::CalcXTPointXYZIT(
     }
 
     point.return_type = packet_.return_mode;
-    point.ring = i;
-    //    std::cout << point.x << "," << point.y << "," << point.z << std::endl;
+    point.channel = i;
     cld->points.emplace_back(point);
   }
 }
 
-/*
-
-drivers::PointXYZIRADT PandarXTDecoder::build_point(
-  int block_id, int unit_id, ReturnMode return_type)
+drivers::NebulaPointCloudPtr PandarXTMDecoder::convert(size_t block_id)
 {
-  const auto & block = packet_.blocks[block_id];
-  const auto & unit = block.units[unit_id];
-  auto unix_second = static_cast<double>(timegm(&packet_.t));
-  bool dual_return = (packet_.return_mode == DUAL_RETURN);
-  PointXYZIRADT point{};
-
-  double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
-
-  point.x = static_cast<float>(
-    xyDistance *
-    sinf(deg2rad(azimuth_offset_[unit_id] + (static_cast<double>(block.azimuth)) / 100.0)));
-  point.y = static_cast<float>(
-    xyDistance *
-    cosf(deg2rad(azimuth_offset_[unit_id] + (static_cast<double>(block.azimuth)) / 100.0)));
-  point.z = static_cast<float>(unit.distance * sinf(deg2rad(elev_angle_[unit_id])));
-
-  point.intensity = unit.intensity;
-  point.distance = static_cast<float>(unit.distance);
-  point.ring = unit_id;
-  point.azimuth = static_cast<float>(block.azimuth) + std::round(azimuth_offset_[unit_id] * 100.0f);
-  point.return_type = drivers::ReturnModeToInt(return_type);
-  point.time_stamp = unix_second + (static_cast<double>(packet_.usec)) / 1000000.0;
-  point.time_stamp +=
-    dual_return
-      ? (static_cast<double>(block_offset_dual_[block_id] + firing_offset_[unit_id]) / 1000000.0f)
-      : (static_cast<double>(block_offset_single_[block_id] + firing_offset_[unit_id]) /
-         1000000.0f);
-
-  return point;
-}
-
-drivers::PointCloudXYZIRADTPtr PandarXTDecoder::convert(size_t block_id)
-{
-  PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
-
-  auto unix_second = static_cast<double>(timegm(&packet_.t));
-
-  const auto & block = packet_.blocks[block_id];
-  for (size_t unit_id = 0; unit_id < LASER_COUNT; ++unit_id) {
-    const auto & unit = block.units[unit_id];
-    // skip invalid points
-    if (unit.distance <= 0.1 || unit.distance > 200.0) {
-      continue;
-    }
-
-    block_pc->points.emplace_back(build_point(
-      block_id, unit_id,
-      (packet_.return_mode == STRONGEST_RETURN) ? drivers::ReturnMode::SINGLE_STRONGEST
-                                                : drivers::ReturnMode::SINGLE_LAST));
-  }
-  return block_pc;
-}
-
-drivers::PointCloudXYZIRADTPtr PandarXTDecoder::convert_dual(size_t block_id)
-{
-  PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
-
-  auto unix_second = static_cast<double>(timegm(&packet_.t));  // sensor-time (ppt/gps)
-
-  auto head =
-    block_id + ((sensor_configuration_->return_mode == drivers::ReturnMode::SINGLE_FIRST) ? 1 : 0);
-  auto tail =
-    block_id + ((sensor_configuration_->return_mode == drivers::ReturnMode::SINGLE_LAST) ? 1 : 2);
-
-  for (size_t unit_id = 0; unit_id < LASER_COUNT; ++unit_id) {
-    for (size_t i = head; i < tail; ++i) {
-      PointXYZIRADT point{};
-      const auto & block = packet_.blocks[i];
-      const auto & unit = block.units[unit_id];
-      // skip invalid points
-      if (unit.distance <= 0.1 || unit.distance > 200.0) {
-        continue;
-      }
-      double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
-
-      point.x = static_cast<float>(
-        xyDistance *
-        sinf(deg2rad(azimuth_offset_[unit_id] + (static_cast<double>(block.azimuth)) / 100.0)));
-      point.y = static_cast<float>(
-        xyDistance *
-        cosf(deg2rad(azimuth_offset_[unit_id] + (static_cast<double>(block.azimuth)) / 100.0)));
-      point.z = static_cast<float>(unit.distance * sinf(deg2rad(elev_angle_[unit_id])));
-
-      point.intensity = unit.intensity;
-      point.distance = unit.distance;
-      point.ring = unit_id;
-      point.azimuth = block.azimuth + std::round(azimuth_offset_[unit_id] * 100.0f);
-
-      point.time_stamp = unix_second + (static_cast<double>(packet_.usec)) / 1000000.0;
-
-      point.time_stamp +=
-        (static_cast<double>(block_offset_dual_[block_id] + firing_offset_[unit_id]) / 1000000.0f);
-
-      block_pc->points.emplace_back(point);
-    }
-  }
-  return block_pc;
-}
-*/
-
-drivers::PointCloudXYZIRADTPtr PandarXTMDecoder::convert(size_t block_id)
-{
-  PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
+  NebulaPointCloudPtr block_pc(new NebulaPointCloud);
   CalcXTPointXYZIT(block_id, packet_.header.chLaserNumber, block_pc);
 
   return block_pc;
 }
 
-drivers::PointCloudXYZIRADTPtr PandarXTMDecoder::convert_dual(size_t block_id)
+drivers::NebulaPointCloudPtr PandarXTMDecoder::convert_dual(size_t block_id)
 {
   return convert(block_id);
 }

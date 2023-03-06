@@ -62,10 +62,10 @@ HesaiDriver::HesaiDriver(
   }
 }
 
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> HesaiDriver::ConvertScanToPointcloud(
+std::tuple<drivers::NebulaPointCloudPtr, double> HesaiDriver::ConvertScanToPointcloud(
   const std::shared_ptr<pandar_msgs::msg::PandarScan> & pandar_scan)
 {
-  std::tuple<drivers::PointCloudXYZIRADTPtr, double> pointcloud;
+  std::tuple<drivers::NebulaPointCloudPtr, double> pointcloud;
   if (driver_status_ == nebula::Status::OK) {
     for (auto & packet : pandar_scan->packets) {
       scan_decoder_->unpack(packet);

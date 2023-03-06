@@ -33,7 +33,7 @@ public:
   int pointsPerPacket() override;
   /// @brief Get the constructed point cloud
   /// @return tuple of Point cloud and timestamp
-  std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() override;
+  std::tuple<drivers::NebulaPointCloudPtr, double> get_pointcloud() override;
   /// @brief Resetting point cloud buffer
   /// @param n_pts # of points
   void reset_pointcloud(size_t n_pts) override;

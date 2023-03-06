@@ -31,7 +31,7 @@ public:
   bool hasScanned() override;
   /// @brief Get the constructed point cloud
   /// @return tuple of Point cloud and timestamp
-  std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() override;
+  std::tuple<drivers::NebulaPointCloudPtr, double> get_pointcloud() override;
 
 private:
   /// @brief Parsing PandarPacket based on packet structure
@@ -43,15 +43,15 @@ private:
   /// @param unit_id Target unit
   /// @param return_type Corresponding return mode
   /// @return Point cloud
-  drivers::PointXYZIRADT build_point(size_t block_id, size_t unit_id, uint8_t return_type);
+  drivers::NebulaPoint build_point(size_t block_id, size_t unit_id, uint8_t return_type);
   /// @brief Convert to point cloud
   /// @param block_id target block
   /// @return Point cloud
-  drivers::PointCloudXYZIRADTPtr convert(size_t block_id) override;
+  drivers::NebulaPointCloudPtr convert(size_t block_id) override;
   /// @brief Convert to point cloud for dual return
   /// @param block_id target block
   /// @return Point cloud
-  drivers::PointCloudXYZIRADTPtr convert_dual(size_t block_id) override;
+  drivers::NebulaPointCloudPtr convert_dual(size_t block_id) override;
 
   std::array<float, LASER_COUNT> elev_angle_{};
   std::array<float, LASER_COUNT> azimuth_offset_{};

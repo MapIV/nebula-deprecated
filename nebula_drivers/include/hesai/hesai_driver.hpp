@@ -54,7 +54,7 @@ public:
   /// @brief Convert PandarScan message to point cloud
   /// @param pandar_scan Message
   /// @return tuple of Point cloud and timestamp
-  std::tuple<drivers::PointCloudXYZIRADTPtr, double> ConvertScanToPointcloud(
+  std::tuple<drivers::NebulaPointCloudPtr, double> ConvertScanToPointcloud(
     const std::shared_ptr<pandar_msgs::msg::PandarScan> & pandar_scan);
 };
 

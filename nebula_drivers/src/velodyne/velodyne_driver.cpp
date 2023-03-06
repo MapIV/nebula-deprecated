@@ -48,10 +48,10 @@ Status VelodyneDriver::SetCalibrationConfiguration(
     calibration_configuration.calibration_file + ")");
 }
 
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> VelodyneDriver::ConvertScanToPointcloud(
+std::tuple<drivers::NebulaPointCloudPtr, double> VelodyneDriver::ConvertScanToPointcloud(
   const std::shared_ptr<velodyne_msgs::msg::VelodyneScan> & velodyne_scan)
 {
-  std::tuple<drivers::PointCloudXYZIRADTPtr, double> pointcloud;
+  std::tuple<drivers::NebulaPointCloudPtr, double> pointcloud;
   if (driver_status_ == nebula::Status::OK) {
     scan_decoder_->reset_pointcloud(velodyne_scan->packets.size());
     for (auto & packet : velodyne_scan->packets) {

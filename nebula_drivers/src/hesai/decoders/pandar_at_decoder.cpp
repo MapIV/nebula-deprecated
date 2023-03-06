@@ -52,15 +52,15 @@ PandarATDecoder::PandarATDecoder(
   last_phase_ = 0;
   has_scanned_ = false;
   first_timestamp_tmp = std::numeric_limits<double>::max();
-  first_timestamp = first_timestamp_tmp;
+  first_timestamp_ = first_timestamp_tmp;
 
-  scan_pc_.reset(new PointCloudXYZIRADT);
-  overflow_pc_.reset(new PointCloudXYZIRADT);
+  scan_pc_.reset(new NebulaPointCloud);
+  overflow_pc_.reset(new NebulaPointCloud);
 }
 
 bool PandarATDecoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> PandarATDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
+std::tuple<drivers::NebulaPointCloudPtr, double> PandarATDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
 
 void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -71,9 +71,9 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
 
   if (has_scanned_) {
     scan_pc_ = overflow_pc_;
-    first_timestamp = first_timestamp_tmp;
+    first_timestamp_ = first_timestamp_tmp;
     first_timestamp_tmp = std::numeric_limits<double>::max();
-    overflow_pc_.reset(new PointCloudXYZIRADT);
+    overflow_pc_.reset(new NebulaPointCloud);
     has_scanned_ = false;
   }
 
@@ -114,11 +114,11 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
 
 #if defined(ROS_DISTRO_FOXY) || defined(ROS_DISTRO_GALACTIC)
 void PandarATDecoder::CalcXTPointXYZIT(
-  int blockid, int chLaserNumber, boost::shared_ptr<pcl::PointCloud<PointXYZIRADT>> cld)
+  int blockid, int chLaserNumber, boost::shared_ptr<pcl::PointCloud<NebulaPoint>> cld)
 {
 #else
 void PandarATDecoder::CalcXTPointXYZIT(
-  int blockid, int chLaserNumber, std::shared_ptr<pcl::PointCloud<PointXYZIRADT>> cld)
+  int blockid, int chLaserNumber, std::shared_ptr<pcl::PointCloud<NebulaPoint>> cld)
 {
 #endif
   Block * block = &packet_.blocks[blockid];
@@ -126,7 +126,7 @@ void PandarATDecoder::CalcXTPointXYZIT(
   for (int i = 0; i < chLaserNumber; ++i) {
     /* for all the units in a block */
     Unit & unit = block->units[i];
-    PointXYZIRADT point{};
+    NebulaPoint point{};
 
     /* skip wrong points */
     if (unit.distance <= 0.1 || unit.distance > 180.0) {
@@ -184,20 +184,20 @@ void PandarATDecoder::CalcXTPointXYZIT(
     }
     point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
     point.return_type = packet_.return_mode;
-    point.ring = i;
+    point.channel = i;
     cld->points.emplace_back(point);
   }
 }
 
-drivers::PointCloudXYZIRADTPtr PandarATDecoder::convert(size_t block_id)
+drivers::NebulaPointCloudPtr PandarATDecoder::convert(size_t block_id)
 {
-  PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
+  NebulaPointCloudPtr block_pc(new NebulaPointCloud);
   CalcXTPointXYZIT(block_id, static_cast<int>(packet_.header.chLaserNumber), block_pc);
 
   return block_pc;
 }
 
-drivers::PointCloudXYZIRADTPtr PandarATDecoder::convert_dual(size_t block_id)
+drivers::NebulaPointCloudPtr PandarATDecoder::convert_dual(size_t block_id)
 {
   return convert(block_id);
 }

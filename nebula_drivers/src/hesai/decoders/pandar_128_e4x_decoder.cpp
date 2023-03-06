@@ -36,18 +36,17 @@ Pandar128E4XDecoder::Pandar128E4XDecoder(
 
   last_phase_ = 0;
   has_scanned_ = false;
-  first_timestamp_tmp = std::numeric_limits<double>::max();
-  first_timestamp = first_timestamp_tmp;
+  first_timestamp_ = 0;
 
-  scan_pc_.reset(new PointCloudXYZIRADT);
+  scan_pc_.reset(new NebulaPointCloud);
   scan_pc_->reserve(LASER_COUNT * MAX_AZIMUTH_STEPS);
-  overflow_pc_.reset(new PointCloudXYZIRADT);
+  overflow_pc_.reset(new NebulaPointCloud);
   overflow_pc_->reserve(LASER_COUNT * MAX_AZIMUTH_STEPS);
 }
 
 bool Pandar128E4XDecoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> Pandar128E4XDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
+std::tuple<drivers::NebulaPointCloudPtr, double> Pandar128E4XDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
 
 bool Pandar128E4XDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & raw_packet)
 {
@@ -63,6 +62,37 @@ bool Pandar128E4XDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & raw
   return false;
 }
 
+bool Pandar128E4XDecoder::is_dual_return()
+{
+  switch(packet_.tail.return_mode) {
+    case DUAL_LAST_STRONGEST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::LAST);
+      second_return_type_ = static_cast<uint8_t>(ReturnType::STRONGEST);
+      return true;
+    case DUAL_LAST_FIRST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::LAST);
+      second_return_type_ = static_cast<uint8_t>(ReturnType::FIRST);
+      return true;
+    case DUAL_FIRST_STRONGEST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::FIRST);
+      second_return_type_ = static_cast<uint8_t>(ReturnType::STRONGEST);
+      return true;
+    case SINGLE_FIRST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::FIRST);
+      break;
+    case SINGLE_STRONGEST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::STRONGEST);
+      break;
+    case SINGLE_LAST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::LAST);
+      break;
+    default:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::UNKNOWN);
+      break;
+  }
+  return false;
+}
+
 void Pandar128E4XDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
   if (!parsePacket(pandar_packet)) {
@@ -70,20 +100,16 @@ void Pandar128E4XDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_p
   }
   if (has_scanned_) {
     scan_pc_ = overflow_pc_;
-    overflow_pc_.reset(new PointCloudXYZIRADT);
+    overflow_pc_.reset(new NebulaPointCloud);
     overflow_pc_->reserve(LASER_COUNT * MAX_AZIMUTH_STEPS);
     has_scanned_ = false;
+    first_timestamp_ = current_unit_unix_second_;
   }
 
-  bool dual_return = false;
-  if (
-    packet_.tail.return_mode == DUAL_LAST_STRONGEST_RETURN ||
-    packet_.tail.return_mode == DUAL_LAST_FIRST_RETURN ||
-    packet_.tail.return_mode == DUAL_FIRST_STRONGEST_RETURN) {
-    dual_return = true;
-  }
+  bool dual_return = is_dual_return();
 
-  auto block_pc = convert();
+  NebulaPointCloudPtr block_pc = dual_return ? convert_dual() : convert();
+
   int current_phase = (static_cast<int>(packet_.body.azimuth_1) - scan_phase_ + 36000) % 36000;
   if (current_phase > last_phase_ && !has_scanned_) {
     *scan_pc_ += *block_pc;
@@ -94,15 +120,11 @@ void Pandar128E4XDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_p
   last_phase_ = current_phase;
 }
 
-drivers::PointXYZIRADT Pandar128E4XDecoder::build_point(
+drivers::NebulaPoint Pandar128E4XDecoder::build_point(
   const Block & block, const size_t & laser_id, const uint16_t & azimuth,
-  const double & unix_second)
+  const uint32_t & unix_second, float &out_distance)
 {
-  PointXYZIRADT point{};
-
-  if(unix_second < first_timestamp_tmp){
-    first_timestamp_tmp = unix_second;
-  }
+  NebulaPoint point{};
 
   float xyDistance = static_cast<float>(block.distance) * DISTANCE_UNIT * cos_elev_angle_[laser_id];
 
@@ -114,18 +136,16 @@ drivers::PointXYZIRADT Pandar128E4XDecoder::build_point(
   point.z = static_cast<float>(block.distance * DISTANCE_UNIT * sin_elev_angle_[laser_id]);
 
   point.intensity = block.reflectivity;
-  point.distance = xyDistance;
-  point.ring = laser_id;
+  point.channel = laser_id;
   point.azimuth = static_cast<float>(azimuth / 100.0f) + azimuth_offset_[laser_id];
-  point.return_type = 0;  // TODO
-  point.time_stamp = packet_.tail.timestamp_us * 1e-6;
-
+  point.time_stamp = unix_second + packet_.tail.timestamp_us - first_timestamp_;
+  out_distance = xyDistance;
   return point;
 }
 
-drivers::PointCloudXYZIRADTPtr Pandar128E4XDecoder::convert()
+drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert()
 {
-  drivers::PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
+  drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
   block_pc->reserve(LASER_COUNT * 2);
   struct tm t = {};
   t.tm_year = packet_.tail.date_time.year;
@@ -135,26 +155,38 @@ drivers::PointCloudXYZIRADTPtr Pandar128E4XDecoder::convert()
   t.tm_min = packet_.tail.date_time.minute;
   t.tm_sec = packet_.tail.date_time.second;
   t.tm_isdst = 0;
-  auto unix_second = static_cast<double>(timegm(&t));
+  current_unit_unix_second_ = timegm(&t);
 
   for (size_t i = 0; i < LASER_COUNT; i++) {
-    auto block1_pt = build_point(packet_.body.block_01[i], i, packet_.body.azimuth_1, unix_second);
-
-    auto block2_pt = build_point(packet_.body.block_02[i], i, packet_.body.azimuth_2, unix_second);
-    if (block1_pt.distance >= MIN_RANGE && block1_pt.distance <= MAX_RANGE) {
-      block_pc->points.emplace_back(block1_pt);
-    }
-    if (block2_pt.distance >= MIN_RANGE && block2_pt.distance <= MAX_RANGE) {
-      block_pc->points.emplace_back(block2_pt);
-    }
+    auto distance = packet_.body.block_01[i].distance * DISTANCE_UNIT;
+    if (distance < MIN_RANGE || distance > MAX_RANGE)
+      continue ;
+    distance = packet_.body.block_02[i].distance * DISTANCE_UNIT;
+    if (distance < MIN_RANGE || distance > MAX_RANGE)
+      continue ;
+    float pt_distance;
+    auto block1_pt = build_point(packet_.body.block_01[i],
+                                 i,
+                                 packet_.body.azimuth_1,
+                                 current_unit_unix_second_,
+                                 pt_distance);
+    block1_pt.return_type = first_return_type_;
+    auto block2_pt = build_point(packet_.body.block_02[i],
+                                 i,
+                                 packet_.body.azimuth_2,
+                                 current_unit_unix_second_,
+                                 pt_distance);
+    block2_pt.return_type = first_return_type_;
+    block_pc->points.emplace_back(block1_pt);
+    block_pc->points.emplace_back(block2_pt);
   }
 
   return block_pc;
 }
 
-drivers::PointCloudXYZIRADTPtr Pandar128E4XDecoder::convert_dual()
+drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert_dual()
 {
-  drivers::PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
+  drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
   struct tm t = {};
   t.tm_year = packet_.tail.date_time.year;
   t.tm_mon = packet_.tail.date_time.month - 1;
@@ -163,11 +195,21 @@ drivers::PointCloudXYZIRADTPtr Pandar128E4XDecoder::convert_dual()
   t.tm_min = packet_.tail.date_time.minute;
   t.tm_sec = packet_.tail.date_time.second;
   t.tm_isdst = 0;
+  current_unit_unix_second_ = timegm(&t);
 
   for (size_t i = 0; i < LASER_COUNT; i++) {
-    block_pc->points.emplace_back(build_point(
-      packet_.body.block_01[i], i, packet_.body.azimuth_1, static_cast<double>(timegm(&t))));
-    // TODO check the second block and compare with first
+    auto distance = packet_.body.block_01[i].distance * DISTANCE_UNIT;
+    if (distance < MIN_RANGE || distance > MAX_RANGE)
+      continue ;
+    float pt1_distance, pt2_distance;
+    auto block1_pt = build_point(packet_.body.block_01[i], i, packet_.body.azimuth_1, current_unit_unix_second_, pt1_distance);
+    auto block2_pt = build_point(packet_.body.block_02[i], i, packet_.body.azimuth_2, current_unit_unix_second_, pt2_distance);
+    block1_pt.return_type = first_return_type_;
+    block_pc->points.emplace_back(block1_pt);
+    if (fabsf(pt1_distance - pt2_distance) > dual_return_distance_threshold_) {
+      block2_pt.return_type = second_return_type_;
+      block_pc->points.emplace_back(block2_pt);
+    }
   }
 
   return block_pc;

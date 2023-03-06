@@ -252,17 +252,17 @@ Status VelodyneRosDecoderTest::GetParameters(
   return Status::OK;
 }
 
-void printPCD(nebula::drivers::PointCloudXYZIRADTPtr pp)
+void printPCD(nebula::drivers::NebulaPointCloudPtr pp)
 {
   for (auto p : pp->points) {
-    std::cout << "(" << p.x << ", " << p.y << "," << p.z << "): " << p.intensity << ", " << p.ring
-              << ", " << p.azimuth << ", " << p.distance << ", " << p.return_type << ", "
+    std::cout << "(" << p.x << ", " << p.y << "," << p.z << "): " << p.intensity << ", " << p.channel
+              << ", " << p.azimuth << ", " << p.return_type << ", "
               << p.time_stamp << std::endl;
   }
 }
 
 void checkPCDs(
-  nebula::drivers::PointCloudXYZIRADTPtr pp1, nebula::drivers::PointCloudXYZIRADTPtr pp2)
+  nebula::drivers::NebulaPointCloudPtr pp1, nebula::drivers::NebulaPointCloudPtr pp2)
 {
   EXPECT_EQ(pp1->points.size(), pp2->points.size());
   for (uint32_t i = 0; i < pp1->points.size(); i++) {
@@ -272,9 +272,8 @@ void checkPCDs(
     EXPECT_FLOAT_EQ(p1.y, p2.y);
     EXPECT_FLOAT_EQ(p1.z, p2.z);
     EXPECT_FLOAT_EQ(p1.intensity, p2.intensity);
-    EXPECT_EQ(p1.ring, p2.ring);
+    EXPECT_EQ(p1.channel, p2.channel);
     EXPECT_FLOAT_EQ(p1.azimuth, p2.azimuth);
-    EXPECT_FLOAT_EQ(p1.distance, p2.distance);
     EXPECT_EQ(p1.return_type, p2.return_type);
     EXPECT_DOUBLE_EQ(p1.time_stamp, p2.time_stamp);
   }
@@ -306,8 +305,8 @@ void VelodyneRosDecoderTest::ReadBag()
   storage_options.storage_id = storage_id;
   converter_options.output_serialization_format = format;  //"cdr";
   rclcpp::Serialization<velodyne_msgs::msg::VelodyneScan> serialization;
-  nebula::drivers::PointCloudXYZIRADTPtr pointcloud(new nebula::drivers::PointCloudXYZIRADT);
-  nebula::drivers::PointCloudXYZIRADTPtr ref_pointcloud(new nebula::drivers::PointCloudXYZIRADT);
+  nebula::drivers::NebulaPointCloudPtr pointcloud(new nebula::drivers::NebulaPointCloud);
+  nebula::drivers::NebulaPointCloudPtr ref_pointcloud(new nebula::drivers::NebulaPointCloud);
   {
     rosbag2_cpp::Reader bag_reader(std::make_unique<rosbag2_cpp::readers::SequentialReader>());
     bag_reader.open(storage_options, converter_options);
@@ -341,9 +340,9 @@ void VelodyneRosDecoderTest::ReadBag()
           std::cout << rt << " loaded: " << target_pcd_path << std::endl;
           checkPCDs(pointcloud, ref_pointcloud);
           check_cnt++;
-          ref_pointcloud.reset(new nebula::drivers::PointCloudXYZIRADT);
+          ref_pointcloud.reset(new nebula::drivers::NebulaPointCloud);
         }
-        pointcloud.reset(new nebula::drivers::PointCloudXYZIRADT);
+        pointcloud.reset(new nebula::drivers::NebulaPointCloud);
       }
     }
     EXPECT_GT(check_cnt, 0);

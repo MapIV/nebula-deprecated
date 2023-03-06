@@ -21,17 +21,18 @@ public:
     const std::shared_ptr<drivers::HesaiCalibrationConfiguration> & calibration_configuration);
   void unpack(const pandar_msgs::msg::PandarPacket & pandar_packet) override;
   bool hasScanned() override;
-  std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() override;
+  std::tuple<drivers::NebulaPointCloudPtr, double> get_pointcloud() override;
 
 private:
   bool parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet) override;
-  drivers::PointXYZIRADT build_point(
+  drivers::NebulaPoint build_point(
     const Block & block, const size_t & laser_id, const uint16_t & azimuth,
-    const double & unix_second);
-  inline drivers::PointCloudXYZIRADTPtr convert(size_t) override{};
-  inline drivers::PointCloudXYZIRADTPtr convert_dual(size_t) override{};
-  drivers::PointCloudXYZIRADTPtr convert();
-  drivers::PointCloudXYZIRADTPtr convert_dual();
+    const uint32_t & unix_second, float &out_distance);
+  inline drivers::NebulaPointCloudPtr convert(size_t) override{};
+  inline drivers::NebulaPointCloudPtr convert_dual(size_t) override{};
+  drivers::NebulaPointCloudPtr convert();
+  drivers::NebulaPointCloudPtr convert_dual();
+  bool is_dual_return();
 
   std::array<float, LASER_COUNT> elev_angle_{};
   std::array<float, LASER_COUNT> elev_angle_rad_{};
@@ -40,6 +41,9 @@ private:
   std::array<float, LASER_COUNT> azimuth_offset_{};
 
   Packet packet_{};
+  uint32_t current_unit_unix_second_{};
+  uint8_t first_return_type_{};
+  uint8_t second_return_type_{};
   //  PacketExtended packet_extended_{};
 };
 

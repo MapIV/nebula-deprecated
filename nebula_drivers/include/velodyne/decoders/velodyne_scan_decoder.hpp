@@ -28,10 +28,6 @@ namespace nebula
 {
 namespace drivers
 {
-// Shorthand typedefs for point cloud representations
-typedef nebula::drivers::PointXYZIR VPoint;
-typedef pcl::PointCloud<VPoint> VPointCloud;
-
 /**
  * Raw Velodyne packet constants and structures.
  */
@@ -139,9 +135,9 @@ class VelodyneScanDecoder
 {
 protected:
   /// @brief Decoded point cloud
-  drivers::PointCloudXYZIRADTPtr scan_pc_;
+  drivers::NebulaPointCloudPtr scan_pc_;
   /// @brief Point cloud overflowing from one cycle
-  drivers::PointCloudXYZIRADTPtr overflow_pc_;
+  drivers::NebulaPointCloudPtr overflow_pc_;
 
   uint16_t scan_phase_{};
   uint16_t last_phase_{};
@@ -181,7 +177,7 @@ public:
 
   /// @brief Virtual function for getting the constructed point cloud
   /// @return tuple of Point cloud and timestamp
-  virtual std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() = 0;
+  virtual std::tuple<drivers::NebulaPointCloudPtr, double> get_pointcloud() = 0;
   /// @brief Resetting point cloud buffer
   /// @param n_pts # of points
   virtual void reset_pointcloud(size_t n_pts) = 0;

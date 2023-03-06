@@ -18,8 +18,8 @@ Vlp32Decoder::Vlp32Decoder(
 
   first_timestamp = std::numeric_limits<double>::max();
 
-  scan_pc_.reset(new PointCloudXYZIRADT);
-  overflow_pc_.reset(new PointCloudXYZIRADT);
+  scan_pc_.reset(new NebulaPointCloud);
+  overflow_pc_.reset(new NebulaPointCloud);
 
   // Set up cached values for sin and cos of all the possible headings
   for (uint16_t rot_index = 0; rot_index < ROTATION_MAX_UNITS; ++rot_index) {
@@ -32,7 +32,7 @@ Vlp32Decoder::Vlp32Decoder(
 
 bool Vlp32Decoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> Vlp32Decoder::get_pointcloud()
+std::tuple<drivers::NebulaPointCloudPtr, double> Vlp32Decoder::get_pointcloud()
 {
   int phase = (uint16_t)round(sensor_configuration_->scan_phase * 100);
   if (!scan_pc_->points.empty()) {
@@ -53,7 +53,7 @@ int Vlp32Decoder::pointsPerPacket() { return BLOCKS_PER_PACKET * SCANS_PER_BLOCK
 
 void Vlp32Decoder::reset_pointcloud(size_t n_pts)
 {
-  //  scan_pc_.reset(new PointCloudXYZIRADT);
+  //  scan_pc_.reset(new NebulaPointCloud);
   scan_pc_->points.clear();
   max_pts_ = n_pts * pointsPerPacket();
   scan_pc_->points.reserve(max_pts_);
@@ -233,14 +233,13 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
             default:
               return_type = RETURN_TYPE::INVALID;
           }
-          drivers::PointXYZIRADT current_point{};
+          drivers::NebulaPoint current_point{};
           current_point.x = x_coord;
           current_point.y = y_coord;
           current_point.z = z_coord;
           current_point.return_type = return_type;
-          current_point.ring = corrections.laser_ring;
+          current_point.channel = corrections.laser_ring;
           current_point.azimuth = raw->blocks[i].rotation;
-          current_point.distance = distance;
           current_point.time_stamp = time_stamp;
           current_point.intensity = intensity;
           scan_pc_->points.emplace_back(current_point);

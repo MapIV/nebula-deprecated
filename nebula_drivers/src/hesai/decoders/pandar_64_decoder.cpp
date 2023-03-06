@@ -46,14 +46,14 @@ Pandar64Decoder::Pandar64Decoder(
   last_phase_ = 0;
   has_scanned_ = false;
   first_timestamp_tmp = std::numeric_limits<double>::max();
-  first_timestamp = first_timestamp_tmp;
-  scan_pc_.reset(new PointCloudXYZIRADT);
-  overflow_pc_.reset(new PointCloudXYZIRADT);
+  first_timestamp_ = first_timestamp_tmp;
+  scan_pc_.reset(new NebulaPointCloud);
+  overflow_pc_.reset(new NebulaPointCloud);
 }
 
 bool Pandar64Decoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> Pandar64Decoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
+std::tuple<drivers::NebulaPointCloudPtr, double> Pandar64Decoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
 
 void Pandar64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -63,9 +63,9 @@ void Pandar64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
 
   if (has_scanned_) {
     scan_pc_ = overflow_pc_;
-    first_timestamp = first_timestamp_tmp;
+    first_timestamp_ = first_timestamp_tmp;
     first_timestamp_tmp = std::numeric_limits<double>::max();
-    overflow_pc_.reset(new PointCloudXYZIRADT);
+    overflow_pc_.reset(new NebulaPointCloud);
     has_scanned_ = false;
   }
 
@@ -95,7 +95,7 @@ void Pandar64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
   }
 }
 
-drivers::PointXYZIRADT Pandar64Decoder::build_point(
+drivers::NebulaPoint Pandar64Decoder::build_point(
   size_t block_id, size_t unit_id, uint8_t return_type)
 {
   const auto & block = packet_.blocks[block_id];
@@ -105,7 +105,7 @@ drivers::PointXYZIRADT Pandar64Decoder::build_point(
     first_timestamp_tmp = unix_second;
   }
   bool dual_return = (packet_.return_mode == DUAL_RETURN);
-  PointXYZIRADT point{};
+  NebulaPoint point{};
 
   double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
 
@@ -118,8 +118,7 @@ drivers::PointXYZIRADT Pandar64Decoder::build_point(
   point.z = static_cast<float>(unit.distance * sinf(deg2rad(elev_angle_[unit_id])));
 
   point.intensity = unit.intensity;
-  point.distance = static_cast<float>(unit.distance);
-  point.ring = unit_id;
+  point.channel = unit_id;
   point.azimuth = static_cast<float>(block.azimuth) + std::round(azimuth_offset_[unit_id] * 100.0f);
   point.return_type = return_type;
   point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
@@ -132,9 +131,9 @@ drivers::PointXYZIRADT Pandar64Decoder::build_point(
   return point;
 }
 
-drivers::PointCloudXYZIRADTPtr Pandar64Decoder::convert(size_t block_id)
+drivers::NebulaPointCloudPtr Pandar64Decoder::convert(size_t block_id)
 {
-  PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
+  NebulaPointCloudPtr block_pc(new NebulaPointCloud);
 
   const auto & block = packet_.blocks[block_id];
   for (size_t unit_id = 0; unit_id < LASER_COUNT; ++unit_id) {
@@ -152,7 +151,7 @@ drivers::PointCloudXYZIRADTPtr Pandar64Decoder::convert(size_t block_id)
   return block_pc;
 }
 
-drivers::PointCloudXYZIRADTPtr Pandar64Decoder::convert_dual(size_t block_id)
+drivers::NebulaPointCloudPtr Pandar64Decoder::convert_dual(size_t block_id)
 {
   //     Under the Dual Return mode, the ranging data from each firing is stored in two adjacent
   //     blocks:
@@ -161,7 +160,7 @@ drivers::PointCloudXYZIRADTPtr Pandar64Decoder::convert_dual(size_t block_id)
   //   · The Azimuth changes every two blocks
   //   · Important note: Hesai datasheet block numbering starts from 0, not 1, so odd/even are
   //   reversed here
-  PointCloudXYZIRADTPtr block_pc(new PointCloudXYZIRADT);
+  NebulaPointCloudPtr block_pc(new NebulaPointCloud);
 
   size_t even_block_id = block_id;
   size_t odd_block_id = block_id + 1;

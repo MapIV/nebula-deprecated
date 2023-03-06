@@ -16,15 +16,15 @@ class HesaiScanDecoder
 {
 protected:
   /// @brief Decoded point cloud
-  drivers::PointCloudXYZIRADTPtr scan_pc_;
+  drivers::NebulaPointCloudPtr scan_pc_;
   /// @brief Point cloud overflowing from one cycle
-  drivers::PointCloudXYZIRADTPtr overflow_pc_;
+  drivers::NebulaPointCloudPtr overflow_pc_;
 
   uint16_t scan_phase_{};
   int last_phase_{};
   bool has_scanned_{};
   double dual_return_distance_threshold_{};
-  double first_timestamp{};
+  uint32_t first_timestamp_{};
   double first_timestamp_tmp{};
 
   /// @brief SensorConfiguration for this decoder
@@ -58,11 +58,11 @@ public:
   /// @brief Virtual function for converting to point cloud
   /// @param block_id target block
   /// @return Point cloud
-  virtual drivers::PointCloudXYZIRADTPtr convert(size_t block_id) = 0;
+  virtual drivers::NebulaPointCloudPtr convert(size_t block_id) = 0;
   /// @brief Virtual function for converting to point cloud for dual return
   /// @param block_id target block
   /// @return Point cloud
-  virtual drivers::PointCloudXYZIRADTPtr convert_dual(size_t block_id) = 0;
+  virtual drivers::NebulaPointCloudPtr convert_dual(size_t block_id) = 0;
 
   /// @brief Virtual function for getting the flag indicating whether one cycle is ready
   /// @return Readied
@@ -70,7 +70,7 @@ public:
 
   /// @brief Virtual function for getting the constructed point cloud
   /// @return tuple of Point cloud and timestamp
-  virtual std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() = 0;
+  virtual std::tuple<drivers::NebulaPointCloudPtr, double> get_pointcloud() = 0;
 };
 }  // namespace drivers
 }  // namespace nebula
