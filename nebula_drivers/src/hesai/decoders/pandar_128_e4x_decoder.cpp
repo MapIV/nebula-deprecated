@@ -192,6 +192,7 @@ drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert([[maybe_unused]]size_t
 drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert_dual([[maybe_unused]]size_t)
 {
   drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
+  block_pc->reserve(LASER_COUNT * 2);
   current_unit_unix_second_ = get_epoch_from_datetime(packet_.tail.date_time);
 
   for (size_t i = 0; i < LASER_COUNT; i++) {
