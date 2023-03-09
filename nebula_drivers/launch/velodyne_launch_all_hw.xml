@@ -17,6 +17,7 @@
     <arg name="cloud_max_angle" default="359" description="Field of View, end degrees."/>
     <arg name="diag_span" default="1000" description="milliseconds"/>
 
+    <arg name="setup_sensor" default="True" description="Enable sensor setup on hw-driver."/>
 
     <node pkg="nebula_lidar_driver" exec="velodyne_driver_ros_wrapper_node"
           name="velodyne_cloud" output="screen">
@@ -42,6 +43,7 @@
         <param name="rotation_speed" value="$(var rotation_speed)"/>
         <param name="cloud_min_angle" value="$(var cloud_min_angle)"/>
         <param name="cloud_max_angle" value="$(var cloud_max_angle)"/>
+        <param name="setup_sensor" value="$(var setup_sensor)"/>
     </node>
 
 </launch>

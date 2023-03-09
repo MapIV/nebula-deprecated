@@ -56,6 +56,7 @@ def launch_setup(context, *args, **kwargs):
                         "sensor_ip": LaunchConfiguration("sensor_ip"),
                         "return_mode": LaunchConfiguration("return_mode"),
                         "calibration_file": sensor_calib_fp,
+                        "setup_sensor": LaunchConfiguration("setup_sensor"),
                     },
                 ],
             ),

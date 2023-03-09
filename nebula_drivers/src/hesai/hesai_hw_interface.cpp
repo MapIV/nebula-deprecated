@@ -190,7 +190,7 @@ Status HesaiHwInterface::GetCalibrationConfiguration(
   return Status::ERROR_1;
 }
 
-Status HesaiHwInterface::InitializeTcpDriver()
+Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
 {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
   std::cout << "HesaiHwInterface::InitializeTcpDriver" << std::endl;
@@ -199,10 +199,12 @@ Status HesaiHwInterface::InitializeTcpDriver()
     sensor_configuration_->sensor_ip, PANDARGENERALSDK_TCP_COMMAND_PORT,
     sensor_configuration_->host_ip, PANDARGENERALSDK_TCP_COMMAND_PORT);
   tcp_driver_->open();
-  tcp_driver_s_->init_socket(
-    sensor_configuration_->sensor_ip, PANDARGENERALSDK_TCP_COMMAND_PORT,
-    sensor_configuration_->host_ip, PANDARGENERALSDK_TCP_COMMAND_PORT);
-  tcp_driver_s_->open();
+  if (setup_sensor) {
+    tcp_driver_s_->init_socket(
+      sensor_configuration_->sensor_ip, PANDARGENERALSDK_TCP_COMMAND_PORT,
+      sensor_configuration_->host_ip, PANDARGENERALSDK_TCP_COMMAND_PORT);
+    tcp_driver_s_->open();
+  }
   return Status::OK;
 }
 

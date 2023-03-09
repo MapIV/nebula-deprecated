@@ -29,9 +29,12 @@ VelodyneHwInterfaceRosWrapper::VelodyneHwInterfaceRosWrapper(const rclcpp::NodeO
   std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
     std::make_shared<drivers::VelodyneSensorConfiguration>(sensor_configuration_);
   RCLCPP_INFO_STREAM(this->get_logger(), "hw_interface_.SetSensorConfiguration");
-  hw_interface_.SetSensorConfiguration(
-    std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
-  updateParameters();
+
+  if (this->setup_sensor) {
+    hw_interface_.SetSensorConfiguration(
+      std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
+    updateParameters();
+  }
 
   // register scan callback and publisher
   hw_interface_.RegisterScanCallback(std::bind(
@@ -40,8 +43,10 @@ VelodyneHwInterfaceRosWrapper::VelodyneHwInterfaceRosWrapper(const rclcpp::NodeO
     "velodyne_packets",
     rclcpp::SensorDataQoS(rclcpp::KeepLast(10)).best_effort().durability_volatile());
 
-  set_param_res_ = this->add_on_set_parameters_callback(
-    std::bind(&VelodyneHwInterfaceRosWrapper::paramCallback, this, std::placeholders::_1));
+  if (this->setup_sensor) {
+    set_param_res_ = this->add_on_set_parameters_callback(
+      std::bind(&VelodyneHwInterfaceRosWrapper::paramCallback, this, std::placeholders::_1));
+  }
 
   auto status = StreamStart();
   if (status == nebula::Status::OK) {
@@ -196,6 +201,16 @@ Status VelodyneHwInterfaceRosWrapper::GetParameters(
     descriptor.integer_range = {range};
     this->declare_parameter<uint16_t>("cloud_max_angle", 359, descriptor);
     sensor_configuration.cloud_max_angle = this->get_parameter("cloud_max_angle").as_int();
+  }
+
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_BOOL;
+    descriptor.read_only = true;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "";
+    this->declare_parameter<bool>("setup_sensor", true, descriptor);
+    this->setup_sensor = this->get_parameter("setup_sensor").as_bool();
   }
 
   if (sensor_configuration.sensor_model == nebula::drivers::SensorModel::UNKNOWN) {
