@@ -69,15 +69,15 @@ constexpr uint32_t DUAL_FIRST_SECOND_RETURN = 0x3A;
 struct Header
 {
   uint16_t sob;            // 0xFFEE 2bytes
-  int8_t chProtocolMajor;  // Protocol Version Major 1byte
-  int8_t chProtocolMinor;  // Protocol Version Minor 1byte
-  int8_t chLaserNumber;    // laser number 1byte
-  int8_t chBlockNumber;    // block number 1byte
-  int8_t chDisUnit;        // Distance unit, 4mm
-  int8_t chReturnType;     // return mode 1 byte  when dual return 0-Single Return
+  uint8_t chProtocolMajor; // Protocol Version Major 1byte
+  uint8_t chProtocolMinor; // Protocol Version Minor 1byte
+  uint8_t chLaserNumber;   // laser number 1byte
+  uint8_t chBlockNumber;   // block number 1byte
+  uint8_t chDisUnit;       // Distance unit, 4mm
+  uint8_t chReturnType;    // return mode 1 byte  when dual return 0-Single Return
                            // 1-The first block is the 1 st return.
                            // 2-The first block is the 2 nd return
-  int8_t chFlags;          // [6] channel customization: 1-Selected channels, 0-All channels
+  uint8_t chFlags;         // [6] channel customization: 1-Selected channels, 0-All channels
                            // [3] digital signature: 1-YES, 0-NO
                            // [2] functional safety: 1-YES, 0-NO
                            // [1] IMU: 1-YES, 0-NO

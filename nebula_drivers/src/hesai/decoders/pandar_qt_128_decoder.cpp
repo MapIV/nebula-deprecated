@@ -291,12 +291,14 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
     has_scanned_ = false;
   }
 
+  std::cout << "packet_.return_mode = " << packet_.return_mode << std::endl;
   bool dual_return = (packet_.return_mode == DUAL_LAST_STRONGEST_RETURN || 
   packet_.return_mode == DUAL_FIRST_LAST_RETURN ||
   packet_.return_mode == DUAL_FIRST_STRONGEST_RETURN ||
   packet_.return_mode == DUAL_STRONGEST_2ndSTRONGEST_RETURN ||
   packet_.return_mode == DUAL_FIRST_SECOND_RETURN);
   auto step = dual_return ? 2 : 1;
+  std::cout << "dual_return = " << dual_return << std::endl;
 
   if (!dual_return) {
     if (
@@ -312,6 +314,9 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
     auto block_pc = dual_return ? convert_dual(block_id) : convert(block_id);
     int current_phase =
       (static_cast<int>(packet_.blocks[block_id].azimuth) - scan_phase_ + 36000) % 36000;
+//    std::cout << "current_phase = " << current_phase << std::endl;
+//    std::cout << "last_phase_ = " << last_phase_ << std::endl;
+
     if (current_phase > last_phase_ && !has_scanned_) {
       *scan_pc_ += *block_pc;
     } else {
@@ -337,6 +342,7 @@ drivers::PointXYZIRADT PandarQT128Decoder::build_point(
   packet_.return_mode == DUAL_STRONGEST_2ndSTRONGEST_RETURN ||
   packet_.return_mode == DUAL_FIRST_SECOND_RETURN);
   PointXYZIRADT point{};
+//  std::cout << "dual_return = " << dual_return << std::endl;
 
   double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
 
@@ -369,6 +375,8 @@ drivers::PointXYZIRADT PandarQT128Decoder::build_point(
           1000000.0f);
   }
 
+//  std::cout << "point.time_stamp = " << point.time_stamp << std::endl;
+
   return point;
 }
 
@@ -400,18 +408,27 @@ drivers::PointCloudXYZIRADTPtr PandarQT128Decoder::convert_dual(size_t block_id)
 
 bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
+//  std::cout << "pandar_packet.size = " << pandar_packet.size << std::endl;
   if (pandar_packet.size != PACKET_SIZE && pandar_packet.size != PACKET_WITHOUT_UDPSEQ_CRC_SIZE) {
+//    std::cout << "pandar_packet.size != PACKET_SIZE && pandar_packet.size != PACKET_WITHOUT_UDPSEQ_CRC_SIZE" << std::endl;
     return false;
   }
   const uint8_t * buf = &pandar_packet.data[0];
 
-  size_t index = 0;
+//  size_t index = 0;
+  int index = 0;
   // Parse 12 Bytes Header
   packet_.header.sob = (buf[index] & 0xff) << 8 | ((buf[index + 1] & 0xff));
   packet_.header.chProtocolMajor = buf[index + 2] & 0xff;
   packet_.header.chProtocolMinor = buf[index + 3] & 0xff;
   packet_.header.chLaserNumber = buf[index + 6] & 0xff;
+//  packet_.header.chLaserNumber = static_cast<int8_t>(static_cast<unsigned char>(buf[index + 6] & 0xff));
+  std::cout << "packet_.header.chLaserNumber=" << packet_.header.chLaserNumber << std::endl;
+  std::cout << "packet_.header.chLaserNumber=" << static_cast<size_t>(packet_.header.chLaserNumber) << std::endl;
+  std::cout << "packet_.header.chLaserNumber=" << static_cast<int>(static_cast<unsigned char>(packet_.header.chLaserNumber)) << std::endl;
+  std::cout << "packet_.header.chLaserNumber=" << static_cast<int>(static_cast<char>(packet_.header.chLaserNumber)) << std::endl;
   packet_.header.chBlockNumber = buf[index + 7] & 0xff;
+  std::cout << "packet_.header.chBlockNumber=" << static_cast<size_t>(packet_.header.chBlockNumber) << std::endl;
   packet_.header.chReturnType = buf[index + 8] & 0xff;// First Block Return (Reserved)
   packet_.header.chDisUnit = buf[index + 9] & 0xff;
   index += HEAD_SIZE;
@@ -425,7 +442,8 @@ bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pand
     packet_.blocks[block].azimuth = (buf[index] & 0xff) | ((buf[index + 1] & 0xff) << 8);
     index += BLOCK_HEADER_AZIMUTH;
 
-    for (int unit = 0; unit < packet_.header.chLaserNumber; unit++) {
+    for (size_t unit = 0; unit < packet_.header.chLaserNumber; unit++) {
+//    for (int unit = 0; unit < 128; unit++) {
       unsigned int unRange = (buf[index] & 0xff) | ((buf[index + 1] & 0xff) << 8);
 
       packet_.blocks[block].units[unit].distance =
@@ -435,16 +453,27 @@ bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pand
       index += UNIT_SIZE;
     }
   }
+  /*
+  for(int i=index;i<30;i++){
+  std::cout << "buf[" << i << "]=" << (int)(buf[i] & 0xff) << std::endl;
+  }
+  */
+//  std::cout << "index=" << (int)index << std::endl;
+
 
   index += SKIP_SIZE;
   packet_.mode_flag = buf[index] & 0xff;//Mode Flag
+//  std::cout << "packet_.mode_flag=" << packet_.mode_flag << std::endl;
   index += MODE_FLAG_SIZE;
   index += RESERVED3_SIZE;
   packet_.return_mode = buf[index] & 0xff;//Return Mode
+//  std::cout << "packet_.return_mode=" << packet_.return_mode << std::endl;
   index += RETURN_MODE_SIZE;
 
   packet_.t.tm_year = (buf[index + 0] & 0xff) + 100;
+//  std::cout << "packet_.t.tm_year=" << packet_.t.tm_year << std::endl;
   packet_.t.tm_mon = (buf[index + 1] & 0xff) - 1;
+//  std::cout << "packet_.t.tm_mon=" << packet_.t.tm_mon << std::endl;
   packet_.t.tm_mday = buf[index + 2] & 0xff;
   packet_.t.tm_hour = buf[index + 3] & 0xff;
   packet_.t.tm_min = buf[index + 4] & 0xff;
