@@ -53,11 +53,7 @@ PandarQT64Decoder::PandarQT64Decoder(
 
 bool PandarQT64Decoder::hasScanned() { return has_scanned_; }
 
-<<<<<<< HEAD:nebula_drivers/src/hesai/decoders/pandar_qt_decoder.cpp
-std::tuple<drivers::NebulaPointCloudPtr, double> PandarQTDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
-=======
-std::tuple<drivers::PointCloudXYZIRADTPtr, double> PandarQT64Decoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp); }
->>>>>>> support_qt128:nebula_drivers/src/hesai/decoders/pandar_qt_64_decoder.cpp
+std::tuple<drivers::NebulaPointCloudPtr, double> PandarQT64Decoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
 
 void PandarQT64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -100,11 +96,7 @@ void PandarQT64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pac
   }
 }
 
-<<<<<<< HEAD:nebula_drivers/src/hesai/decoders/pandar_qt_decoder.cpp
-drivers::NebulaPoint PandarQTDecoder::build_point(
-=======
-drivers::PointXYZIRADT PandarQT64Decoder::build_point(
->>>>>>> support_qt128:nebula_drivers/src/hesai/decoders/pandar_qt_64_decoder.cpp
+drivers::NebulaPoint PandarQT64Decoder::build_point(
   size_t block_id, size_t unit_id, uint8_t return_type)
 {
   const auto & block = packet_.blocks[block_id];
@@ -141,11 +133,7 @@ drivers::PointXYZIRADT PandarQT64Decoder::build_point(
   return point;
 }
 
-<<<<<<< HEAD:nebula_drivers/src/hesai/decoders/pandar_qt_decoder.cpp
-drivers::NebulaPointCloudPtr PandarQTDecoder::convert(size_t block_id)
-=======
-drivers::PointCloudXYZIRADTPtr PandarQT64Decoder::convert(size_t block_id)
->>>>>>> support_qt128:nebula_drivers/src/hesai/decoders/pandar_qt_64_decoder.cpp
+drivers::NebulaPointCloudPtr PandarQT64Decoder::convert(size_t block_id)
 {
   NebulaPointCloudPtr block_pc(new NebulaPointCloud);
 
@@ -166,11 +154,7 @@ drivers::PointCloudXYZIRADTPtr PandarQT64Decoder::convert(size_t block_id)
   return block_pc;
 }
 
-<<<<<<< HEAD:nebula_drivers/src/hesai/decoders/pandar_qt_decoder.cpp
-drivers::NebulaPointCloudPtr PandarQTDecoder::convert_dual(size_t block_id)
-=======
-drivers::PointCloudXYZIRADTPtr PandarQT64Decoder::convert_dual(size_t block_id)
->>>>>>> support_qt128:nebula_drivers/src/hesai/decoders/pandar_qt_64_decoder.cpp
+drivers::NebulaPointCloudPtr PandarQT64Decoder::convert_dual(size_t block_id)
 {
   //   Under the Dual Return mode, the ranging data from each firing is stored in two adjacent
   //   blocks:
