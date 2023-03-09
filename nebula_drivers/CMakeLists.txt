@@ -74,7 +74,8 @@ ament_auto_add_library(hesai_driver SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/hesai_driver.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_40_decoder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_64_decoder.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_qt_decoder.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_qt_64_decoder.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_qt_128_decoder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_xt_decoder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_xtm_decoder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hesai/decoders/pandar_at_decoder.cpp

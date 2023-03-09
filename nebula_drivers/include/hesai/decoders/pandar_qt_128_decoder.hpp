@@ -2,7 +2,7 @@
 
 #include <array>
 #include <hesai/decoders/hesai_scan_decoder.hpp>
-#include <hesai/decoders/pandar_qt.hpp>
+#include <hesai/decoders/pandar_qt_128.hpp>
 
 #include "pandar_msgs/msg/pandar_packet.hpp"
 #include "pandar_msgs/msg/pandar_scan.hpp"
@@ -11,16 +11,16 @@ namespace nebula
 {
 namespace drivers
 {
-namespace pandar_qt
+namespace pandar_qt_128
 {
-/// @brief Hesai LiDAR decorder (QT64)
-class PandarQTDecoder : public HesaiScanDecoder
+/// @brief Hesai LiDAR decorder (QT128)
+class PandarQT128Decoder : public HesaiScanDecoder
 {
 public:
   /// @brief Constructor
   /// @param sensor_configuration SensorConfiguration for this decoder
   /// @param calibration_configuration Calibration for this decoder
-  explicit PandarQTDecoder(
+  explicit PandarQT128Decoder(
     const std::shared_ptr<drivers::HesaiSensorConfiguration> & sensor_configuration,
     const std::shared_ptr<drivers::HesaiCalibrationConfiguration> & calibration_configuration);
   /// @brief Parsing and shaping PandarPacket
@@ -31,7 +31,7 @@ public:
   bool hasScanned() override;
   /// @brief Get the constructed point cloud
   /// @return tuple of Point cloud and timestamp
-  std::tuple<drivers::NebulaPointCloudPtr, double> get_pointcloud() override;
+  std::tuple<drivers::PointCloudXYZIRADTPtr, double> get_pointcloud() override;
 
 private:
   /// @brief Parsing PandarPacket based on packet structure
@@ -43,20 +43,21 @@ private:
   /// @param unit_id Target unit
   /// @param return_type Corresponding return mode
   /// @return Point cloud
-  drivers::NebulaPoint build_point(size_t block_id, size_t unit_id, uint8_t return_type);
+  drivers::PointXYZIRADT build_point(size_t block_id, size_t unit_id, uint8_t return_type);
   /// @brief Convert to point cloud
   /// @param block_id target block
   /// @return Point cloud
-  drivers::NebulaPointCloudPtr convert(size_t block_id) override;
+  drivers::PointCloudXYZIRADTPtr convert(size_t block_id) override;
   /// @brief Convert to point cloud for dual return
   /// @param block_id target block
   /// @return Point cloud
-  drivers::NebulaPointCloudPtr convert_dual(size_t block_id) override;
+  drivers::PointCloudXYZIRADTPtr convert_dual(size_t block_id) override;
 
   std::array<float, LASER_COUNT> elev_angle_{};
   std::array<float, LASER_COUNT> azimuth_offset_{};
 
-  std::array<float, LASER_COUNT> firing_offset_{};
+  std::map<int, float> firing_offset1_{};
+  std::map<int, float> firing_offset2_{};
 
   std::array<float, BLOCKS_PER_PACKET> block_offset_single_{};
   std::array<float, BLOCKS_PER_PACKET> block_offset_dual_{};
@@ -64,6 +65,6 @@ private:
   Packet packet_{};
 };
 
-}  // namespace pandar_qt
+}  // namespace pandar_qt_128
 }  // namespace drivers
 }  // namespace nebula
