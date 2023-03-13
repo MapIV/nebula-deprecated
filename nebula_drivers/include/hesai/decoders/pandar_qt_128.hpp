@@ -12,6 +12,11 @@ namespace drivers
 {
 namespace pandar_qt_128
 {
+constexpr uint16_t MAX_AZIMUTH_STEPS = 900;  // High Res mode
+//constexpr float DISTANCE_UNIT = 0.004f;       // 4mm
+constexpr float MIN_RANGE = 0.05;
+constexpr float MAX_RANGE = 50.0;
+
 // Head
 constexpr size_t HEAD_SIZE = 12;
 constexpr size_t PRE_HEADER_SIZE = 6;
@@ -52,14 +57,15 @@ constexpr size_t SIGNATURE_SIZE = 32;
 constexpr size_t SKIP_SIZE = CRC_SIZE + PACKET_FS_SIZE + RESERVED2_SIZE;
 
 // All
-constexpr size_t PACKET_SIZE = HEAD_SIZE + BODY_SIZE + PACKET_FS_SIZE + PACKET_TAIL_SIZE + SIGNATURE_SIZE;
+constexpr size_t PACKET_SIZE =
+  HEAD_SIZE + BODY_SIZE + PACKET_FS_SIZE + PACKET_TAIL_SIZE + SIGNATURE_SIZE;
 constexpr size_t PACKET_WITHOUT_UDPSEQ_CRC_SIZE =
   HEAD_SIZE + BODY_SIZE + PACKET_FS_SIZE + PACKET_TAIL_WITHOUT_UDPSEQ_CRC_SIZE;
 
-constexpr uint32_t FIRST_RETURN = 0x33;
-constexpr uint32_t SECOND_RETURN = 0x34;
-constexpr uint32_t STRONGEST_RETURN = 0x37;
-constexpr uint32_t LAST_RETURN = 0x38;
+constexpr uint32_t SINGLE_FIRST_RETURN = 0x33;
+constexpr uint32_t SINGLE_SECOND_RETURN = 0x34;
+constexpr uint32_t SINGLE_STRONGEST_RETURN = 0x37;
+constexpr uint32_t SINGLE_LAST_RETURN = 0x38;
 constexpr uint32_t DUAL_LAST_STRONGEST_RETURN = 0x39;
 constexpr uint32_t DUAL_FIRST_LAST_RETURN = 0x3B;
 constexpr uint32_t DUAL_FIRST_STRONGEST_RETURN = 0x3C;
@@ -68,20 +74,20 @@ constexpr uint32_t DUAL_FIRST_SECOND_RETURN = 0x3A;
 
 struct Header
 {
-  uint16_t sob;            // 0xFFEE 2bytes
-  uint8_t chProtocolMajor; // Protocol Version Major 1byte
-  uint8_t chProtocolMinor; // Protocol Version Minor 1byte
-  uint8_t chLaserNumber;   // laser number 1byte
-  uint8_t chBlockNumber;   // block number 1byte
-  uint8_t chDisUnit;       // Distance unit, 4mm
-  uint8_t chReturnType;    // return mode 1 byte  when dual return 0-Single Return
-                           // 1-The first block is the 1 st return.
-                           // 2-The first block is the 2 nd return
-  uint8_t chFlags;         // [6] channel customization: 1-Selected channels, 0-All channels
-                           // [3] digital signature: 1-YES, 0-NO
-                           // [2] functional safety: 1-YES, 0-NO
-                           // [1] IMU: 1-YES, 0-NO
-                           // [0] UDP sequence: 1-YES, 0-NO
+  uint16_t sob;             // 0xFFEE 2bytes
+  uint8_t chProtocolMajor;  // Protocol Version Major 1byte
+  uint8_t chProtocolMinor;  // Protocol Version Minor 1byte
+  uint8_t chLaserNumber;    // laser number 1byte
+  uint8_t chBlockNumber;    // block number 1byte
+  uint8_t chDisUnit;        // Distance unit, 4mm
+  uint8_t chReturnType;     // return mode 1 byte  when dual return 0-Single Return
+                            // 1-The first block is the 1 st return.
+                            // 2-The first block is the 2 nd return
+  uint8_t chFlags;          // [6] channel customization: 1-Selected channels, 0-All channels
+                            // [3] digital signature: 1-YES, 0-NO
+                            // [2] functional safety: 1-YES, 0-NO
+                            // [1] IMU: 1-YES, 0-NO
+                            // [0] UDP sequence: 1-YES, 0-NO
 };
 
 struct Unit

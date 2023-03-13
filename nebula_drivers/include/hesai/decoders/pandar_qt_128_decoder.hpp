@@ -53,14 +53,24 @@ private:
   /// @return Point cloud
   drivers::NebulaPointCloudPtr convert_dual(size_t block_id) override;
 
+  /// @brief Checking packet_.return mode
+  /// @return packet_.return mode is dual mode
+  bool is_dual_return();
+
   std::array<float, LASER_COUNT> elev_angle_{};
   std::array<float, LASER_COUNT> azimuth_offset_{};
+  std::array<float, LASER_COUNT> elev_angle_rad_{};
+  std::array<float, LASER_COUNT> cos_elev_angle_{};
+  std::array<float, LASER_COUNT> sin_elev_angle_{};
 
   std::map<int, float> firing_offset1_{};
   std::map<int, float> firing_offset2_{};
 
   std::array<float, BLOCKS_PER_PACKET> block_offset_single_{};
   std::array<float, BLOCKS_PER_PACKET> block_offset_dual_{};
+
+  uint8_t first_return_type_{};
+  uint8_t second_return_type_{};
 
   Packet packet_{};
 };

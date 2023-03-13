@@ -10,8 +10,7 @@ namespace drivers
 {
 namespace pandar_qt_128
 {
-
-  std::string PandarQT128_TL1 = R"(33,27.656
+std::string PandarQT128_TL1 = R"(33,27.656
 34,53
 35,2.312
 36,78.344
@@ -107,7 +106,7 @@ namespace pandar_qt_128
 126,22.776
 127,73.464
 128,48.12)";
-  std::string PandarQT128_TL2 = R"(1,2.312
+std::string PandarQT128_TL2 = R"(1,2.312
 2,78.344
 3,27.656
 4,53
@@ -210,7 +209,7 @@ PandarQT128Decoder::PandarQT128Decoder(
 {
   sensor_configuration_ = sensor_configuration;
   sensor_calibration_ = calibration_configuration;
-/*
+  /*
   firing_offset_ = {
     12.31,  14.37,  16.43,  18.49,  20.54,  22.6,   24.66,  26.71,  29.16,  31.22,  33.28,
     35.34,  37.39,  39.45,  41.5,   43.56,  46.61,  48.67,  50.73,  52.78,  54.84,  56.9,
@@ -223,7 +222,7 @@ PandarQT128Decoder::PandarQT128Decoder(
   {
     std::string sbuf;
     std::stringstream ss(PandarQT128_TL1);
-    while( std::getline(ss, sbuf, '\n') ) {
+    while (std::getline(ss, sbuf, '\n')) {
       int id;
       float val;
       sscanf(sbuf.c_str(), "%d,%f", &id, &val);
@@ -241,7 +240,7 @@ PandarQT128Decoder::PandarQT128Decoder(
   {
     std::string sbuf;
     std::stringstream ss(PandarQT128_TL2);
-    while( std::getline(ss, sbuf, '\n') ) {
+    while (std::getline(ss, sbuf, '\n')) {
       int id;
       float val;
       sscanf(sbuf.c_str(), "%d,%f", &id, &val);
@@ -260,22 +259,30 @@ PandarQT128Decoder::PandarQT128Decoder(
   for (size_t laser = 0; laser < LASER_COUNT; ++laser) {
     elev_angle_[laser] = calibration_configuration->elev_angle_map[laser];
     azimuth_offset_[laser] = calibration_configuration->azimuth_offset_map[laser];
+    cos_elev_angle_[laser] = cosf(deg2rad(elev_angle_[laser]));
+    sin_elev_angle_[laser] = sinf(deg2rad(elev_angle_[laser]));
   }
 
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
   dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
+
   last_phase_ = 0;
   has_scanned_ = false;
   first_timestamp_tmp = std::numeric_limits<double>::max();
   first_timestamp_ = first_timestamp_tmp;
 
   scan_pc_.reset(new NebulaPointCloud);
+  scan_pc_->reserve(LASER_COUNT * MAX_AZIMUTH_STEPS);
   overflow_pc_.reset(new NebulaPointCloud);
+  overflow_pc_->reserve(LASER_COUNT * MAX_AZIMUTH_STEPS);
 }
 
 bool PandarQT128Decoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::NebulaPointCloudPtr, double> PandarQT128Decoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
+std::tuple<drivers::NebulaPointCloudPtr, double> PandarQT128Decoder::get_pointcloud()
+{
+  return std::make_tuple(scan_pc_, first_timestamp_);
+}
 
 void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -288,18 +295,24 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
     first_timestamp_ = first_timestamp_tmp;
     first_timestamp_tmp = std::numeric_limits<double>::max();
     overflow_pc_.reset(new NebulaPointCloud);
+    overflow_pc_->reserve(LASER_COUNT * MAX_AZIMUTH_STEPS);
     has_scanned_ = false;
   }
 
-//  std::cout << "packet_.return_mode = " << packet_.return_mode << std::endl;
+  //  std::cout << "packet_.return_mode = " << packet_.return_mode << std::endl;
+  /*
   bool dual_return = (packet_.return_mode == DUAL_LAST_STRONGEST_RETURN || 
   packet_.return_mode == DUAL_FIRST_LAST_RETURN ||
   packet_.return_mode == DUAL_FIRST_STRONGEST_RETURN ||
   packet_.return_mode == DUAL_STRONGEST_2ndSTRONGEST_RETURN ||
   packet_.return_mode == DUAL_FIRST_SECOND_RETURN);
+  */
+  bool dual_return = is_dual_return();
   auto step = dual_return ? 2 : 1;
-//  std::cout << "dual_return = " << dual_return << std::endl;
+  //  std::cout << "dual_return = " << dual_return << std::endl;
 
+  /*
+  // sensor_configuration_ not required
   if (!dual_return) {
     if (
       (packet_.return_mode == FIRST_RETURN &&
@@ -309,22 +322,63 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
       //sensor config, driver mismatched
     }
   }
+  */
 
-  for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id += step) {
-    auto block_pc = dual_return ? convert_dual(block_id) : convert(block_id);
-    int current_phase =
-      (static_cast<int>(packet_.blocks[block_id].azimuth) - scan_phase_ + 36000) % 36000;
-//    std::cout << "current_phase = " << current_phase << std::endl;
-//    std::cout << "last_phase_ = " << last_phase_ << std::endl;
-
-    if (current_phase > last_phase_ && !has_scanned_) {
-      *scan_pc_ += *block_pc;
-    } else {
-      *overflow_pc_ += *block_pc;
-      has_scanned_ = true;
+  drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
+  int current_phase;
+  int cnt1, cnt2;
+  //  for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id += step) {
+  for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id++) {
+    //    auto block_pc = dual_return ? convert_dual(block_id) : convert(block_id);
+    if (dual_return) {
+      if (0 < block_id)  //2nd
+      {
+        cnt2 = 0;
+        auto block2_pt = convert(block_id);
+        size_t block1size = block_pc->points.size();
+        //        std::cout << "block_pc->points.size()=" << block_pc->points.size() << std::endl;
+        //        std::cout << "block2_pt->points.size()=" << block2_pt->points.size() << std::endl;
+        //        std::cout << "sizeof(packet_.blocks[0].units)=" << sizeof(packet_.blocks[0].units) << std::endl;
+        //        std::cout << "sizeof(packet_.blocks[1].units)=" << sizeof(packet_.blocks[1].units) << std::endl;
+        //        for (size_t i = 0; i < LASER_COUNT; i++) {
+        for (size_t i = 0; i < block1size; i++) {
+          //            std::cout << i << std::endl;
+          if (
+            fabsf(
+              packet_.blocks[block_id].units[i].distance - packet_.blocks[0].units[i].distance) >
+            dual_return_distance_threshold_) {
+            //          if (fabsf(packet_.blocks[block_id].units[i].distance - packet_.blocks[0].units[i].distance) > dual_return_distance_threshold_ || true) {
+            block_pc->points.emplace_back(block2_pt->points[i]);
+            cnt2++;
+          }
+        }
+        std::cout << "cnt1=" << cnt1 << ", cnt2=" << cnt2 << std::endl;
+      } else  //1st
+      {
+        auto block1_pt = convert(block_id);
+        //        std::cout << "block1_pt->points.size()=" << block1_pt->points.size() << std::endl;
+        block_pc->points.insert(
+          block_pc->points.end(), block1_pt->points.begin(), block1_pt->points.end());
+        cnt1 = block_pc->points.size();
+      }
+    } else  //single
+    {
+      block_pc = convert(block_id);
+      *block_pc += *block_pc;
+      cnt1 = block_pc->points.size();
     }
-    last_phase_ = current_phase;
+    current_phase =
+      (static_cast<int>(packet_.blocks[block_id].azimuth) - scan_phase_ + 36000) % 36000;
+    //    std::cout << "current_phase = " << current_phase << std::endl;
+    //    std::cout << "last_phase_ = " << last_phase_ << std::endl;
   }
+  if (current_phase > last_phase_ && !has_scanned_) {
+    *scan_pc_ += *block_pc;
+  } else {
+    *overflow_pc_ += *block_pc;
+    has_scanned_ = true;
+  }
+  last_phase_ = current_phase;
 }
 
 drivers::NebulaPoint PandarQT128Decoder::build_point(
@@ -333,18 +387,22 @@ drivers::NebulaPoint PandarQT128Decoder::build_point(
   const auto & block = packet_.blocks[block_id];
   const auto & unit = block.units[unit_id];
   auto unix_second = static_cast<double>(timegm(&packet_.t));
-  if(unix_second < first_timestamp_tmp){
+  if (unix_second < first_timestamp_tmp) {
     first_timestamp_tmp = unix_second;
   }
+  /*
   bool dual_return = (packet_.return_mode == DUAL_LAST_STRONGEST_RETURN || 
   packet_.return_mode == DUAL_FIRST_LAST_RETURN ||
   packet_.return_mode == DUAL_FIRST_STRONGEST_RETURN ||
   packet_.return_mode == DUAL_STRONGEST_2ndSTRONGEST_RETURN ||
   packet_.return_mode == DUAL_FIRST_SECOND_RETURN);
+  */
+  bool dual_return = is_dual_return();
   NebulaPoint point{};
-//  std::cout << "dual_return = " << dual_return << std::endl;
+  //  std::cout << "dual_return = " << dual_return << std::endl;
 
-  double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
+  //  double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
+  double xyDistance = unit.distance * cos_elev_angle_[unit_id];
 
   point.x = static_cast<float>(
     xyDistance *
@@ -352,30 +410,38 @@ drivers::NebulaPoint PandarQT128Decoder::build_point(
   point.y = static_cast<float>(
     xyDistance *
     cosf(deg2rad(azimuth_offset_[unit_id] + (static_cast<double>(block.azimuth)) / 100.0)));
-  point.z = static_cast<float>(unit.distance * sinf(deg2rad(elev_angle_[unit_id])));
+  //  point.z = static_cast<float>(unit.distance * sinf(deg2rad(elev_angle_[unit_id])));
+  point.z = static_cast<float>(unit.distance * sin_elev_angle_[unit_id]);
 
   point.intensity = unit.intensity;
-//  point.distance = unit.distance;
+  //  point.distance = unit.distance;
   point.channel = unit_id;
   point.azimuth = block.azimuth + std::round(azimuth_offset_[unit_id] * 100.0f);
-  point.return_type = packet_.return_mode; // keep original value
-
-  point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
-  if(0 < packet_.mode_flag){
-    point.time_stamp +=
-      dual_return
-        ? (static_cast<double>(block_offset_dual_[block_id] + firing_offset1_[unit_id]) / 1000000.0f)
-        : (static_cast<double>(block_offset_single_[block_id] + firing_offset1_[unit_id]) /
-          1000000.0f);
-  }else{
-    point.time_stamp +=
-      dual_return
-        ? (static_cast<double>(block_offset_dual_[block_id] + firing_offset2_[unit_id]) / 1000000.0f)
-        : (static_cast<double>(block_offset_single_[block_id] + firing_offset2_[unit_id]) /
-          1000000.0f);
+  //  point.return_type = packet_.return_mode; // keep original value
+  if (dual_return && block_id == 1) {
+    point.return_type = second_return_type_;
+  } else {
+    point.return_type = first_return_type_;
   }
 
-//  std::cout << "point.time_stamp = " << point.time_stamp << std::endl;
+  point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
+  if (0 < packet_.mode_flag) {
+    point.time_stamp +=
+      dual_return
+        ? (static_cast<double>(block_offset_dual_[block_id] + firing_offset1_[unit_id]) /
+           1000000.0f)
+        : (static_cast<double>(block_offset_single_[block_id] + firing_offset1_[unit_id]) /
+           1000000.0f);
+  } else {
+    point.time_stamp +=
+      dual_return
+        ? (static_cast<double>(block_offset_dual_[block_id] + firing_offset2_[unit_id]) /
+           1000000.0f)
+        : (static_cast<double>(block_offset_single_[block_id] + firing_offset2_[unit_id]) /
+           1000000.0f);
+  }
+
+  //  std::cout << "point.time_stamp = " << point.time_stamp << std::endl;
 
   return point;
 }
@@ -384,19 +450,24 @@ drivers::NebulaPointCloudPtr PandarQT128Decoder::convert(size_t block_id)
 {
   NebulaPointCloudPtr block_pc(new NebulaPointCloud);
 
+  bool dual_return = is_dual_return();
   const auto & block = packet_.blocks[block_id];
+  //  auto distance = block.units[0].distance * DISTANCE_UNIT;
+  //  std::cout << "distance=" << distance << std::endl;
   for (size_t unit_id = 0; unit_id < LASER_COUNT; ++unit_id) {
     const auto & unit = block.units[unit_id];
+    auto distance = packet_.blocks[dual_return ? 0 : block_id].units[unit_id].distance;
     // skip invalid points
-    if (unit.distance <= 0.1 || unit.distance > 200.0) {
+    //    if (unit.distance <= 0.1 || unit.distance > 200.0) {
+    if (distance < MIN_RANGE || MAX_RANGE < distance) {
       continue;
     }
 
     block_pc->points.emplace_back(build_point(
-      block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));//fixed, not used now
-//      (packet_.return_mode == FIRST_RETURN)
-//        ? static_cast<uint8_t>(drivers::ReturnType::FIRST)//drivers::ReturnMode::SINGLE_FIRST
-//        : static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
+      block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));  //fixed, not used now
+    //      (packet_.return_mode == FIRST_RETURN)
+    //        ? static_cast<uint8_t>(drivers::ReturnType::FIRST)//drivers::ReturnMode::SINGLE_FIRST
+    //        : static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
   }
   return block_pc;
 }
@@ -406,6 +477,48 @@ drivers::NebulaPointCloudPtr PandarQT128Decoder::convert_dual(size_t block_id)
   return convert(block_id);
 }
 
+bool PandarQT128Decoder::is_dual_return()
+{
+  switch (packet_.return_mode) {
+    case DUAL_LAST_STRONGEST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::LAST);
+      second_return_type_ = static_cast<uint8_t>(ReturnType::STRONGEST);
+      return true;
+    case DUAL_FIRST_LAST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::FIRST);
+      second_return_type_ = static_cast<uint8_t>(ReturnType::LAST);
+      return true;
+    case DUAL_FIRST_STRONGEST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::FIRST);
+      second_return_type_ = static_cast<uint8_t>(ReturnType::STRONGEST);
+      return true;
+    case DUAL_STRONGEST_2ndSTRONGEST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::STRONGEST);
+      second_return_type_ = static_cast<uint8_t>(ReturnType::SECOND_STRONGEST);
+      return true;
+    case DUAL_FIRST_SECOND_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::FIRST);
+      second_return_type_ = static_cast<uint8_t>(ReturnType::SECOND);
+      return true;
+    case SINGLE_FIRST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::FIRST);
+      break;
+    case SINGLE_SECOND_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::SECOND);
+      break;
+    case SINGLE_STRONGEST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::STRONGEST);
+      break;
+    case SINGLE_LAST_RETURN:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::LAST);
+      break;
+    default:
+      first_return_type_ = static_cast<uint8_t>(ReturnType::UNKNOWN);
+      break;
+  }
+  return false;
+}
+
 bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
   if (pandar_packet.size != PACKET_SIZE && pandar_packet.size != PACKET_WITHOUT_UDPSEQ_CRC_SIZE) {
@@ -413,7 +526,7 @@ bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pand
   }
   const uint8_t * buf = &pandar_packet.data[0];
 
-//  size_t index = 0;
+  //  size_t index = 0;
   int index = 0;
   // Parse 12 Bytes Header
   packet_.header.sob = (buf[index] & 0xff) << 8 | ((buf[index + 1] & 0xff));
@@ -421,7 +534,7 @@ bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pand
   packet_.header.chProtocolMinor = buf[index + 3] & 0xff;
   packet_.header.chLaserNumber = buf[index + 6] & 0xff;
   packet_.header.chBlockNumber = buf[index + 7] & 0xff;
-  packet_.header.chReturnType = buf[index + 8] & 0xff;// First Block Return (Reserved)
+  packet_.header.chReturnType = buf[index + 8] & 0xff;  // First Block Return (Reserved)
   packet_.header.chDisUnit = buf[index + 9] & 0xff;
   index += HEAD_SIZE;
 
@@ -430,8 +543,8 @@ bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pand
     return false;
   }
 
-//  std::cout << "packet_.header.chBlockNumber=" << packet_.header.chBlockNumber << std::endl;
-//  std::cout << "packet_.header.chLaserNumber=" << packet_.header.chLaserNumber << std::endl;
+  //  std::cout << "packet_.header.chBlockNumber=" << packet_.header.chBlockNumber << std::endl;
+  //  std::cout << "packet_.header.chLaserNumber=" << packet_.header.chLaserNumber << std::endl;
   for (size_t block = 0; block < static_cast<size_t>(packet_.header.chBlockNumber); block++) {
     packet_.blocks[block].azimuth = (buf[index] & 0xff) | ((buf[index + 1] & 0xff) << 8);
     index += BLOCK_HEADER_AZIMUTH;
@@ -447,12 +560,11 @@ bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pand
     }
   }
 
-
   index += SKIP_SIZE;
-  packet_.mode_flag = buf[index] & 0xff;//Mode Flag
+  packet_.mode_flag = buf[index] & 0xff;  //Mode Flag
   index += MODE_FLAG_SIZE;
   index += RESERVED3_SIZE;
-  packet_.return_mode = buf[index] & 0xff;//Return Mode
+  packet_.return_mode = buf[index] & 0xff;  //Return Mode
   index += RETURN_MODE_SIZE;
 
   packet_.t.tm_year = (buf[index + 0] & 0xff) + 100;

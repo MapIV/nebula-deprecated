@@ -21,6 +21,8 @@ enum class ReturnType : uint8_t {
   STRONGEST,
   FIRST_WEAK,
   LAST_WEAK,
+  SECOND,
+  SECOND_STRONGEST,
   IDENTICAL
 };
 
@@ -46,7 +48,6 @@ enum class ReturnMode : uint8_t {
   DUAL_FIRST_STRONGEST,
   DUAL
 };
-
 
 /// @brief Convert ReturnMode enum to ReturnType enum for Pandar AT, XTM (temporary, not used)
 /// @param mode
