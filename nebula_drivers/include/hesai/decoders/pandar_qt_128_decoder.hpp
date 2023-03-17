@@ -41,9 +41,10 @@ private:
   /// @brief Constructing a point cloud of the target part
   /// @param block_id Target block
   /// @param unit_id Target unit
-  /// @param return_type Corresponding return mode
+  /// @param dual_return Return mode is dual
+  /// @param unix_second Packet time
   /// @return Point cloud
-  drivers::NebulaPoint build_point(size_t block_id, size_t unit_id, uint8_t return_type);
+  drivers::NebulaPoint build_point(size_t block_id, size_t unit_id, bool dual_return, const uint32_t & unix_second);
   /// @brief Convert to point cloud
   /// @param block_id target block
   /// @return Point cloud

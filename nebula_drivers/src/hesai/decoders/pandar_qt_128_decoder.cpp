@@ -308,7 +308,7 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
   packet_.return_mode == DUAL_FIRST_SECOND_RETURN);
   */
   bool dual_return = is_dual_return();
-  auto step = dual_return ? 2 : 1;
+//  auto step = dual_return ? 2 : 1;
   //  std::cout << "dual_return = " << dual_return << std::endl;
 
   /*
@@ -352,7 +352,7 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
             cnt2++;
           }
         }
-        std::cout << "cnt1=" << cnt1 << ", cnt2=" << cnt2 << std::endl;
+//        std::cout << "cnt1=" << cnt1 << ", cnt2=" << cnt2 << std::endl;
       } else  //1st
       {
         auto block1_pt = convert(block_id);
@@ -382,13 +382,16 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
 }
 
 drivers::NebulaPoint PandarQT128Decoder::build_point(
-  size_t block_id, size_t unit_id, uint8_t return_type)
+  size_t block_id, size_t unit_id,
+  bool dual_return, const uint32_t & unix_second)
 {
   const auto & block = packet_.blocks[block_id];
   const auto & unit = block.units[unit_id];
-  auto unix_second = static_cast<double>(timegm(&packet_.t));
+  bool first_flg = false;
+//  auto unix_second = static_cast<double>(timegm(&packet_.t));
   if (unix_second < first_timestamp_tmp) {
     first_timestamp_tmp = unix_second;
+    first_flg = true;
   }
   /*
   bool dual_return = (packet_.return_mode == DUAL_LAST_STRONGEST_RETURN || 
@@ -397,7 +400,7 @@ drivers::NebulaPoint PandarQT128Decoder::build_point(
   packet_.return_mode == DUAL_STRONGEST_2ndSTRONGEST_RETURN ||
   packet_.return_mode == DUAL_FIRST_SECOND_RETURN);
   */
-  bool dual_return = is_dual_return();
+//  bool dual_return = is_dual_return();
   NebulaPoint point{};
   //  std::cout << "dual_return = " << dual_return << std::endl;
 
@@ -425,6 +428,11 @@ drivers::NebulaPoint PandarQT128Decoder::build_point(
   }
 
   point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
+  if(!first_flg)
+  {
+    point.time_stamp += unix_second - first_timestamp_tmp;
+  }
+//  std::cout << "packet_.mode_flag = " << packet_.mode_flag << std::endl;
   if (0 < packet_.mode_flag) {
     point.time_stamp +=
       dual_return
@@ -433,6 +441,7 @@ drivers::NebulaPoint PandarQT128Decoder::build_point(
         : (static_cast<double>(block_offset_single_[block_id] + firing_offset1_[unit_id]) /
            1000000.0f);
   } else {
+//    std::cout << "packet_.mode_flag = " << packet_.mode_flag << std::endl;
     point.time_stamp +=
       dual_return
         ? (static_cast<double>(block_offset_dual_[block_id] + firing_offset2_[unit_id]) /
@@ -440,8 +449,11 @@ drivers::NebulaPoint PandarQT128Decoder::build_point(
         : (static_cast<double>(block_offset_single_[block_id] + firing_offset2_[unit_id]) /
            1000000.0f);
   }
-
-  //  std::cout << "point.time_stamp = " << point.time_stamp << std::endl;
+  /*
+  if(point.time_stamp < 100){
+    std::cout << "point.time_stamp = " << point.time_stamp << std::endl;
+  }
+  */
 
   return point;
 }
@@ -451,11 +463,12 @@ drivers::NebulaPointCloudPtr PandarQT128Decoder::convert(size_t block_id)
   NebulaPointCloudPtr block_pc(new NebulaPointCloud);
 
   bool dual_return = is_dual_return();
-  const auto & block = packet_.blocks[block_id];
+  auto unix_second = static_cast<double>(timegm(&packet_.t));
+//  const auto & block = packet_.blocks[block_id];
   //  auto distance = block.units[0].distance * DISTANCE_UNIT;
   //  std::cout << "distance=" << distance << std::endl;
   for (size_t unit_id = 0; unit_id < LASER_COUNT; ++unit_id) {
-    const auto & unit = block.units[unit_id];
+//    const auto & unit = block.units[unit_id];
     auto distance = packet_.blocks[dual_return ? 0 : block_id].units[unit_id].distance;
     // skip invalid points
     //    if (unit.distance <= 0.1 || unit.distance > 200.0) {
@@ -464,7 +477,8 @@ drivers::NebulaPointCloudPtr PandarQT128Decoder::convert(size_t block_id)
     }
 
     block_pc->points.emplace_back(build_point(
-      block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));  //fixed, not used now
+      block_id, unit_id,
+      dual_return, unix_second));
     //      (packet_.return_mode == FIRST_RETURN)
     //        ? static_cast<uint8_t>(drivers::ReturnType::FIRST)//drivers::ReturnMode::SINGLE_FIRST
     //        : static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
@@ -561,7 +575,10 @@ bool PandarQT128Decoder::parsePacket(const pandar_msgs::msg::PandarPacket & pand
   }
 
   index += SKIP_SIZE;
-  packet_.mode_flag = buf[index] & 0xff;  //Mode Flag
+//  packet_.mode_flag = buf[index] & 0xff;  //Mode Flag
+//  std::cout << "packet_.mode_flag = " << std::bitset<8>(buf[index]) << std::endl;
+  packet_.mode_flag = buf[index] & 0x01;  //Mode Flag
+//  std::cout << "packet_.mode_flag = " << packet_.mode_flag << std::endl;
   index += MODE_FLAG_SIZE;
   index += RESERVED3_SIZE;
   packet_.return_mode = buf[index] & 0xff;  //Return Mode
