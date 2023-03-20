@@ -1,4 +1,4 @@
-#include "hesai_ros_decoder_test_at128.hpp"
+#include "hesai_ros_decoder_test_xt32m.hpp"
 
 #include <gtest/gtest.h>
 
@@ -100,7 +100,7 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    this->declare_parameter<std::string>("sensor_model", "PandarAT128");
+    this->declare_parameter<std::string>("sensor_model", "PandarXT32M");
     sensor_configuration.sensor_model =
       nebula::drivers::SensorModelFromString(this->get_parameter("sensor_model").as_string());
   }
@@ -142,7 +142,7 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
     this->declare_parameter<std::string>(
-      "calibration_file", (calib_dir / "PandarAT128.csv").string(), descriptor);
+      "calibration_file", (calib_dir / "PandarXT32M.csv").string(), descriptor);
     calibration_configuration.calibration_file =
       this->get_parameter("calibration_file").as_string();
   }
@@ -163,9 +163,8 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
     this->declare_parameter<std::string>(
-      "bag_path", (bag_root_dir / "at128" / "1671446145045082648").string(), descriptor);
+      "bag_path", (bag_root_dir / "xt32m" / "1660893203042895158").string(), descriptor);
     bag_path = this->get_parameter("bag_path").as_string();
-    std::cout << bag_path << std::endl;
   }
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
@@ -236,14 +235,13 @@ Status HesaiRosDecoderTest::GetParameters(
 void printPCD(nebula::drivers::NebulaPointCloudPtr pp)
 {
   for (auto p : pp->points) {
-    std::cout << "(" << p.x << ", " << p.y << "," << p.z << "): " << p.intensity << ", " << p.channel
-              << ", " << p.azimuth << ", " << p.return_type << ", "
-              << p.time_stamp << std::endl;
+    std::cout << "(" << p.x << ", " << p.y << "," << p.z << "): " << p.intensity << ", "
+              << p.channel << ", " << p.azimuth << ", " << p.return_type << ", " << p.time_stamp
+              << std::endl;
   }
 }
 
-void checkPCDs(
-  nebula::drivers::NebulaPointCloudPtr pp1, nebula::drivers::NebulaPointCloudPtr pp2)
+void checkPCDs(nebula::drivers::NebulaPointCloudPtr pp1, nebula::drivers::NebulaPointCloudPtr pp2)
 {
   EXPECT_EQ(pp1->points.size(), pp2->points.size());
   for (uint32_t i = 0; i < pp1->points.size(); i++) {

@@ -60,7 +60,10 @@ PandarATDecoder::PandarATDecoder(
 
 bool PandarATDecoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::NebulaPointCloudPtr, double> PandarATDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
+std::tuple<drivers::NebulaPointCloudPtr, double> PandarATDecoder::get_pointcloud()
+{
+  return std::make_tuple(scan_pc_, first_timestamp_);
+}
 
 void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -179,7 +182,7 @@ void PandarATDecoder::CalcXTPointXYZIT(
 
     point.intensity = unit.intensity;
     double unix_second = packet_.unix_second;
-    if(unix_second < first_timestamp_tmp){
+    if (unix_second < first_timestamp_tmp) {
       first_timestamp_tmp = unix_second;
     }
     point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;

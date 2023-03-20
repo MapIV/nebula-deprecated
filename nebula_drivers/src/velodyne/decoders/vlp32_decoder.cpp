@@ -210,13 +210,13 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
           intensity = (intensity < min_intensity) ? min_intensity : intensity;
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
 
-          double time_stamp = i * 55.296 / 1000.0 / 1000.0 + j * 2.304 / 1000.0 / 1000.0;// +
-//                              rclcpp::Time(velodyne_packet.stamp).seconds();
+          double time_stamp = i * 55.296 / 1000.0 / 1000.0 + j * 2.304 / 1000.0 / 1000.0;  // +
+          //                              rclcpp::Time(velodyne_packet.stamp).seconds();
           auto ts = rclcpp::Time(velodyne_packet.stamp).seconds();
-          if(ts < first_timestamp){
+          if (ts < first_timestamp) {
             first_timestamp = ts;
           }
-          
+
           // Temporary to stop compile error - fix to give VLP32 support
           uint8_t return_mode = velodyne_packet.data[1204];
           uint8_t return_type;

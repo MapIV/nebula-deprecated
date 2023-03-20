@@ -47,15 +47,17 @@ using NebulaPointCloudPtr = pcl::PointCloud<NebulaPoint>::Ptr;
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
   nebula::drivers::PointXYZIR,
-  (float, x, x)(float, y, y)(float, z, z)(std::uint8_t, intensity, intensity)(std::uint16_t, ring, ring))
+  (float, x,
+   x)(float, y, y)(float, z, z)(std::uint8_t, intensity, intensity)(std::uint16_t, ring, ring))
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
   nebula::drivers::PointXYZIRADT,
-  (float, x, x)(float, y, y)(float, z, z)(std::uint8_t, intensity, intensity)(std::uint16_t, ring, ring)(
-    float, azimuth, azimuth)(float, distance, distance)(std::uint8_t, return_type, return_type)(
-    std::uint32_t, time_stamp, time_stamp))
+  (float, x, x)(float, y, y)(float, z, z)(std::uint8_t, intensity, intensity)(
+    std::uint16_t, ring, ring)(float, azimuth, azimuth)(float, distance, distance)(
+    std::uint8_t, return_type, return_type)(std::uint32_t, time_stamp, time_stamp))
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
-    nebula::drivers::PointXYZICATR,
-    (float, x, x)(float, y, y)(float, z, z)(std::uint8_t, intensity, intensity)(std::uint16_t, channel, channel)(
-        float, azimuth, azimuth)(std::uint32_t, time_stamp, time_stamp)(std::uint8_t, return_type, return_type))
+  nebula::drivers::PointXYZICATR,
+  (float, x, x)(float, y, y)(float, z, z)(std::uint8_t, intensity, intensity)(
+    std::uint16_t, channel, channel)(float, azimuth, azimuth)(
+    std::uint32_t, time_stamp, time_stamp)(std::uint8_t, return_type, return_type))

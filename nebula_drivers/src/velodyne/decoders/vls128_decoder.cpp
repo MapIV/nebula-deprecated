@@ -220,11 +220,11 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
               const float z_coord = distance * sin_vert_angle;       // velodyne z
               const float intensity = current_block.data[k + 2];
 
-              const double time_stamp = block * 55.3 / 1000.0 / 1000.0 +
-                                        j * 2.665 / 1000.0 / 1000.0;// +
-//                                        rclcpp::Time(velodyne_packet.stamp).seconds();
+              const double time_stamp =
+                block * 55.3 / 1000.0 / 1000.0 + j * 2.665 / 1000.0 / 1000.0;  // +
+              //                                        rclcpp::Time(velodyne_packet.stamp).seconds();
               auto ts = rclcpp::Time(velodyne_packet.stamp).seconds();
-              if(ts < first_timestamp){
+              if (ts < first_timestamp) {
                 first_timestamp = ts;
               }
 

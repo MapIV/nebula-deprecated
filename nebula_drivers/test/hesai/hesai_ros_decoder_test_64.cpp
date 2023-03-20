@@ -1,4 +1,4 @@
-#include "hesai_ros_decoder_test_xt32m.hpp"
+#include "hesai_ros_decoder_test_64.hpp"
 
 #include <gtest/gtest.h>
 
@@ -100,7 +100,7 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    this->declare_parameter<std::string>("sensor_model", "PandarXT32M");
+    this->declare_parameter<std::string>("sensor_model", "Pandar64");
     sensor_configuration.sensor_model =
       nebula::drivers::SensorModelFromString(this->get_parameter("sensor_model").as_string());
   }
@@ -110,7 +110,7 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
-    this->declare_parameter<std::string>("return_mode", "LastStrongest", descriptor);
+    this->declare_parameter<std::string>("return_mode", "Dual", descriptor);
     sensor_configuration.return_mode = nebula::drivers::ReturnModeFromStringHesai(
       this->get_parameter("return_mode").as_string(), sensor_configuration.sensor_model);
   }
@@ -142,7 +142,7 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
     this->declare_parameter<std::string>(
-      "calibration_file", (calib_dir / "PandarXT32M.csv").string(), descriptor);
+      "calibration_file", (calib_dir / "Pandar64.csv").string(), descriptor);
     calibration_configuration.calibration_file =
       this->get_parameter("calibration_file").as_string();
   }
@@ -163,8 +163,9 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
     this->declare_parameter<std::string>(
-      "bag_path", (bag_root_dir / "xt32m" / "1660893203042895158").string(), descriptor);
+      "bag_path", (bag_root_dir / "64" / "1673403880599376836").string(), descriptor);
     bag_path = this->get_parameter("bag_path").as_string();
+    std::cout << bag_path << std::endl;
   }
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
@@ -192,6 +193,19 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.additional_constraints = "";
     this->declare_parameter<std::string>("target_topic", "/pandar_packets", descriptor);
     target_topic = this->get_parameter("target_topic").as_string();
+  }
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    descriptor.read_only = false;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "Dual return distance threshold [0.01, 0.5]";
+    rcl_interfaces::msg::FloatingPointRange range;
+    range.set__from_value(0.00).set__to_value(0.5).set__step(0.01);
+    descriptor.floating_point_range = {range};
+    this->declare_parameter<double>("dual_return_distance_threshold", 0.0, descriptor);
+    sensor_configuration.dual_return_distance_threshold =
+      this->get_parameter("dual_return_distance_threshold").as_double();
   }
 
   if (sensor_configuration.sensor_model == nebula::drivers::SensorModel::UNKNOWN) {
@@ -235,14 +249,13 @@ Status HesaiRosDecoderTest::GetParameters(
 void printPCD(nebula::drivers::NebulaPointCloudPtr pp)
 {
   for (auto p : pp->points) {
-    std::cout << "(" << p.x << ", " << p.y << "," << p.z << "): " << p.intensity << ", " << p.channel
-              << ", " << p.azimuth << ", " << p.return_type << ", "
-              << p.time_stamp << std::endl;
+    std::cout << "(" << p.x << ", " << p.y << "," << p.z << "): " << p.intensity << ", "
+              << p.channel << ", " << p.azimuth << ", " << p.return_type << ", " << p.time_stamp
+              << std::endl;
   }
 }
 
-void checkPCDs(
-  nebula::drivers::NebulaPointCloudPtr pp1, nebula::drivers::NebulaPointCloudPtr pp2)
+void checkPCDs(nebula::drivers::NebulaPointCloudPtr pp1, nebula::drivers::NebulaPointCloudPtr pp2)
 {
   EXPECT_EQ(pp1->points.size(), pp2->points.size());
   for (uint32_t i = 0; i < pp1->points.size(); i++) {

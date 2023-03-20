@@ -53,7 +53,10 @@ Pandar64Decoder::Pandar64Decoder(
 
 bool Pandar64Decoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::NebulaPointCloudPtr, double> Pandar64Decoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
+std::tuple<drivers::NebulaPointCloudPtr, double> Pandar64Decoder::get_pointcloud()
+{
+  return std::make_tuple(scan_pc_, first_timestamp_);
+}
 
 void Pandar64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -101,7 +104,7 @@ drivers::NebulaPoint Pandar64Decoder::build_point(
   const auto & block = packet_.blocks[block_id];
   const auto & unit = block.units[unit_id];
   auto unix_second = static_cast<double>(timegm(&packet_.t));
-  if(unix_second < first_timestamp_tmp){
+  if (unix_second < first_timestamp_tmp) {
     first_timestamp_tmp = unix_second;
   }
   bool dual_return = (packet_.return_mode == DUAL_RETURN);
@@ -145,8 +148,9 @@ drivers::NebulaPointCloudPtr Pandar64Decoder::convert(size_t block_id)
     block_pc->points.emplace_back(build_point(
       block_id, unit_id,
       (packet_.return_mode == STRONGEST_RETURN)
-        ? static_cast<uint8_t>(drivers::ReturnType::STRONGEST)//drivers::ReturnMode::SINGLE_STRONGEST
-        : static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
+        ? static_cast<uint8_t>(
+            drivers::ReturnType::STRONGEST)  //drivers::ReturnMode::SINGLE_STRONGEST
+        : static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::SINGLE_LAST
   }
   return block_pc;
 }
@@ -178,26 +182,32 @@ drivers::NebulaPointCloudPtr Pandar64Decoder::convert_dual(size_t block_id)
     if (sensor_return_mode == drivers::ReturnMode::STRONGEST && even_usable) {
       // First return is in even block
       block_pc->points.emplace_back(build_point(
-        even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::STRONGEST)));//drivers::ReturnMode::SINGLE_STRONGEST
+        even_block_id, unit_id,
+        static_cast<uint8_t>(
+          drivers::ReturnType::STRONGEST)));  //drivers::ReturnMode::SINGLE_STRONGEST
     } else if (sensor_return_mode == drivers::ReturnMode::LAST && even_usable) {
       // Last return is in odd block
-      block_pc->points.emplace_back(
-        build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
+      block_pc->points.emplace_back(build_point(
+        odd_block_id, unit_id,
+        static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::SINGLE_LAST
     } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
       // If the two returns are too close, only return the last one
       if (
         (abs(even_unit.distance - odd_unit.distance) < dual_return_distance_threshold_) &&
         odd_usable) {
-        block_pc->points.emplace_back(
-          build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::DUAL_ONLY)
+        block_pc->points.emplace_back(build_point(
+          odd_block_id, unit_id,
+          static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::DUAL_ONLY)
       } else {
         if (even_usable) {
           block_pc->points.emplace_back(build_point(
-            even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::FIRST)));//drivers::ReturnMode::DUAL_FIRST
+            even_block_id, unit_id,
+            static_cast<uint8_t>(drivers::ReturnType::FIRST)));  //drivers::ReturnMode::DUAL_FIRST
         }
         if (odd_usable) {
           block_pc->points.emplace_back(build_point(
-            odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::DUAL_LAST
+            odd_block_id, unit_id,
+            static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::DUAL_LAST
         }
       }
     }

@@ -46,7 +46,10 @@ Pandar128E4XDecoder::Pandar128E4XDecoder(
 
 bool Pandar128E4XDecoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::NebulaPointCloudPtr, double> Pandar128E4XDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
+std::tuple<drivers::NebulaPointCloudPtr, double> Pandar128E4XDecoder::get_pointcloud()
+{
+  return std::make_tuple(scan_pc_, first_timestamp_);
+}
 
 bool Pandar128E4XDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & raw_packet)
 {
@@ -64,7 +67,7 @@ bool Pandar128E4XDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & raw
 
 bool Pandar128E4XDecoder::is_dual_return()
 {
-  switch(packet_.tail.return_mode) {
+  switch (packet_.tail.return_mode) {
     case DUAL_LAST_STRONGEST_RETURN:
       first_return_type_ = static_cast<uint8_t>(ReturnType::LAST);
       second_return_type_ = static_cast<uint8_t>(ReturnType::STRONGEST);
@@ -122,7 +125,7 @@ void Pandar128E4XDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_p
 
 drivers::NebulaPoint Pandar128E4XDecoder::build_point(
   const Block & block, const size_t & laser_id, const uint16_t & azimuth,
-  const uint32_t & unix_second, float &out_distance)
+  const uint32_t & unix_second, float & out_distance)
 {
   NebulaPoint point{};
 
@@ -143,10 +146,10 @@ drivers::NebulaPoint Pandar128E4XDecoder::build_point(
   return point;
 }
 
-uint32_t Pandar128E4XDecoder::get_epoch_from_datetime(const DateTime &date_time)
+uint32_t Pandar128E4XDecoder::get_epoch_from_datetime(const DateTime & date_time)
 {
   struct tm t = {};
-  t.tm_year =date_time.year;
+  t.tm_year = date_time.year;
   t.tm_mon = date_time.month - 1;
   t.tm_mday = date_time.day;
   t.tm_hour = date_time.hour;
@@ -156,7 +159,7 @@ uint32_t Pandar128E4XDecoder::get_epoch_from_datetime(const DateTime &date_time)
   return timegm(&t);
 }
 
-drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert([[maybe_unused]]size_t)
+drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert([[maybe_unused]] size_t)
 {
   drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
   block_pc->reserve(LASER_COUNT * 2);
@@ -164,23 +167,15 @@ drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert([[maybe_unused]]size_t
 
   for (size_t i = 0; i < LASER_COUNT; i++) {
     auto distance = packet_.body.block_01[i].distance * DISTANCE_UNIT;
-    if (distance < MIN_RANGE || distance > MAX_RANGE)
-      continue ;
+    if (distance < MIN_RANGE || distance > MAX_RANGE) continue;
     distance = packet_.body.block_02[i].distance * DISTANCE_UNIT;
-    if (distance < MIN_RANGE || distance > MAX_RANGE)
-      continue ;
+    if (distance < MIN_RANGE || distance > MAX_RANGE) continue;
     float pt_distance;
-    auto block1_pt = build_point(packet_.body.block_01[i],
-                                 i,
-                                 packet_.body.azimuth_1,
-                                 current_unit_unix_second_,
-                                 pt_distance);
+    auto block1_pt = build_point(
+      packet_.body.block_01[i], i, packet_.body.azimuth_1, current_unit_unix_second_, pt_distance);
     block1_pt.return_type = first_return_type_;
-    auto block2_pt = build_point(packet_.body.block_02[i],
-                                 i,
-                                 packet_.body.azimuth_2,
-                                 current_unit_unix_second_,
-                                 pt_distance);
+    auto block2_pt = build_point(
+      packet_.body.block_02[i], i, packet_.body.azimuth_2, current_unit_unix_second_, pt_distance);
     block2_pt.return_type = first_return_type_;
     block_pc->points.emplace_back(block1_pt);
     block_pc->points.emplace_back(block2_pt);
@@ -189,26 +184,19 @@ drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert([[maybe_unused]]size_t
   return block_pc;
 }
 
-drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert_dual([[maybe_unused]]size_t)
+drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert_dual([[maybe_unused]] size_t)
 {
   drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
   current_unit_unix_second_ = get_epoch_from_datetime(packet_.tail.date_time);
 
   for (size_t i = 0; i < LASER_COUNT; i++) {
     auto distance = packet_.body.block_01[i].distance * DISTANCE_UNIT;
-    if (distance < MIN_RANGE || distance > MAX_RANGE)
-      continue ;
+    if (distance < MIN_RANGE || distance > MAX_RANGE) continue;
     float pt1_distance, pt2_distance;
-    auto block1_pt = build_point(packet_.body.block_01[i],
-                                 i,
-                                 packet_.body.azimuth_1,
-                                 current_unit_unix_second_,
-                                 pt1_distance);
-    auto block2_pt = build_point(packet_.body.block_02[i],
-                                 i,
-                                 packet_.body.azimuth_2,
-                                 current_unit_unix_second_,
-                                 pt2_distance);
+    auto block1_pt = build_point(
+      packet_.body.block_01[i], i, packet_.body.azimuth_1, current_unit_unix_second_, pt1_distance);
+    auto block2_pt = build_point(
+      packet_.body.block_02[i], i, packet_.body.azimuth_2, current_unit_unix_second_, pt2_distance);
     block1_pt.return_type = first_return_type_;
     block_pc->points.emplace_back(block1_pt);
     if (fabsf(pt1_distance - pt2_distance) > dual_return_distance_threshold_) {

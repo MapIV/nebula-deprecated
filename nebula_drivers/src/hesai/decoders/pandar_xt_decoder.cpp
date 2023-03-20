@@ -48,7 +48,10 @@ PandarXTDecoder::PandarXTDecoder(
 
 bool PandarXTDecoder::hasScanned() { return has_scanned_; }
 
-std::tuple<drivers::NebulaPointCloudPtr, double> PandarXTDecoder::get_pointcloud() { return std::make_tuple(scan_pc_, first_timestamp_); }
+std::tuple<drivers::NebulaPointCloudPtr, double> PandarXTDecoder::get_pointcloud()
+{
+  return std::make_tuple(scan_pc_, first_timestamp_);
+}
 
 void PandarXTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
@@ -88,7 +91,7 @@ drivers::NebulaPoint PandarXTDecoder::build_point(int block_id, int unit_id, uin
   const auto & block = packet_.blocks[block_id];
   const auto & unit = block.units[unit_id];
   auto unix_second = static_cast<double>(timegm(&packet_.t));
-  if(unix_second < first_timestamp_tmp){
+  if (unix_second < first_timestamp_tmp) {
     first_timestamp_tmp = unix_second;
   }
   bool dual_return = (packet_.return_mode == DUAL_RETURN);
@@ -133,8 +136,9 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert(size_t block_id)
     block_pc->points.emplace_back(build_point(
       block_id, unit_id,
       (packet_.return_mode == STRONGEST_RETURN)
-        ? static_cast<uint8_t>(drivers::ReturnType::STRONGEST)//drivers::ReturnMode::SINGLE_STRONGEST
-        : static_cast<uint8_t>(drivers::ReturnType::LAST)));//drivers::ReturnMode::SINGLE_LAST
+        ? static_cast<uint8_t>(
+            drivers::ReturnType::STRONGEST)  //drivers::ReturnMode::SINGLE_STRONGEST
+        : static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::SINGLE_LAST
   }
   return block_pc;
 }
@@ -144,7 +148,7 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
   NebulaPointCloudPtr block_pc(new NebulaPointCloud);
 
   auto unix_second = static_cast<double>(timegm(&packet_.t));  // sensor-time (ppt/gps)
-  if(unix_second < first_timestamp_tmp){
+  if (unix_second < first_timestamp_tmp) {
     first_timestamp_tmp = unix_second;
   }
 

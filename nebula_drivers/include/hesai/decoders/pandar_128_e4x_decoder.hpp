@@ -27,11 +27,11 @@ private:
   bool parsePacket(const pandar_msgs::msg::PandarPacket & pandar_packet) override;
   drivers::NebulaPoint build_point(
     const Block & block, const size_t & laser_id, const uint16_t & azimuth,
-    const uint32_t & unix_second, float &out_distance);
+    const uint32_t & unix_second, float & out_distance);
   drivers::NebulaPointCloudPtr convert(size_t) override;
   drivers::NebulaPointCloudPtr convert_dual(size_t) override;
   bool is_dual_return();
-  static uint32_t get_epoch_from_datetime(const DateTime& date_time);
+  static uint32_t get_epoch_from_datetime(const DateTime & date_time);
 
   std::array<float, LASER_COUNT> elev_angle_{};
   std::array<float, LASER_COUNT> elev_angle_rad_{};
