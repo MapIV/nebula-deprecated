@@ -32,7 +32,7 @@ def launch_setup(context, *args, **kwargs):
     sensor_params_fp = LaunchConfiguration("config_file").perform(context)
     if sensor_params_fp == "":
         warnings.warn("No config file provided, using sensor model default", RuntimeWarning)
-        sensor_params_fp = os.path.join(nebula_share_dir, "config", sensor_model + ".yaml")
+        sensor_params_fp = os.path.join(nebula_share_dir, "config", sensor_make.lower(), sensor_model + ".yaml")
     sensor_calib_fp = os.path.join(nebula_share_dir, "calibration", sensor_make.lower(), sensor_model + sensor_extension)
     if not os.path.exists(sensor_params_fp):
         sensor_params_fp = os.path.join(nebula_share_dir, "config", "BaseParams.yaml")
