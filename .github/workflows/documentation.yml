@@ -16,7 +16,7 @@ jobs:
         with:
           key: ${{ github.ref }}
           path: .cache
-      - run: sudo apt update && sudo apt install doxygen && \
+      - run: sudo apt update && sudo apt install -y doxygen python3-pip && \
           pip install mkdocs-material \
           mkdocs \
           mkdocs-material \
