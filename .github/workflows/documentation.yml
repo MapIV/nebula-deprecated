@@ -17,7 +17,7 @@ jobs:
           key: ${{ github.ref }}
           path: .cache
       - run: sudo apt update && sudo apt install -y doxygen python3-pip && \
-          pip install mkdocs-material \
+          python3 -m pip install mkdocs-material \
           mkdocs \
           mkdocs-material \
           Jinja2 \
