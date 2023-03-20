@@ -4,13 +4,18 @@ if(BUILD_TESTING)
 
     find_package(ament_cmake_gtest)
 
-    add_definitions(-D_SRC_RESOURCES_DIR_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test/data/")
-    add_definitions(-D_SRC_CALIBRATION_DIR_PATH="${CMAKE_CURRENT_SOURCE_DIR}/calibration/")
+    add_definitions(-D_SRC_RESOURCES_DIR_PATH="${PROJECT_SOURCE_DIR}/test/data/")
+    add_definitions(-D_SRC_CALIBRATION_DIR_PATH="${PROJECT_SOURCE_DIR}/calibration/")
 
     set(NEBULA_TEST_DEPENDENCIES
             rclcpp
             rosbag2_cpp
             pandar_msgs
+            velodyne_msgs
+            )
+    set(NEBULA_TEST_LIBRARIES
+            velodyne_driver
+            hesai_driver
             )
 
     add_subdirectory(hesai)
