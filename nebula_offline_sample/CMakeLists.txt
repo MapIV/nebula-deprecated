@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(nebula_offline_sample)
 
-# Default to C++14
+# Default to C++17
 if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
 endif ()
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -15,13 +15,13 @@ find_package(PCL REQUIRED COMPONENTS common)
 find_package(PCL REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(nebula_lidar_driver REQUIRED)
 
 if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
     add_definitions(-DHAVE_NEW_YAMLCPP)
 endif(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
 
 ament_auto_find_build_dependencies()
-
 
 include_directories(
         include
@@ -62,20 +62,11 @@ if (BUILD_TESTING)
     ament_lint_auto_find_test_dependencies()
 endif()
 
-## NEW SENSOR
-# HwInterfaces Lib
-# RosHwInterface
-# Driver Lib
-# RosDriver
-
-
-
 ament_auto_package(
         INSTALL_TO_SHARE
         launch
         config
 )
-
 
 # Set ROS_DISTRO macros
 set(ROS_DISTRO $ENV{ROS_DISTRO})
