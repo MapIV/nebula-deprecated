@@ -21,9 +21,9 @@ enum class ReturnType : uint8_t {
   STRONGEST,
   FIRST_WEAK,
   LAST_WEAK,
+  IDENTICAL,
   SECOND,
-  SECOND_STRONGEST,
-  IDENTICAL
+  SECOND_STRONGEST
 };
 
 /// @brief Return mode of each LiDAR
