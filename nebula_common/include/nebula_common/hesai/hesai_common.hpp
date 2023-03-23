@@ -237,13 +237,14 @@ inline ReturnMode ReturnModeFromStringHesai(
 {
   switch (sensor_model) {
     case SensorModel::HESAI_PANDARXT32M:
-    case SensorModel::HESAI_PANDARAT128:
+  case SensorModel::HESAI_PANDARAT128:
       if (return_mode == "Last") return ReturnMode::LAST;
       if (return_mode == "Strongest") return ReturnMode::STRONGEST;
       if (return_mode == "LastStrongest") return ReturnMode::DUAL_LAST_STRONGEST;
       if (return_mode == "First") return ReturnMode::FIRST;
       if (return_mode == "LastFirst") return ReturnMode::DUAL_LAST_FIRST;
       if (return_mode == "FirstStrongest") return ReturnMode::DUAL_FIRST_STRONGEST;
+      if (return_mode == "Dual") return ReturnMode::DUAL;
       break;
     case SensorModel::HESAI_PANDARQT64:
       if (return_mode == "Last") return ReturnMode::LAST;
