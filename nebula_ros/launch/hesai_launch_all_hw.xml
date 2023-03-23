@@ -6,6 +6,7 @@
     <arg name="scan_phase" default="0.0" />
 
     <arg name="calibration_file" default="$(find-pkg-share nebula_decoders)/calibration/hesai/$(var sensor_model).csv"/>
+    <arg name="correction_file" default="$(find-pkg-share nebula_decoders)/calibration/hesai/$(var sensor_model).dat"/>
 
     <arg name="sensor_ip" default="192.168.1.201" description="Lidar Sensor IP"/>
     <arg name="host_ip" default="255.255.255.255" description="Broadcast IP from Sensor"/>
@@ -27,6 +28,7 @@
         <param name="frame_id" value="$(var frame_id)"/>
         <param name="scan_phase" value="$(var scan_phase)"/>
         <param name="calibration_file" value="$(var calibration_file)"/>
+        <param name="correction_file" value="$(var correction_file)"/>
     </node>
     
     <node pkg="nebula_ros" exec="hesai_hw_interface_ros_wrapper_node"

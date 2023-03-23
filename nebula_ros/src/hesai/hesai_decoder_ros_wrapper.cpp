@@ -97,7 +97,7 @@ Status HesaiDriverRosWrapper::InitializeDriver(
   driver_ptr_ = std::make_shared<drivers::HesaiDriver>(
     std::static_pointer_cast<drivers::HesaiSensorConfiguration>(sensor_configuration),
     std::static_pointer_cast<drivers::HesaiCalibrationConfiguration>(
-      calibration_configuration),  //);
+      calibration_configuration),
     std::static_pointer_cast<drivers::HesaiCorrection>(correction_configuration));
   return driver_ptr_->GetStatus();
 }
@@ -205,6 +205,8 @@ Status HesaiDriverRosWrapper::GetParameters(
   }
   if (sensor_configuration.sensor_model == drivers::SensorModel::HESAI_PANDARAT128) {
     if (correction_file_path.empty()) {
+      RCLCPP_ERROR_STREAM(
+             this->get_logger(), "Empty Correction File: '" << correction_file_path << "'");
       return Status::INVALID_CALIBRATION_FILE;
     } else {
       auto cal_status = correction_configuration.LoadFromFile(correction_file_path);
