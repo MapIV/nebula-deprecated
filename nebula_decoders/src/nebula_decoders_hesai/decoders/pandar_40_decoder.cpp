@@ -1,7 +1,9 @@
+#include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_40_decoder.hpp"
+
 #include <cmath>
 #include <utility>
+
 #include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_40.hpp"
-#include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_40_decoder.hpp"
 
 namespace nebula
 {

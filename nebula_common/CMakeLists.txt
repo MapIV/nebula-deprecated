@@ -27,6 +27,10 @@ if(BUILD_TESTING)
     ament_lint_auto_find_test_dependencies()
 endif()
 
+ament_auto_add_library(nebula_common SHARED
+        src/velodyne/velodyne_calibration_decoder.cpp
+        )
+
 ament_auto_package()
 
 # Set ROS_DISTRO macros

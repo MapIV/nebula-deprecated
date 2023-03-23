@@ -5,8 +5,7 @@ namespace nebula
 namespace ros
 {
 VelodyneHwInterfaceRosWrapper::VelodyneHwInterfaceRosWrapper(const rclcpp::NodeOptions & options)
-: rclcpp::Node("velodyne_hw_interface_ros_wrapper", options),
-  hw_interface_()
+: rclcpp::Node("velodyne_hw_interface_ros_wrapper", options), hw_interface_()
 {
   not_supported_message = "Not supported";
 

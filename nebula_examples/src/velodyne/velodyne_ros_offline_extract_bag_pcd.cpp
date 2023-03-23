@@ -311,9 +311,10 @@ Status VelodyneRosOfflineExtractBag::ReadBag()
         std::cout << "Found data in topic " << bag_message->topic_name << ": "
                   << bag_message->time_stamp << std::endl;
 
-//        nebula::drivers::NebulaPointCloudPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(
-//          std::make_shared<velodyne_msgs::msg::VelodyneScan>(extracted_msg));
-        auto pointcloud_ts = driver_ptr_->ConvertScanToPointcloud(std::make_shared<velodyne_msgs::msg::VelodyneScan>(extracted_msg));
+        //        nebula::drivers::NebulaPointCloudPtr pointcloud = driver_ptr_->ConvertScanToPointcloud(
+        //          std::make_shared<velodyne_msgs::msg::VelodyneScan>(extracted_msg));
+        auto pointcloud_ts = driver_ptr_->ConvertScanToPointcloud(
+          std::make_shared<velodyne_msgs::msg::VelodyneScan>(extracted_msg));
         auto pointcloud = std::get<0>(pointcloud_ts);
         auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
 

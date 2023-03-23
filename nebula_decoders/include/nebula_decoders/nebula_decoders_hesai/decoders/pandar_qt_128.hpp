@@ -209,7 +209,7 @@ const std::string PandarQT128_TL1 = R"(33,27.656
 126,22.776
 127,73.464
 128,48.12)";
-    const std::string PandarQT128_TL2 = R"(1,2.312
+const std::string PandarQT128_TL2 = R"(1,2.312
 2,78.344
 3,27.656
 4,53

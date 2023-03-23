@@ -104,7 +104,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     container = ComposableNodeContainer(
-        name="nebula_lidar_driver_node",
+        name="nebula_ros_node",
         namespace="",
         package="rclcpp_components",
         executable="component_container",

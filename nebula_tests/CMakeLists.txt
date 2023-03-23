@@ -22,7 +22,6 @@ find_package(diagnostic_updater REQUIRED)
 find_package(nebula_common REQUIRED)
 find_package(nebula_decoders REQUIRED)
 find_package(nebula_hw_interfaces REQUIRED)
-find_package(nebula_ros REQUIRED)
 
 if(BUILD_TESTING)
     find_package(ament_lint_auto REQUIRED)
@@ -31,6 +30,7 @@ if(BUILD_TESTING)
     find_package(ament_cmake_gtest)
 
     add_definitions(-D_SRC_RESOURCES_DIR_PATH="${PROJECT_SOURCE_DIR}/data/")
+    # TODO: FIX this path to point to nebula_decoders/calibration
     add_definitions(-D_SRC_CALIBRATION_DIR_PATH="${PROJECT_SOURCE_DIR}/calibration/")
 
     set(NEBULA_TEST_DEPENDENCIES

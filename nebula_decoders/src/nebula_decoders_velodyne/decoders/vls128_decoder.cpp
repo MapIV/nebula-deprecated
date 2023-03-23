@@ -1,6 +1,7 @@
+#include "nebula_decoders/nebula_decoders_velodyne/decoders/vls128_decoder.hpp"
+
 #include <cmath>
 #include <utility>
-#include "nebula_decoders/nebula_decoders_velodyne/decoders/vls128_decoder.hpp"
 
 namespace nebula
 {
@@ -284,7 +285,8 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
   }  // for (uint block = 0; block < static_cast < uint > (BLOCKS_PER_PACKET - (4 * dual_return)); block++)
 }
 
-bool Vls128Decoder::parsePacket([[maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
+bool Vls128Decoder::parsePacket(
+  [[maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
 {
   return 0;
 }

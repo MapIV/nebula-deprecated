@@ -13,8 +13,8 @@
     cloud_min_angle: 0 # Field of View, start degrees.
     cloud_max_angle: 360 # Field of View, end degrees.
     diag_span: 1000 # milliseconds
-    calibration_file: "./install/nebula_lidar_driver/share/nebula_lidar_driver/calibration/hesai/PandarAT128.csv"
-    correction_file: "./install/nebula_lidar_driver/share/nebula_lidar_driver/calibration/hesai/PandarAT128.dat"
+    calibration_file: "./install/nebula_decoders/share/nebula_decoders/calibration/hesai/PandarAT128.csv"
+    correction_file: "./install/nebula_decoders/share/nebula_decoders/calibration/hesai/PandarAT128.dat"
     setup_sensor: True
 
     online: True

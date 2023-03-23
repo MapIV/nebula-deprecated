@@ -1,8 +1,17 @@
 #ifndef NEBULA_VelodyneRosOfflineExtractBag_H
 #define NEBULA_VelodyneRosOfflineExtractBag_H
 
+#include <ament_index_cpp/get_package_prefix.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_components/register_node_macro.hpp>
 #include <regex>
 
+#include "nebula_common/nebula_common.hpp"
+#include "nebula_common/nebula_status.hpp"
+#include "nebula_common/velodyne/velodyne_calibration_decoder.hpp"
+#include "nebula_common/velodyne/velodyne_common.hpp"
+#include "nebula_decoders/nebula_decoders_velodyne/velodyne_driver.hpp"
+#include "nebula_ros/common/nebula_driver_ros_wrapper_base.hpp"
 #include "rclcpp/serialization.hpp"
 #include "rclcpp/serialized_message.hpp"
 #include "rcpputils/filesystem_helper.hpp"
@@ -12,16 +21,6 @@
 #include "rosbag2_cpp/writer.hpp"
 #include "rosbag2_cpp/writers/sequential_writer.hpp"
 #include "rosbag2_storage/storage_options.hpp"
-#include <ament_index_cpp/get_package_prefix.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_components/register_node_macro.hpp>
-
-#include "nebula_common/nebula_common.hpp"
-#include "nebula_common/nebula_status.hpp"
-#include "nebula_common/velodyne/velodyne_common.hpp"
-#include "nebula_common/velodyne/velodyne_calibration_decoder.hpp"
-#include "nebula_decoders/nebula_decoders_velodyne/velodyne_driver.hpp"
-#include "nebula_ros/common/nebula_driver_ros_wrapper_base.hpp"
 #include "velodyne_msgs/msg/velodyne_packet.hpp"
 #include "velodyne_msgs/msg/velodyne_scan.hpp"
 

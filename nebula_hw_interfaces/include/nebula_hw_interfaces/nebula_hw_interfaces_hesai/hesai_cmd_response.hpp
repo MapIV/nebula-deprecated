@@ -1,9 +1,9 @@
 #ifndef HESAI_CMD_RESPONSE_HPP
 #define HESAI_CMD_RESPONSE_HPP
 
-#include <ostream>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/format.hpp>
+#include <ostream>
 
 namespace nebula
 {

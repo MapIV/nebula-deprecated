@@ -1,5 +1,7 @@
 #include "hesai/hesai_ros_offline_extract_bag_pcd.hpp"
 
+#include <regex>
+
 #include "rclcpp/serialization.hpp"
 #include "rclcpp/serialized_message.hpp"
 #include "rcpputils/filesystem_helper.hpp"
@@ -9,9 +11,6 @@
 #include "rosbag2_cpp/writer.hpp"
 #include "rosbag2_cpp/writers/sequential_writer.hpp"
 #include "rosbag2_storage/storage_options.hpp"
-#include <regex>
-
-#include "rcpputils/filesystem_helper.hpp"
 
 namespace nebula
 {
@@ -304,7 +303,8 @@ Status HesaiRosOfflineExtractBag::ReadBag()
         std::cout << "Found data in topic " << bag_message->topic_name << ": "
                   << bag_message->time_stamp << std::endl;
 
-        auto pointcloud_ts = driver_ptr_->ConvertScanToPointcloud(std::make_shared<pandar_msgs::msg::PandarScan>(extracted_msg));
+        auto pointcloud_ts = driver_ptr_->ConvertScanToPointcloud(
+          std::make_shared<pandar_msgs::msg::PandarScan>(extracted_msg));
         auto pointcloud = std::get<0>(pointcloud_ts);
         auto fn = std::to_string(bag_message->time_stamp) + ".pcd";
         //        pcl::io::savePCDFileBinary((o_dir / fn).string(), *pointcloud);
@@ -326,7 +326,7 @@ Status HesaiRosOfflineExtractBag::ReadBag()
         if (skip_num < cnt) {
           out_cnt++;
           writer.writeBinary((o_dir / fn).string(), *pointcloud);
-//          writer.writeASCII((o_dir / fn).string(), *pointcloud);
+          //          writer.writeASCII((o_dir / fn).string(), *pointcloud);
         }
         if (out_num <= out_cnt) {
           break;

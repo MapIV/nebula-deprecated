@@ -1,7 +1,9 @@
+#include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_128_e4x_decoder.hpp"
+
 #include <cmath>
 #include <utility>
+
 #include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_128_e4x.hpp"
-#include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_128_e4x_decoder.hpp"
 
 namespace nebula
 {

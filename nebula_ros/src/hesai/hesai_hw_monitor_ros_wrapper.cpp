@@ -1,11 +1,11 @@
 #include "nebula_ros/hesai/hesai_hw_monitor_ros_wrapper.hpp"
 
-#include <boost/asio.hpp>
-
-#include "tcp_driver/tcp_driver.hpp"
 #include <boost/algorithm/string/join.hpp>
+#include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <thread>
+
+#include "tcp_driver/tcp_driver.hpp"
 
 namespace nebula
 {
@@ -126,9 +126,8 @@ Status HesaiHwMonitorRosWrapper::GetParameters(
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
     this->declare_parameter<std::string>("return_mode", "", descriptor);
-    sensor_configuration.return_mode =
-      nebula::drivers::ReturnModeFromStringHesai(
-        this->get_parameter("return_mode").as_string(), sensor_configuration.sensor_model);
+    sensor_configuration.return_mode = nebula::drivers::ReturnModeFromStringHesai(
+      this->get_parameter("return_mode").as_string(), sensor_configuration.sensor_model);
   }
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
@@ -325,27 +324,27 @@ void HesaiHwMonitorRosWrapper::InitializeHesaiDiagnostics()
   }
 
   auto on_timer_update = [this] {
-  RCLCPP_DEBUG_STREAM(get_logger(), "OnUpdateTimer");
-  auto now = this->get_clock()->now();
-  auto dif = (now - *current_status_time).seconds();
+    RCLCPP_DEBUG_STREAM(get_logger(), "OnUpdateTimer");
+    auto now = this->get_clock()->now();
+    auto dif = (now - *current_status_time).seconds();
 
-  RCLCPP_DEBUG_STREAM(get_logger(), "dif(status): " << dif );
+    RCLCPP_DEBUG_STREAM(get_logger(), "dif(status): " << dif);
 
     if (diag_span_ * 2.0 < dif * 1000) {
       current_diag_status = diagnostic_msgs::msg::DiagnosticStatus::STALE;
-        RCLCPP_DEBUG_STREAM(get_logger(), "STALE");
+      RCLCPP_DEBUG_STREAM(get_logger(), "STALE");
     } else {
       current_diag_status = diagnostic_msgs::msg::DiagnosticStatus::OK;
-        RCLCPP_DEBUG_STREAM(get_logger(), "OK");
+      RCLCPP_DEBUG_STREAM(get_logger(), "OK");
     }
     dif = (now - *current_lidar_monitor_time).seconds();
     std::cout << "dif(monitor): " << dif << std::endl;
     if (diag_span_ * 2.0 < dif * 1000) {
       current_monitor_status = diagnostic_msgs::msg::DiagnosticStatus::STALE;
-        RCLCPP_DEBUG_STREAM(get_logger(), "STALE");
+      RCLCPP_DEBUG_STREAM(get_logger(), "STALE");
     } else {
       current_monitor_status = diagnostic_msgs::msg::DiagnosticStatus::OK;
-        RCLCPP_DEBUG_STREAM(get_logger(), "OK");
+      RCLCPP_DEBUG_STREAM(get_logger(), "OK");
     }
     diagnostics_updater_.force_update();
   };
@@ -354,7 +353,7 @@ void HesaiHwMonitorRosWrapper::InitializeHesaiDiagnostics()
     this->get_node_base_interface()->get_context());
   this->get_node_timers_interface()->add_timer(diagnostics_update_timer_, cbg_r_);
 
-    RCLCPP_DEBUG_STREAM(get_logger(), "add_timer");
+  RCLCPP_DEBUG_STREAM(get_logger(), "add_timer");
 }
 
 std::string HesaiHwMonitorRosWrapper::GetPtreeValue(
@@ -378,28 +377,27 @@ rcl_interfaces::msg::SetParametersResult HesaiHwMonitorRosWrapper::paramCallback
   const std::vector<rclcpp::Parameter> & p)
 {
   std::scoped_lock lock(mtx_config_);
-RCLCPP_DEBUG_STREAM(get_logger(), "add_on_set_parameters_callback");
-RCLCPP_DEBUG_STREAM(get_logger(),  p);
-RCLCPP_DEBUG_STREAM(get_logger(), sensor_configuration_);
+  RCLCPP_DEBUG_STREAM(get_logger(), "add_on_set_parameters_callback");
+  RCLCPP_DEBUG_STREAM(get_logger(), p);
+  RCLCPP_DEBUG_STREAM(get_logger(), sensor_configuration_);
   RCLCPP_INFO_STREAM(this->get_logger(), p);
 
   drivers::HesaiSensorConfiguration new_param{sensor_configuration_};
   RCLCPP_INFO_STREAM(this->get_logger(), new_param);
   uint16_t new_diag_span = 0;
-  if (
-    get_param(p, "diag_span", new_diag_span)) {
+  if (get_param(p, "diag_span", new_diag_span)) {
     sensor_configuration_ = new_param;
     RCLCPP_INFO_STREAM(this->get_logger(), "Update sensor_configuration");
     std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
       std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration_);
-      RCLCPP_DEBUG_STREAM(this->get_logger(), "hw_interface_.SetSensorConfiguration");
+    RCLCPP_DEBUG_STREAM(this->get_logger(), "hw_interface_.SetSensorConfiguration");
   }
 
   auto result = std::make_shared<rcl_interfaces::msg::SetParametersResult>();
   result->successful = true;
   result->reason = "success";
 
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "add_on_set_parameters_callback success");
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "add_on_set_parameters_callback success");
   return *result;
 }
 
@@ -425,7 +423,7 @@ void HesaiHwMonitorRosWrapper::OnHesaiStatusTimer()
 */
 void HesaiHwMonitorRosWrapper::OnHesaiStatusTimer()
 {
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "OnHesaiStatusTimer" << std::endl);
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "OnHesaiStatusTimer" << std::endl);
   try {
     auto ios = std::make_shared<boost::asio::io_service>();
     hw_interface_.GetLidarStatus(  //ios,
@@ -448,7 +446,7 @@ void HesaiHwMonitorRosWrapper::OnHesaiStatusTimer()
 
 void HesaiHwMonitorRosWrapper::OnHesaiLidarMonitorTimerHttp()
 {
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "OnHesaiLidarMonitorTimerHttp");
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "OnHesaiLidarMonitorTimerHttp");
   try {
     hw_interface_.GetLidarMonitorAsyncHttp([this](const std::string & str) {
       std::scoped_lock lock(mtx_lidar_monitor);
@@ -471,7 +469,7 @@ void HesaiHwMonitorRosWrapper::OnHesaiLidarMonitorTimerHttp()
 
 void HesaiHwMonitorRosWrapper::OnHesaiLidarMonitorTimer()
 {
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "OnHesaiLidarMonitorTimer");
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "OnHesaiLidarMonitorTimer");
   try {
     auto ios = std::make_shared<boost::asio::io_service>();
     hw_interface_.GetLidarMonitor([this](HesaiLidarMonitor & result) {

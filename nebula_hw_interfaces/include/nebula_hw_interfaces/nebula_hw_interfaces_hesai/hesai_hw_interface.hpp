@@ -1,13 +1,11 @@
 #ifndef NEBULA_HESAI_HW_INTERFACE_H
 #define NEBULA_HESAI_HW_INTERFACE_H
 
-#include <memory>
-#include <mutex>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-
+#include <memory>
+#include <mutex>
 #include <rclcpp/rclcpp.hpp>
 
 #include "nebula_common/hesai/hesai_common.hpp"
@@ -24,7 +22,7 @@ namespace nebula
 {
 namespace drivers
 {
-    const int PandarTcpCommandPort = 9347;
+const int PandarTcpCommandPort = 9347;
 
 /// @brief Hardware interface of hesai driver
 class HesaiHwInterface : NebulaHwInterfaceBase

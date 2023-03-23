@@ -30,19 +30,19 @@ $ colcon test-result --all
 ## Generic Launch File
 You can easily run the sensor hardware interface, the sensor hardware monitor and sensor driver using (e.g. Pandar64):
 
-```ros2 launch nebula_lidar_driver nebula_launch.py sensor_model:=Pandar64```
+```ros2 launch nebula_ros nebula_launch.py sensor_model:=Pandar64```
 
 If you don't want to launch the hardware (i.e. working on rosbag) set the `launch_hw` flag to false:
 
-```ros2 launch nebula_lidar_driver nebula_launch.py sensor_model:=Pandar64 launch_hw:=false```
+```ros2 launch nebula_ros nebula_launch.py sensor_model:=Pandar64 launch_hw:=false```
 
 If you don't want the hardware driver to perform the sensor configuration communication (i.e. limited number of connections) set the `setup_sensor` flag to false:
 
-```ros2 launch nebula_lidar_driver nebula_launch.py sensor_model:=Pandar64 setup_sensor:=false```
+```ros2 launch nebula_ros nebula_launch.py sensor_model:=Pandar64 setup_sensor:=false```
 
 You should ideally provide a config file for your specific sensor, but default ones are provided `nebula_drivers/config`
 
-```ros2 launch nebula_lidar_driver nebula_launch.py sensor_model:=Pandar64 config_file:=your_sensor.yaml```
+```ros2 launch nebula_ros nebula_launch.py sensor_model:=Pandar64 config_file:=your_sensor.yaml```
 
 ## Hesai LiDARs
 Supported models, where sensor_model is the ROS param to be used at launch:
@@ -76,7 +76,7 @@ Common ROS params:
 
 ### Hesai Hardware Interface
 Launches the UDP hardware connection to a live sensor and publishes HesaiScan messages. E.g.:
-```ros2 launch nebula_lidar_driver hesai_hw_interface.xml sensor_model:=Pandar40P return_mode:=Dual```
+```ros2 launch nebula_ros hesai_hw_interface.xml sensor_model:=Pandar40P return_mode:=Dual```
 Unique params:
 
 | Parameter       | Type   | Default     | Accepted Values   | Description     |
@@ -91,7 +91,7 @@ Unique params:
 
 ### Hesai Driver
 Launches the hesai driver which subscribes to HesaiScan messages and converts them to PointCloud2. E.g.:
-```ros2 launch nebula_lidar_driver hesai_driver.xml sensor_model:=Pandar40P return_mode:=Dual```
+```ros2 launch nebula_ros hesai_driver.xml sensor_model:=Pandar40P return_mode:=Dual```
 Unique params:
 
 | Parameter       | Type   | Default     | Accepted Values | Description            |
@@ -134,7 +134,7 @@ Common ROS params:
 
 ### Velodyne Hardware Interface
 Launches the UDP hardware connection to a live sensor and publishes VelodyneScan messages. E.g.:
-```ros2 launch nebula_lidar_driver velodyne_hw_interface.xml sensor_model:=VLS128 return_mode:=Dual```
+```ros2 launch nebula_ros velodyne_hw_interface.xml sensor_model:=VLS128 return_mode:=Dual```
 Unique params:
 
 | Parameter       | Type   | Default     | Accepted Values | Description      |
@@ -147,7 +147,7 @@ Unique params:
 
 ### Velodyne Driver
 Launches the Velodyne driver which subscribes to VelodyneScan messages and converts them to PointCloud2. E.g.:
-```ros2 launch nebula_lidar_driver velodyne_driver.xml sensor_model:=VLS128 return_mode:=Dual```
+```ros2 launch nebula_ros velodyne_driver.xml sensor_model:=VLS128 return_mode:=Dual```
 Unique params:
 
 | Parameter        | Type   | Default | Accepted Values  | Description                             |

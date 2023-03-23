@@ -1,6 +1,7 @@
+#include "nebula_decoders/nebula_decoders_velodyne/decoders/vlp16_decoder.hpp"
+
 #include <cmath>
 #include <utility>
-#include "nebula_decoders/nebula_decoders_velodyne/decoders/vlp16_decoder.hpp"
 
 namespace nebula
 {
@@ -264,7 +265,8 @@ void Vlp16Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
   }
 }
 
-bool Vlp16Decoder::parsePacket([[maybe_unused]]const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
+bool Vlp16Decoder::parsePacket(
+  [[maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
 {
   return 0;
 }

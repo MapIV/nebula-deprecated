@@ -36,7 +36,7 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
   for (std::thread & th : thread_pool) {
     th.join();
   }
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "hw_interface_.CheckAndSetConfig();");
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "hw_interface_.CheckAndSetConfig();");
   if (this->setup_sensor) {
     hw_interface_.CheckAndSetConfig();
     updateParameters();
@@ -338,9 +338,9 @@ rcl_interfaces::msg::SetParametersResult HesaiHwInterfaceRosWrapper::paramCallba
   const std::vector<rclcpp::Parameter> & p)
 {
   std::scoped_lock lock(mtx_config_);
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "add_on_set_parameters_callback");
-    RCLCPP_DEBUG_STREAM(this->get_logger(),  p);
-    RCLCPP_DEBUG_STREAM(this->get_logger(), sensor_configuration_);
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "add_on_set_parameters_callback");
+  RCLCPP_DEBUG_STREAM(this->get_logger(), p);
+  RCLCPP_DEBUG_STREAM(this->get_logger(), sensor_configuration_);
   RCLCPP_INFO_STREAM(this->get_logger(), p);
 
   drivers::HesaiSensorConfiguration new_param{sensor_configuration_};
@@ -379,7 +379,7 @@ rcl_interfaces::msg::SetParametersResult HesaiHwInterfaceRosWrapper::paramCallba
   result->successful = true;
   result->reason = "success";
 
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "add_on_set_parameters_callback success");
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "add_on_set_parameters_callback success");
 
   return *result;
 }
@@ -387,7 +387,7 @@ rcl_interfaces::msg::SetParametersResult HesaiHwInterfaceRosWrapper::paramCallba
 std::vector<rcl_interfaces::msg::SetParametersResult> HesaiHwInterfaceRosWrapper::updateParameters()
 {
   std::scoped_lock lock(mtx_config_);
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "updateParameters start");
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "updateParameters start");
   std::ostringstream os_sensor_model;
   os_sensor_model << sensor_configuration_.sensor_model;
   std::ostringstream os_return_mode;
@@ -408,7 +408,7 @@ std::vector<rcl_interfaces::msg::SetParametersResult> HesaiHwInterfaceRosWrapper
      rclcpp::Parameter("cloud_max_angle", sensor_configuration_.cloud_max_angle),
      rclcpp::Parameter(
        "dual_return_distance_threshold", sensor_configuration_.dual_return_distance_threshold)});
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "updateParameters end");
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "updateParameters end");
   return results;
 }
 

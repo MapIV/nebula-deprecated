@@ -1,5 +1,6 @@
-#include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_xt.hpp"
 #include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_xt_decoder.hpp"
+
+#include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_xt.hpp"
 
 namespace nebula
 {

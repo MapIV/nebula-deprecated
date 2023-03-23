@@ -1,10 +1,11 @@
 #ifndef NEBULA_VELODYNE_HW_INTERFACE_H
 #define NEBULA_VELODYNE_HW_INTERFACE_H
 
-#include <memory>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
+
 #include "nebula_common/velodyne/velodyne_common.hpp"
 #include "nebula_common/velodyne/velodyne_status.hpp"
 #include "nebula_hw_interfaces/nebula_hw_interfaces_common/nebula_hw_interface_base.hpp"

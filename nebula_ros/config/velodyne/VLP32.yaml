@@ -19,7 +19,7 @@
     min_range: 0.3
     max_range: 300.0
     view_width: 360.0
-    calibration_file: "./install/nebula_lidar_driver/share/nebula_lidar_driver/calibration/velodyne/VLP32.yaml"
+    calibration_file: "./install/nebula_decoders/share/nebula_decoders/calibration/velodyne/VLP32.yaml"
     setup_sensor: True
 
     online: True
