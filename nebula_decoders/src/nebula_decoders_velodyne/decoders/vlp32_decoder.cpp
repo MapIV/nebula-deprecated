@@ -74,6 +74,9 @@ void Vlp32Decoder::reset_overflow()
 void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
 {
   const raw_packet_t * raw = (const raw_packet_t *)&velodyne_packet.data[0];
+  uint8_t return_mode = velodyne_packet.data[1204];
+  const bool dual_return = (return_mode == RETURN_MODE_DUAL);
+
   for (int i = 0; i < BLOCKS_PER_PACKET; i++) {
     int bank_origin = 0;
     if (raw->blocks[i].header == LOWER_BANK) {
@@ -90,12 +93,27 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
 
       /** Position Calculation */
       const raw_block_t & block = raw->blocks[i];
-      union two_bytes tmp;
-      tmp.bytes[0] = block.data[k];
-      tmp.bytes[1] = block.data[k + 1];
+      union two_bytes current_return;
+      current_return.bytes[0] = block.data[k];
+      current_return.bytes[1] = block.data[k + 1];
+
+      union two_bytes other_return;
+      if (dual_return) {
+        other_return.bytes[0] =
+          i % 2 ? raw->blocks[i - 1].data[k] : raw->blocks[i + 1].data[k];
+        other_return.bytes[1] =
+          i % 2 ? raw->blocks[i - 1].data[k + 1] : raw->blocks[i + 1].data[k + 1];
+      }
+      // Do not process if there is no return, or in dual return mode and the first and last echos are the same.
+      if (
+        (current_return.bytes[0] == 0 && current_return.bytes[1] == 0) ||
+        (dual_return && i % 2 && other_return.bytes[0] == current_return.bytes[0] &&
+          other_return.bytes[1] == current_return.bytes[1])) {
+        continue;
+      }
 
       float distance =
-        tmp.uint * calibration_configuration_->velodyne_calibration.distance_resolution_m;
+        current_return.uint * calibration_configuration_->velodyne_calibration.distance_resolution_m;
       if (distance > 1e-6) {
         distance += corrections.dist_correction;
       }
@@ -205,7 +223,7 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
                                      (1 - corrections.focal_distance / 13100);
           const float focal_slope = corrections.focal_slope;
           float sqr =
-            (1 - static_cast<float>(tmp.uint) / 65535) * (1 - static_cast<float>(tmp.uint) / 65535);
+            (1 - static_cast<float>(current_return.uint) / 65535) * (1 - static_cast<float>(current_return.uint) / 65535);
           intensity += focal_slope * (std::abs(focal_offset - 256 * sqr));
           intensity = (intensity < min_intensity) ? min_intensity : intensity;
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
@@ -217,27 +235,65 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
             first_timestamp = ts;
           }
 
-          // Temporary to stop compile error - fix to give VLP32 support
-          uint8_t return_mode = velodyne_packet.data[1204];
-          uint8_t return_type;
+          nebula::drivers::ReturnType return_type;
           switch (return_mode) {
             case RETURN_MODE_DUAL:
-              return_type = RETURN_TYPE::INVALID;
+              if (
+                (other_return.bytes[0] == 0 && other_return.bytes[1] == 0) ||
+                (other_return.bytes[0] == current_return.bytes[0] &&
+                  other_return.bytes[1] == current_return.bytes[1])) {
+                return_type = drivers::ReturnType::IDENTICAL;
+//                return_type = RETURN_TYPE::DUAL_ONLY;
+//                  std::cout << "DUAL_ONLY" << std::endl;//occured
+              } else {
+                const float other_intensity = i % 2 ? raw->blocks[i - 1].data[k + 2]
+                                                        : raw->blocks[i + 1].data[k + 2];
+                bool first = other_return.uint < current_return.uint ? 0 : 1;
+                bool strongest = other_intensity < intensity ? 1 : 0;
+                if (other_intensity == intensity) {
+                  strongest = first ? 0 : 1;
+                }
+                if (first && strongest) {
+                  return_type = drivers::ReturnType::FIRST;
+//                  return_type = RETURN_TYPE::DUAL_STRONGEST_FIRST;
+//                  std::cout << "DUAL_STRONGEST_FIRST" << std::endl;//occured
+                } else if (!first && strongest) {
+                  return_type = drivers::ReturnType::STRONGEST;
+//                  return_type = RETURN_TYPE::DUAL_STRONGEST_LAST;
+//                  std::cout << "DUAL_STRONGEST_LAST" << std::endl;//occured
+                } else if (first && !strongest) {
+                  return_type = drivers::ReturnType::FIRST_WEAK;
+//                  return_type = RETURN_TYPE::DUAL_WEAK_FIRST;
+//                  std::cout << "FIRST_WEAK" << std::endl;//occured
+                } else if (!first && !strongest) {
+                  return_type = drivers::ReturnType::LAST_WEAK;
+//                  return_type = RETURN_TYPE::DUAL_WEAK_LAST;
+//                  std::cout << "LAST_WEAK" << std::endl;//occured
+                } else {
+                  return_type = drivers::ReturnType::UNKNOWN;
+//                  return_type = RETURN_TYPE::INVALID;
+//                  std::cout << "UNKNOWN" << std::endl;//not occur?
+                }
+              }
               break;
             case RETURN_MODE_STRONGEST:
-              return_type = RETURN_TYPE::SINGLE_STRONGEST;
+              return_type = drivers::ReturnType::STRONGEST;
+//              return_type = RETURN_TYPE::SINGLE_STRONGEST;
               break;
             case RETURN_MODE_LAST:
-              return_type = RETURN_TYPE::SINGLE_LAST;
+              return_type = drivers::ReturnType::LAST;
+//              return_type = RETURN_TYPE::SINGLE_LAST;
               break;
             default:
-              return_type = RETURN_TYPE::INVALID;
+              return_type = drivers::ReturnType::UNKNOWN;
+//              return_type = RETURN_TYPE::INVALID;
           }
+//          std::cout << "return_type=" << return_type << std::endl;
           drivers::NebulaPoint current_point{};
           current_point.x = x_coord;
           current_point.y = y_coord;
           current_point.z = z_coord;
-          current_point.return_type = return_type;
+          current_point.return_type = static_cast<uint8_t>(return_type);
           current_point.channel = corrections.laser_ring;
           current_point.azimuth = raw->blocks[i].rotation;
           current_point.time_stamp = time_stamp;

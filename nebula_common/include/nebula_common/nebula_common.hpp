@@ -185,6 +185,45 @@ inline uint8_t ReturnModeToInt(const ReturnMode & mode)
   }
 }
 
+
+/// @brief Convert ReturnType enum to string (Overloading the << operator)
+/// @param os
+/// @param arg
+/// @return stream
+inline std::ostream & operator<<(std::ostream & os, nebula::drivers::ReturnType const & arg)
+{
+  switch (arg) {
+    case ReturnType::UNKNOWN:
+      os << "Unknown";
+      break;
+    case ReturnType::LAST:
+      os << "Last";
+      break;
+    case ReturnType::FIRST:
+      os << "First";
+      break;
+    case ReturnType::STRONGEST:
+      os << "Strongest";
+      break;
+    case ReturnType::FIRST_WEAK:
+      os << "FirstWeak";
+      break;
+    case ReturnType::LAST_WEAK:
+      os << "LastWeak";
+      break;
+    case ReturnType::IDENTICAL:
+      os << "Identical";
+      break;
+    case ReturnType::SECOND:
+      os << "Second";
+      break;
+    case ReturnType::SECOND_STRONGEST:
+      os << "SecondStrongest";
+      break;
+  }
+  return os;
+}
+
 /// @brief Convert ReturnMode enum to string (Overloading the << operator)
 /// @param os
 /// @param arg
