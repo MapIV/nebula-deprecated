@@ -14,6 +14,18 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic -Wunused-function)
 endif ()
 
+set(ROS_DISTRO $ENV{ROS_DISTRO})
+if(${ROS_DISTRO} STREQUAL "rolling")
+    add_compile_definitions(ROS_DISTRO_ROLLING)
+elseif(${ROS_DISTRO} STREQUAL "foxy")
+    add_compile_definitions(ROS_DISTRO_FOXY)
+elseif(${ROS_DISTRO} STREQUAL "galactic")
+    add_compile_definitions(ROS_DISTRO_GALACTIC)
+elseif(${ROS_DISTRO} STREQUAL "humble")
+    add_compile_definitions(ROS_DISTRO_HUMBLE)
+endif()
+
+
 find_package(PCL REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
 find_package(pcl_conversions REQUIRED)
