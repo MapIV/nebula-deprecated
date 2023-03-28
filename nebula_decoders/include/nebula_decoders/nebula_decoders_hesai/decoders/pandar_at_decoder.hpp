@@ -151,6 +151,7 @@ private:
   Packet packet_{};
 
   uint16_t last_azimuth_;
+  uint16_t last_field_;
   int start_angle_;
   double last_timestamp_;
 
