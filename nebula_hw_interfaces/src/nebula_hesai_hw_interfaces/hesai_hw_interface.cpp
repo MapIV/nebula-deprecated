@@ -103,7 +103,7 @@ void HesaiHwInterface::ReceiveCloudPacketCallback(const std::vector<uint8_t> & b
 {
   int scan_phase = static_cast<int>(sensor_configuration_->scan_phase * 100.0);
   if (!is_valid_packet_(buffer.size())) {
-      PrintError("Invalid Packet: " + std::to_string(buffer.size()));
+      PrintDebug("Invalid Packet: " + std::to_string(buffer.size()));
       return;
   }
     uint32_t buffer_size = buffer.size();
