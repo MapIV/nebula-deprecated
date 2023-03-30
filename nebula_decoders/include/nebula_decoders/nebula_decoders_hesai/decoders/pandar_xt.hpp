@@ -40,7 +40,6 @@ constexpr size_t PACKET_SIZE = HEAD_SIZE + BODY_SIZE + PACKET_TAIL_SIZE;
 // 0x37 - Strongest Return  0x3B - Dual Return (Last, First)
 // 0x38 - Last Return       0x3C - Dual Return (First, Strongest)
 
-constexpr uint32_t FIRST_RETURN = 0x33;
 constexpr uint32_t STRONGEST_RETURN = 0x37;
 constexpr uint32_t LAST_RETURN = 0x38;
 constexpr uint32_t DUAL_RETURN = 0x39;

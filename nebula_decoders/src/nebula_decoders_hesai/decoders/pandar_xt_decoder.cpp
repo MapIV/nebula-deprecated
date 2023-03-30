@@ -67,9 +67,7 @@ void PandarXTDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
     has_scanned_ = false;
   }
 
-  bool dual_return =
-    (packet_.return_mode != FIRST_RETURN && packet_.return_mode != STRONGEST_RETURN &&
-     packet_.return_mode != LAST_RETURN);
+  bool dual_return = packet_.return_mode == DUAL_RETURN;
   auto step = dual_return ? 2 : 1;
 
   for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id += step) {
@@ -94,7 +92,7 @@ drivers::NebulaPoint PandarXTDecoder::build_point(int block_id, int unit_id, uin
   if (unix_second < first_timestamp_tmp) {
     first_timestamp_tmp = unix_second;
   }
-  bool dual_return = (packet_.return_mode == DUAL_RETURN);
+  bool dual_return = packet_.return_mode == DUAL_RETURN;
   NebulaPoint point{};
 
   double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
@@ -133,12 +131,21 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert(size_t block_id)
       continue;
     }
 
-    block_pc->points.emplace_back(build_point(
-      block_id, unit_id,
-      (packet_.return_mode == STRONGEST_RETURN)
-        ? static_cast<uint8_t>(
-            drivers::ReturnType::STRONGEST)  //drivers::ReturnMode::SINGLE_STRONGEST
-        : static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::SINGLE_LAST
+    switch (packet_.return_mode)
+    {
+    case STRONGEST_RETURN:
+      block_pc->points.emplace_back(build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::STRONGEST)));
+      break;
+
+    case LAST_RETURN:
+      block_pc->points.emplace_back(build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));
+      break;
+    
+    default:
+      block_pc->points.emplace_back(build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::UNKNOWN)));
+      break;
+    }
+
   }
   return block_pc;
 }
@@ -162,10 +169,28 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
       NebulaPoint point{};
       const auto & block = packet_.blocks[i];
       const auto & unit = block.units[unit_id];
+      const auto & another_block = packet_.blocks[(i + 1) % 2];
+      const auto & another_unit = another_block.units[unit_id];
       // skip invalid points
       if (unit.distance <= 0.1 || unit.distance > 200.0) {
         continue;
       }
+      point.intensity = unit.intensity;
+      auto another_intensity = another_unit.intensity;
+      bool identical_flg = false;
+      if(point.intensity == another_intensity && unit.distance == another_unit.distance)
+      {
+        /*
+  //      std::cout << i << ":identical" << std::endl;
+        if(0 < blockid)
+        {
+          continue;
+        }
+        */
+        identical_flg = true;
+      }
+
+
       double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
 
       point.x = static_cast<float>(
@@ -176,7 +201,6 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
         cosf(deg2rad(azimuth_offset_[unit_id] + (static_cast<double>(block.azimuth)) / 100.0)));
       point.z = static_cast<float>(unit.distance * sinf(deg2rad(elev_angle_[unit_id])));
 
-      point.intensity = unit.intensity;
       point.channel = unit_id;
       point.azimuth = block.azimuth + std::round(azimuth_offset_[unit_id] * 100.0f);
 
@@ -184,6 +208,25 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
 
       point.time_stamp +=
         (static_cast<double>(block_offset_dual_[block_id] + firing_offset_[unit_id]) / 1000000.0f);
+
+      
+      if (identical_flg){
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::IDENTICAL);
+      } else if (i % 2 == 0) {
+        if (point.intensity < another_intensity)
+        {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::LAST_WEAK);
+        } else {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);
+        }
+      } else {
+        if (point.intensity > another_intensity)
+        {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);
+        } else {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::SECOND_STRONGEST);
+        }
+      }
 
       block_pc->points.emplace_back(point);
     }

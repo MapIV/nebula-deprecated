@@ -167,7 +167,7 @@ drivers::NebulaPointCloudPtr Pandar40Decoder::convert_dual(size_t block_id)
   size_t odd_block_id = block_id + 1;
   const auto & even_block = packet_.blocks[even_block_id];
   const auto & odd_block = packet_.blocks[odd_block_id];
-  auto sensor_return_mode = sensor_configuration_->return_mode;
+//  auto sensor_return_mode = sensor_configuration_->return_mode;
 
   for (auto unit_id : firing_order_) {
     const auto & even_unit = even_block.units[unit_id];
@@ -176,6 +176,7 @@ drivers::NebulaPointCloudPtr Pandar40Decoder::convert_dual(size_t block_id)
     bool even_usable = (even_unit.distance <= 0.1 || even_unit.distance > 200.0) ? 0 : 1;
     bool odd_usable = (odd_unit.distance <= 0.1 || odd_unit.distance > 200.0) ? 0 : 1;
 
+    /*
     //    if (sensor_configuration_->return_mode == drivers::ReturnMode::SINGLE_STRONGEST) {
     if (sensor_return_mode == drivers::ReturnMode::STRONGEST) {
       // Strongest return is in even block when both returns coincide
@@ -195,14 +196,17 @@ drivers::NebulaPointCloudPtr Pandar40Decoder::convert_dual(size_t block_id)
       block_pc->push_back(build_point(
         even_block_id, unit_id,
         static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::SINGLE_LAST
-    } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
+//    } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
+    } else if (packet_.return_mode == DUAL_RETURN) {
+      */
+     // maybe always dual return mode in convert_dual
       // If the two returns are too close, only return the last one
       if (
         (abs(even_unit.distance - odd_unit.distance) < dual_return_distance_threshold_) &&
         even_usable) {
         block_pc->push_back(build_point(
           even_block_id, unit_id,
-          static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::DUAL_ONLY
+          static_cast<uint8_t>(drivers::ReturnType::IDENTICAL)));  //drivers::ReturnMode::DUAL_ONLY
       } else if (even_unit.intensity >= odd_unit.intensity) {
         // Strongest return is in even block when it is also the last
         if (odd_usable) {
@@ -232,7 +236,7 @@ drivers::NebulaPointCloudPtr Pandar40Decoder::convert_dual(size_t block_id)
               drivers::ReturnType::LAST_WEAK)));  //drivers::ReturnMode::DUAL_WEAK_LAST
         }
       }
-    }
+//    }
   }
   return block_pc;
 }

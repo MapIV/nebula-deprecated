@@ -179,6 +179,7 @@ drivers::NebulaPointCloudPtr Pandar64Decoder::convert_dual(size_t block_id)
     bool even_usable = !(even_unit.distance <= 0.1 || even_unit.distance > 200.0);
     bool odd_usable = !(odd_unit.distance <= 0.1 || odd_unit.distance > 200.0);
 
+    /*
     if (sensor_return_mode == drivers::ReturnMode::STRONGEST && even_usable) {
       // First return is in even block
       block_pc->points.emplace_back(build_point(
@@ -191,13 +192,15 @@ drivers::NebulaPointCloudPtr Pandar64Decoder::convert_dual(size_t block_id)
         odd_block_id, unit_id,
         static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::SINGLE_LAST
     } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
+      */
+     // maybe always dual return mode in convert_dual
       // If the two returns are too close, only return the last one
       if (
         (abs(even_unit.distance - odd_unit.distance) < dual_return_distance_threshold_) &&
         odd_usable) {
         block_pc->points.emplace_back(build_point(
           odd_block_id, unit_id,
-          static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::DUAL_ONLY)
+          static_cast<uint8_t>(drivers::ReturnType::IDENTICAL)));  //drivers::ReturnMode::DUAL_ONLY)
       } else {
         if (even_usable) {
           block_pc->points.emplace_back(build_point(
@@ -210,7 +213,7 @@ drivers::NebulaPointCloudPtr Pandar64Decoder::convert_dual(size_t block_id)
             static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::DUAL_LAST
         }
       }
-    }
+//    }
   }
   return block_pc;
 }
