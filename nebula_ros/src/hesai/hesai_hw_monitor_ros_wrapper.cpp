@@ -338,7 +338,7 @@ void HesaiHwMonitorRosWrapper::InitializeHesaiDiagnostics()
       RCLCPP_DEBUG_STREAM(get_logger(), "OK");
     }
     dif = (now - *current_lidar_monitor_time).seconds();
-    std::cout << "dif(monitor): " << dif << std::endl;
+    RCLCPP_DEBUG_STREAM(get_logger(), "dif(monitor): " << dif );
     if (diag_span_ * 2.0 < dif * 1000) {
       current_monitor_status = diagnostic_msgs::msg::DiagnosticStatus::STALE;
       RCLCPP_DEBUG_STREAM(get_logger(), "STALE");
@@ -503,6 +503,9 @@ void HesaiHwMonitorRosWrapper::HesaiCheckStatus(
 
     diagnostics.summary(level, boost::algorithm::join(msg, ", "));
   }
+  else {
+    diagnostics.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No data available");
+  }
 }
 
 void HesaiHwMonitorRosWrapper::HesaiCheckPtp(
@@ -512,12 +515,31 @@ void HesaiHwMonitorRosWrapper::HesaiCheckPtp(
   if (current_status) {
     uint8_t level = diagnostic_msgs::msg::DiagnosticStatus::OK;
     std::vector<std::string> msg;
-
-    diagnostics.add("gps_pps_lock", current_status->get_str_gps_pps_lock());
-    diagnostics.add("gps_gprmc_status", current_status->get_str_gps_gprmc_status());
-    diagnostics.add("ptp_clock_status", current_status->get_str_ptp_clock_status());
-
+    auto gps_status = current_status->get_str_gps_pps_lock();
+    auto gprmc_status = current_status->get_str_gps_gprmc_status();
+    auto ptp_status = current_status->get_str_ptp_clock_status();
+    std::transform(gps_status.cbegin(), gps_status.cend(), gps_status.begin(), toupper);
+    std::transform(gprmc_status.cbegin(), gprmc_status.cend(), gprmc_status.begin(), toupper);
+    std::transform(ptp_status.cbegin(), ptp_status.cend(), ptp_status.begin(), toupper);
+    diagnostics.add("gps_pps_lock", gps_status);
+    diagnostics.add("gps_gprmc_status", gprmc_status);
+    diagnostics.add("ptp_clock_status", ptp_status);
+    if ( gps_status != "UNKNOWN") {
+      msg.emplace_back("gps_pps_lock: " + gps_status);
+    }
+    if ( gprmc_status != "UNKNOWN") {
+      msg.emplace_back("gprmc_status: " + gprmc_status);
+    }
+    if ( ptp_status != "UNKNOWN") {
+      msg.emplace_back("ptp_status: " + ptp_status);
+    }
+    if (ptp_status == "FREE RUN" && gps_status == "UNKNOWN") {
+      level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+    }
     diagnostics.summary(level, boost::algorithm::join(msg, ", "));
+  }
+  else {
+    diagnostics.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No data available");
   }
 }
 
@@ -534,6 +556,9 @@ void HesaiHwMonitorRosWrapper::HesaiCheckTemperature(
     }
     diagnostics.summary(level, boost::algorithm::join(msg, ", "));
   }
+  else {
+    diagnostics.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No data available");
+  }
 }
 
 void HesaiHwMonitorRosWrapper::HesaiCheckRpm(
@@ -546,6 +571,9 @@ void HesaiHwMonitorRosWrapper::HesaiCheckRpm(
     diagnostics.add("motor_speed", std::to_string(current_status->motor_speed));
 
     diagnostics.summary(level, boost::algorithm::join(msg, ", "));
+  }
+  else {
+    diagnostics.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No data available");
   }
 }
 
@@ -564,7 +592,7 @@ void HesaiHwMonitorRosWrapper::HesaiCheckVoltageHttp(
       mes = GetPtreeValue(current_lidar_monitor_tree.get(), "Body." + key);
     } catch (boost::bad_lexical_cast & ex) {
       level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
-      mes = error_message;
+      mes = error_message + std::string(ex.what());
     }
     diagnostics.add(key, mes);
     key = "lidarInVol";
@@ -572,11 +600,14 @@ void HesaiHwMonitorRosWrapper::HesaiCheckVoltageHttp(
       mes = GetPtreeValue(current_lidar_monitor_tree.get(), "Body." + key);
     } catch (boost::bad_lexical_cast & ex) {
       level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
-      mes = error_message;
+      mes = error_message+ std::string(ex.what());
     }
     diagnostics.add(key, mes);
 
     diagnostics.summary(level, boost::algorithm::join(msg, ", "));
+  }
+  else {
+    diagnostics.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No data available");
   }
 }
 
@@ -595,6 +626,9 @@ void HesaiHwMonitorRosWrapper::HesaiCheckVoltage(
       "input_power", GetFixedPrecisionString(current_monitor->input_power * 0.01) + " W");
 
     diagnostics.summary(level, boost::algorithm::join(msg, ", "));
+  }
+  else {
+    diagnostics.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No data available");
   }
 }
 
