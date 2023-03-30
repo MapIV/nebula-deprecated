@@ -72,7 +72,7 @@ void PandarQT64Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pac
     has_scanned_ = false;
   }
 
-  bool dual_return = (packet_.return_mode == DUAL_RETURN_B); // if the manual is correct
+  bool dual_return = (packet_.return_mode == DUAL_RETURN_B);
   auto step = dual_return ? 2 : 1;
 
   if (!dual_return) {
@@ -108,7 +108,7 @@ drivers::NebulaPoint PandarQT64Decoder::build_point(
   if (unix_second < first_timestamp_tmp) {
     first_timestamp_tmp = unix_second;
   }
-  bool dual_return = (packet_.return_mode == DUAL_RETURN_B); // if the manual is correct
+  bool dual_return = (packet_.return_mode == DUAL_RETURN_B);
   NebulaPoint point{};
 
   double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
