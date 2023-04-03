@@ -12,6 +12,8 @@ namespace drivers
 {
 namespace pandar_40
 {
+constexpr double MIN_RANGE = 0.3f;
+constexpr double MAX_RANGE = 200.f;
 constexpr size_t SOB_ANGLE_SIZE = 4;
 constexpr size_t RAW_MEASURE_SIZE = 3;
 constexpr size_t LASER_COUNT = 40;

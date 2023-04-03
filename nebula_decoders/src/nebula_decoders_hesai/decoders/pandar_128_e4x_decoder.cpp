@@ -162,7 +162,7 @@ uint32_t Pandar128E4XDecoder::get_epoch_from_datetime(const DateTime & date_time
 drivers::NebulaPointCloudPtr Pandar128E4XDecoder::convert([[maybe_unused]] size_t)
 {
   drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
-  block_pc->reserve(LASER_COUNT * 2);
+  block_pc->reserve(LASER_COUNT * NUM_BLOCKS);
   current_unit_unix_second_ = get_epoch_from_datetime(packet_.tail.date_time);
 
   for (size_t i = 0; i < LASER_COUNT; i++) {

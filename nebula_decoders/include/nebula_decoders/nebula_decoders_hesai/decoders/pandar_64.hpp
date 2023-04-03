@@ -12,6 +12,8 @@ namespace drivers
 {
 namespace pandar_64
 {
+constexpr double MIN_RANGE = 0.3f;
+constexpr double MAX_RANGE = 200.f;
 // Head
 constexpr size_t HEAD_SIZE = 8;
 // Body

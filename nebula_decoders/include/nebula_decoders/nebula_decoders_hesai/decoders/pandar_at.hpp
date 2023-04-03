@@ -12,6 +12,8 @@ namespace drivers
 {
 namespace pandar_at
 {
+constexpr float MIN_RANGE = 1.f;
+constexpr float MAX_RANGE = 180.0f;
 // Head
 constexpr size_t HEAD_SIZE = 12;
 constexpr size_t PRE_HEADER_SIZE = 6;

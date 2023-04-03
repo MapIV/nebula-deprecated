@@ -76,25 +76,6 @@ void PandarXTMDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pack
     has_scanned_ = false;
   }
 
-  /*
-  bool dual_return =
-    (packet_.return_mode != FIRST_RETURN && packet_.return_mode != STRONGEST_RETURN &&
-     packet_.return_mode != LAST_RETURN);
-  auto step = dual_return ? 2 : 1;
-
-  for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id += step) {
-    auto block_pc = dual_return ? convert_dual(block_id) : convert(block_id);
-    int current_phase =
-      (static_cast<int>(packet_.blocks[block_id].azimuth) - scan_phase_ + 36000) % 36000;
-    if (current_phase > last_phase_ && !has_scanned_) {
-      *scan_pc_ += *block_pc;
-    } else {
-      *overflow_pc_ += *block_pc;
-      has_scanned_ = true;
-    }
-    last_phase_ = current_phase;
-  }
-  */
   for (int block_id = 0; block_id < packet_.header.chBlockNumber; ++block_id) {
     int azimuthGap = 0;      /* To do */
     double timestampGap = 0; /* To do */
@@ -120,9 +101,7 @@ void PandarXTMDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pack
       }
     } else {
       *scan_pc_ += *block_pc;
-      //printf("last_azimuth_:%d pkt.blocks[block_id].azimuth:%d  *******azimuthGap:%d\n", last_azimuth_, pkt.blocks[block_id].azimuth, azimuthGap);
     }
-    //    CalcXTPointXYZIT(block_id, packet_.header.chLaserNumber, scan_pc_);
     last_azimuth_ = packet_.blocks[block_id].azimuth;
     last_timestamp_ = packet_.usec;
   }
@@ -144,10 +123,8 @@ void PandarXTMDecoder::CalcXTPointXYZIT(
     Unit & unit = block->units[i];
     NebulaPoint point{};
 
-    /* skip wrong points */
-    //    if (unit.distance <= 0.1 || unit.distance > 200.0) {
-    if (unit.distance <= 0.1 || unit.distance > 300.0) {
-      //      std::cout << "unit.distance <= 0.1 || unit.distance > 300.0" << std::endl;
+    /* skip invalid points */
+    if (unit.distance < MIN_RANGE || unit.distance > MAX_RANGE) {
       continue;
     }
 

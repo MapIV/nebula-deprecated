@@ -127,7 +127,7 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert(size_t block_id)
   for (size_t unit_id = 0; unit_id < LASER_COUNT; ++unit_id) {
     const auto & unit = block.units[unit_id];
     // skip invalid points
-    if (unit.distance <= 0.1 || unit.distance > 200.0) {
+    if (unit.distance < MIN_RANGE || unit.distance > MAX_RANGE) {
       continue;
     }
 
@@ -180,13 +180,6 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
       auto another_intensity = another_unit.intensity;
       bool identical_flg = false;
       if (point.intensity == another_intensity && unit.distance == another_unit.distance) {
-        /*
-  //      std::cout << i << ":identical" << std::endl;
-        if(0 < blockid)
-        {
-          continue;
-        }
-        */
         identical_flg = true;
       }
 

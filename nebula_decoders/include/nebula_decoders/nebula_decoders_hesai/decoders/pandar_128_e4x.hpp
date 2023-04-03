@@ -36,6 +36,7 @@ constexpr uint16_t PACKET_SIZE = HEADER_SIZE + BODY_SIZE + FUNCTIONAL_SAFETY_SIZ
 constexpr float MIN_RANGE = 0.1;
 constexpr float MAX_RANGE = 230.0;
 constexpr uint16_t THREE_SIXTY = 360;
+constexpr size_t NUM_BLOCKS = 2;
 
 constexpr size_t UNUSED_INT = 0;
 

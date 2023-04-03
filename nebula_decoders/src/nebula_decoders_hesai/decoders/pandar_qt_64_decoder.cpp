@@ -181,19 +181,6 @@ drivers::NebulaPointCloudPtr PandarQT64Decoder::convert_dual(size_t block_id)
     bool even_usable = !(even_unit.distance <= 0.1 || even_unit.distance > 200.0);
     bool odd_usable = !(odd_unit.distance <= 0.1 || odd_unit.distance > 200.0);
 
-    /*
-    if (sensor_return_mode == drivers::ReturnMode::FIRST && even_usable) {
-      // First return is in even block
-      block_pc->push_back(build_point(
-        even_block_id, unit_id,
-        static_cast<uint8_t>(drivers::ReturnType::FIRST)));  //drivers::ReturnMode::SINGLE_FIRST
-    } else if (sensor_return_mode == drivers::ReturnMode::LAST && even_usable) {
-      // Last return is in odd block
-      block_pc->push_back(build_point(
-        odd_block_id, unit_id,
-        static_cast<uint8_t>(drivers::ReturnType::LAST)));  //drivers::ReturnMode::SINGLE_LAST
-    } else if (sensor_return_mode == drivers::ReturnMode::DUAL) {
-      */
     // maybe always dual return mode in convert_dual
     // If the two returns are too close, only return the last one
     if (

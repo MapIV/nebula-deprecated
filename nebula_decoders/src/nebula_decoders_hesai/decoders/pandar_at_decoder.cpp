@@ -83,74 +83,11 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
   for (int block_id = 0; block_id < packet_.header.chBlockNumber; ++block_id) {
     int azimuthGap = 0;      /* To do */
     double timestampGap = 0; /* To do */
-                             //    int azimuth = packet_.blocks[block_id].azimuth;
     int Azimuth = static_cast<int>(
       packet_.blocks[block_id].azimuth * LIDAR_AZIMUTH_UNIT +
       packet_.blocks[block_id].fine_azimuth);
-    //    std::cout << "azimuth=" << azimuth << std::endl;
-    //    azimuth %= 12000;
-    /*
-    if (last_azimuth_ > azimuth) {
-//      azimuthGap = azimuth + (12000 - static_cast<int>(last_azimuth_));
-      azimuthGap = azimuth + (36000 - static_cast<int>(last_azimuth_));
-    } else {
-      azimuthGap = azimuth - static_cast<int>(last_azimuth_);
-    }
-    timestampGap = packet_.usec - last_timestamp_ + 0.001;
-    */
 
     auto block_pc = convert(block_id);
-    /*
-    if (
-      (packet_.return_mode == STRONGEST_RETURN || packet_.return_mode == LAST_RETURN) ||
-      (last_azimuth_ != azimuth &&  //            (azimuthGap / timestampGap) < 36000 * 100 ) {
-       (azimuthGap / timestampGap) < 12000 * 100)) {
-      // for all the blocks
-      if (
-        (last_azimuth_ > azimuth && start_angle_ <= azimuth) ||
-        (last_azimuth_ < start_angle_ && start_angle_ <= azimuth)) {
-        *overflow_pc_ += *block_pc;
-        has_scanned_ = true;
-      } else {
-        *scan_pc_ += *block_pc;
-      }
-    } else {
-      *scan_pc_ += *block_pc;
-    }
-    */
-    /*
-    if (
-      (last_azimuth_ > azimuth && start_angle_ <= azimuth) ||
-      (last_azimuth_ < start_angle_ && start_angle_ <= azimuth)) {
-      *overflow_pc_ += *block_pc;
-      has_scanned_ = true;
-    } else {
-      *scan_pc_ += *block_pc;
-    }
-    */
-    /*
-   int PANDAR_AT128_EDGE_AZIMUTH_OFFSET = 4500;
-   int PANDAR_AT128_FRAME_ANGLE_SIZE = 1200;
-//   int m_iEdgeAzimuthSize = 1600;
-   int m_iEdgeAzimuthSize = 200;
-   bool scaned = false;
-   int endAzimuth = static_cast<int>(packet_.blocks[block_id].azimuth * LIDAR_AZIMUTH_UNIT + packet_.blocks[block_id].fine_azimuth);
-    for (int i = 0; i < correction_configuration_->frameNumber; i++) {
-      if ((fabs(float(endAzimuth) - (correction_configuration_->startFrame[i] + (PANDAR_AT128_EDGE_AZIMUTH_OFFSET + PANDAR_AT128_FRAME_ANGLE_SIZE / 2) * LIDAR_AZIMUTH_UNIT) %
-      MAX_AZI_LEN) <=
-      m_iEdgeAzimuthSize * LIDAR_AZIMUTH_UNIT)) {
-        scaned = true;
-        break;
-        }
-    }
-    if (scaned) {
-//      *overflow_pc_ += *block_pc;
-      *scan_pc_ += *block_pc;
-      has_scanned_ = true;
-    } else {
-      *scan_pc_ += *block_pc;
-    }
-    */
     int count = 0, field = 0;
     while (count < correction_configuration_->frameNumber &&
            (((Azimuth + MAX_AZI_LEN - correction_configuration_->startFrame[field]) % MAX_AZI_LEN +
@@ -164,7 +101,6 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
     if (0 <= last_field_ && last_field_ != field) {
       *overflow_pc_ += *block_pc;
       has_scanned_ = true;
-      //      std::cout << scan_pc_->points.size() << std::endl;
     } else {
       *scan_pc_ += *block_pc;
     }
@@ -193,7 +129,7 @@ void PandarATDecoder::CalcXTPointXYZIT(
     NebulaPoint point{};
 
     /* skip wrong points */
-    if (unit.distance <= 0.1 || unit.distance > 180.0) {
+    if (unit.distance < MIN_RANGE || unit.distance > MAX_RANGE) {
       continue;
     }
 
@@ -202,7 +138,6 @@ void PandarATDecoder::CalcXTPointXYZIT(
 
     bool identical_flg = false;
     if (point.intensity == another_intensity && unit.distance == another_unit.distance) {
-      //      std::cout << i << ":identical" << std::endl;
       if (0 < blockid) {
         continue;
       }
@@ -222,7 +157,6 @@ void PandarATDecoder::CalcXTPointXYZIT(
         field = (field + 1) % correction_configuration_->frameNumber;
         count++;
       }
-      //      std::cout << "field=" << field << std::endl;
       auto elevation =
         correction_configuration_->elevation[i] +
         correction_configuration_->getElevationAdjustV3(i, Azimuth) * LIDAR_AZIMUTH_UNIT;
@@ -237,7 +171,6 @@ void PandarATDecoder::CalcXTPointXYZIT(
         point.x = static_cast<float>(xyDistance * m_sin_azimuth_map_[azimuth]);
         point.y = static_cast<float>(xyDistance * m_cos_azimuth_map_[azimuth]);
         point.z = static_cast<float>(unit.distance * m_sin_elevation_map_[elevation]);
-        //        std::cout << point.x << ", " << point.y << ", " << point.z << ", " << std::endl;
       }
     } else {
       int Azimuth = static_cast<int>(block->azimuth * LIDAR_AZIMUTH_UNIT + block->fine_azimuth);
@@ -257,8 +190,6 @@ void PandarATDecoder::CalcXTPointXYZIT(
       }
     }
 
-    //    std::cout << i << ":" << blockid << "(" << ((blockid + 1) % 2) << ")" << static_cast<int>(point.intensity) << "," << static_cast<int>(another_intensity) << std::endl;
-    //    std::cout << i << ":" << blockid << "(" << ((blockid + 1) % 2) << ")" << static_cast<int>(unit.distance) << "," << static_cast<int>(another_unit.distance) << std::endl;
     double unix_second = packet_.unix_second;
     if (unix_second < first_timestamp_tmp) {
       first_timestamp_tmp = unix_second;
@@ -283,7 +214,6 @@ void PandarATDecoder::CalcXTPointXYZIT(
           if (point.intensity < another_intensity) {
             point.return_type =
               static_cast<uint8_t>(nebula::drivers::ReturnType::LAST_WEAK);  // Last return
-            //          std::cout << static_cast<int>(point.return_type) << std::endl;
           } else {
             point.return_type = static_cast<uint8_t>(
               nebula::drivers::ReturnType::STRONGEST);  // Last and strongest return
@@ -292,7 +222,6 @@ void PandarATDecoder::CalcXTPointXYZIT(
           if (point.intensity > another_intensity) {
             point.return_type =
               static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);  // Strongest return
-            //          std::cout << static_cast<int>(point.return_type) << std::endl;
           } else {
             point.return_type = static_cast<uint8_t>(
               nebula::drivers::ReturnType::SECOND_STRONGEST);  // Second strongest return
@@ -304,7 +233,6 @@ void PandarATDecoder::CalcXTPointXYZIT(
         point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::UNKNOWN);
         break;
     }
-    //    std::cout << static_cast<int>(point.return_type) << std::endl;
     point.channel = i;
     cld->points.emplace_back(point);
   }
@@ -341,8 +269,6 @@ bool PandarATDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_
   packet_.header.chReturnType = buf[index + 8] & 0xff;
   packet_.header.chDisUnit = buf[index + 9] & 0xff;
   index += HEAD_SIZE;
-  //  std::cout << "packet_.header.chProtocolMajor=" << static_cast<int>(packet_.header.chProtocolMajor) << std::endl;
-  //  std::cout << "packet_.header.chProtocolMinor=" << static_cast<int>(packet_.header.chProtocolMinor) << std::endl;
 
   if (packet_.header.sob != 0xEEFF) {
     // Error Start of Packet!
@@ -380,8 +306,6 @@ bool PandarATDecoder::parsePacket(const pandar_msgs::msg::PandarPacket & pandar_
 
   index += TIMESTAMP_SIZE;
   packet_.return_mode = buf[index] & 0xff;
-  //  std::cout << static_cast<double>(packet_.return_mode) << std::endl;
-  //  std::cout << std::hex << packet_.return_mode << std::endl;
   index += RETURN_SIZE;
   index += FACTORY_SIZE;
 
