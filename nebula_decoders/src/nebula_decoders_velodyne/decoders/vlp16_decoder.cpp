@@ -193,8 +193,8 @@ void Vlp16Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
                 const float z_coord = distance * sin_vert_angle;       // velodyne z
                 const float intensity = current_block.data[k + 2];
 
-                const double time_stamp = (block * 2 + firing) * 55.296 / 1000.0 / 1000.0 +
-                                          dsr * 2.304 / 1000.0 / 1000.0;
+                const double time_stamp =
+                  (block * 2 + firing) * 55.296 / 1000.0 / 1000.0 + dsr * 2.304 / 1000.0 / 1000.0;
                 auto ts = rclcpp::Time(velodyne_packet.stamp).seconds();
                 if (ts < first_timestamp) {
                   first_timestamp = ts;
