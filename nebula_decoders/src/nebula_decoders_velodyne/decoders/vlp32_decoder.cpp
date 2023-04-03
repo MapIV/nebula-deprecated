@@ -74,7 +74,7 @@ void Vlp32Decoder::reset_overflow()
 void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
 {
   const raw_packet_t * raw = (const raw_packet_t *)&velodyne_packet.data[0];
-  uint8_t return_mode = velodyne_packet.data[1204];
+  uint8_t return_mode = velodyne_packet.data[RETURN_MODE_INDEX];
   const bool dual_return = (return_mode == RETURN_MODE_DUAL);
 
   for (int i = 0; i < BLOCKS_PER_PACKET; i++) {
@@ -123,23 +123,17 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
         /*condition added to avoid calculating points which are not
             in the interesting defined area (min_angle < area < max_angle)*/
         if (
-          //          (block.rotation >= sensor_configuration_->cloud_min_angle &&
-          //           block.rotation <= sensor_configuration_->cloud_max_angle &&
           (block.rotation >= sensor_configuration_->cloud_min_angle * 100 &&
            block.rotation <= sensor_configuration_->cloud_max_angle * 100 &&
            sensor_configuration_->cloud_min_angle < sensor_configuration_->cloud_max_angle) ||
           (sensor_configuration_->cloud_min_angle > sensor_configuration_->cloud_max_angle &&
            (raw->blocks[i].rotation <= sensor_configuration_->cloud_max_angle * 100 ||
             raw->blocks[i].rotation >= sensor_configuration_->cloud_min_angle * 100))) {
-          //           (raw->blocks[i].rotation <= sensor_configuration_->cloud_max_angle ||
-          //            raw->blocks[i].rotation >= sensor_configuration_->cloud_min_angle))) {
           const float cos_vert_angle = corrections.cos_vert_correction;
           const float sin_vert_angle = corrections.sin_vert_correction;
           const float cos_rot_correction = corrections.cos_rot_correction;
           const float sin_rot_correction = corrections.sin_rot_correction;
 
-          // cos(a-b) = cos(a)*cos(b) + sin(a)*sin(b)
-          // sin(a-b) = sin(a)*cos(b) - cos(a)*sin(b)
           const float cos_rot_angle = cos_rot_table_[block.rotation] * cos_rot_correction +
                                       sin_rot_table_[block.rotation] * sin_rot_correction;
           const float sin_rot_angle = sin_rot_table_[block.rotation] * cos_rot_correction -
@@ -228,7 +222,6 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
 
           double time_stamp = i * 55.296 / 1000.0 / 1000.0 + j * 2.304 / 1000.0 / 1000.0;  // +
-          //                              rclcpp::Time(velodyne_packet.stamp).seconds();
           auto ts = rclcpp::Time(velodyne_packet.stamp).seconds();
           if (ts < first_timestamp) {
             first_timestamp = ts;
@@ -242,8 +235,6 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
                 (other_return.bytes[0] == current_return.bytes[0] &&
                  other_return.bytes[1] == current_return.bytes[1])) {
                 return_type = drivers::ReturnType::IDENTICAL;
-                //                return_type = RETURN_TYPE::DUAL_ONLY;
-                //                  std::cout << "DUAL_ONLY" << std::endl;//occured
               } else {
                 const float other_intensity =
                   i % 2 ? raw->blocks[i - 1].data[k + 2] : raw->blocks[i + 1].data[k + 2];
@@ -254,40 +245,26 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
                 }
                 if (first && strongest) {
                   return_type = drivers::ReturnType::FIRST;
-                  //                  return_type = RETURN_TYPE::DUAL_STRONGEST_FIRST;
-                  //                  std::cout << "DUAL_STRONGEST_FIRST" << std::endl;//occured
                 } else if (!first && strongest) {
                   return_type = drivers::ReturnType::STRONGEST;
-                  //                  return_type = RETURN_TYPE::DUAL_STRONGEST_LAST;
-                  //                  std::cout << "DUAL_STRONGEST_LAST" << std::endl;//occured
                 } else if (first && !strongest) {
                   return_type = drivers::ReturnType::FIRST_WEAK;
-                  //                  return_type = RETURN_TYPE::DUAL_WEAK_FIRST;
-                  //                  std::cout << "FIRST_WEAK" << std::endl;//occured
                 } else if (!first && !strongest) {
                   return_type = drivers::ReturnType::LAST_WEAK;
-                  //                  return_type = RETURN_TYPE::DUAL_WEAK_LAST;
-                  //                  std::cout << "LAST_WEAK" << std::endl;//occured
                 } else {
                   return_type = drivers::ReturnType::UNKNOWN;
-                  //                  return_type = RETURN_TYPE::INVALID;
-                  //                  std::cout << "UNKNOWN" << std::endl;//not occur?
                 }
               }
               break;
             case RETURN_MODE_STRONGEST:
               return_type = drivers::ReturnType::STRONGEST;
-              //              return_type = RETURN_TYPE::SINGLE_STRONGEST;
               break;
             case RETURN_MODE_LAST:
               return_type = drivers::ReturnType::LAST;
-              //              return_type = RETURN_TYPE::SINGLE_LAST;
               break;
             default:
               return_type = drivers::ReturnType::UNKNOWN;
-              //              return_type = RETURN_TYPE::INVALID;
           }
-          //          std::cout << "return_type=" << return_type << std::endl;
           drivers::NebulaPoint current_point{};
           current_point.x = x_coord;
           current_point.y = y_coord;

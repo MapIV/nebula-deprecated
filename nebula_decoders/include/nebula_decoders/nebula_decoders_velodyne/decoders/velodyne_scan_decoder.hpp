@@ -39,6 +39,8 @@ static const int BLOCK_DATA_SIZE = (SCANS_PER_BLOCK * RAW_SCAN_SIZE);
 static const float ROTATION_RESOLUTION = 0.01f;     // [deg]
 static const uint16_t ROTATION_MAX_UNITS = 36000u;  // [deg/100]
 
+static const size_t RETURN_MODE_INDEX = 1204;
+
 /** @todo make this work for both big and little-endian machines */
 static const uint16_t UPPER_BANK = 0xeeff;
 static const uint16_t LOWER_BANK = 0xddff;

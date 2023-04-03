@@ -79,7 +79,7 @@ void Vlp16Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
   const raw_packet_t * raw = (const raw_packet_t *)&velodyne_packet.data[0];
   float last_azimuth_diff = 0;
   uint16_t azimuth_next;
-  const uint8_t return_mode = velodyne_packet.data[1204];
+  const uint8_t return_mode = velodyne_packet.data[RETURN_MODE_INDEX];
   const bool dual_return = (return_mode == RETURN_MODE_DUAL);
 
   for (uint block = 0; block < BLOCKS_PER_PACKET; block++) {
@@ -121,10 +121,8 @@ void Vlp16Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
     // (min_angle < area < max_angle).
     if (
       (sensor_configuration_->cloud_min_angle < sensor_configuration_->cloud_max_angle &&
-       //         azimuth >= sensor_configuration_->cloud_min_angle &&
        azimuth >= sensor_configuration_->cloud_min_angle * 100 &&
        azimuth <= sensor_configuration_->cloud_max_angle * 100) ||
-      //         azimuth <= sensor_configuration_->cloud_max_angle) ||
       (sensor_configuration_->cloud_min_angle > sensor_configuration_->cloud_max_angle)) {
       for (int firing = 0, k = 0; firing < VLP16_FIRINGS_PER_BLOCK; ++firing) {
         for (int dsr = 0; dsr < VLP16_SCANS_PER_FIRING; dsr++, k += RAW_SCAN_SIZE) {
@@ -169,16 +167,12 @@ void Vlp16Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
 
               // Condition added to avoid calculating points which are not in the interesting defined area (min_angle < area < max_angle).
               if (
-                //                (azimuth_corrected >= sensor_configuration_->cloud_min_angle &&
-                //                 azimuth_corrected <= sensor_configuration_->cloud_max_angle &&
                 (azimuth_corrected >= sensor_configuration_->cloud_min_angle * 100 &&
                  azimuth_corrected <= sensor_configuration_->cloud_max_angle * 100 &&
                  sensor_configuration_->cloud_min_angle < sensor_configuration_->cloud_max_angle) ||
                 (sensor_configuration_->cloud_min_angle > sensor_configuration_->cloud_max_angle &&
                  (azimuth_corrected <= sensor_configuration_->cloud_max_angle * 100 ||
                   azimuth_corrected >= sensor_configuration_->cloud_min_angle * 100))) {
-                //                 (azimuth_corrected <= sensor_configuration_->cloud_max_angle ||
-                //                  azimuth_corrected >= sensor_configuration_->cloud_min_angle))) {
                 // Convert polar coordinates to Euclidean XYZ.
                 const float cos_vert_angle = corrections.cos_vert_correction;
                 const float sin_vert_angle = corrections.sin_vert_correction;
@@ -200,8 +194,7 @@ void Vlp16Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
                 const float intensity = current_block.data[k + 2];
 
                 const double time_stamp = (block * 2 + firing) * 55.296 / 1000.0 / 1000.0 +
-                                          dsr * 2.304 / 1000.0 / 1000.0;  // +
-                //                                          rclcpp::Time(velodyne_packet.stamp).seconds();
+                                          dsr * 2.304 / 1000.0 / 1000.0;
                 auto ts = rclcpp::Time(velodyne_packet.stamp).seconds();
                 if (ts < first_timestamp) {
                   first_timestamp = ts;

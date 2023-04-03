@@ -82,7 +82,7 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
   const raw_packet_t * raw = (const raw_packet_t *)&velodyne_packet.data[0];
   float last_azimuth_diff = 0;
   uint16_t azimuth_next;
-  const uint8_t return_mode = velodyne_packet.data[1204];
+  const uint8_t return_mode = velodyne_packet.data[RETURN_MODE_INDEX];
   const bool dual_return = (return_mode == RETURN_MODE_DUAL);
 
   for (uint block = 0; block < static_cast<uint>(BLOCKS_PER_PACKET - (4 * dual_return)); block++) {
@@ -189,8 +189,6 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
             distance > sensor_configuration_->min_range &&
             distance < sensor_configuration_->max_range) {
             // Condition added to avoid calculating points which are not in the interesting defined area (cloud_min_angle < area < cloud_max_angle).
-            //            if ((azimuth_corrected >= sensor_configuration_->cloud_min_angle &&
-            //               azimuth_corrected <= sensor_configuration_->cloud_max_angle &&
             if (
               (azimuth_corrected >= sensor_configuration_->cloud_min_angle * 100 &&
                azimuth_corrected <= sensor_configuration_->cloud_max_angle * 100 &&
@@ -198,8 +196,6 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
               (sensor_configuration_->cloud_min_angle > sensor_configuration_->cloud_max_angle &&
                (azimuth_corrected <= sensor_configuration_->cloud_max_angle * 100 ||
                 azimuth_corrected >= sensor_configuration_->cloud_min_angle * 100))) {
-              //               (azimuth_corrected <= sensor_configuration_->cloud_max_angle ||
-              //                azimuth_corrected >= sensor_configuration_->cloud_min_angle))) {
               // convert polar coordinates to Euclidean XYZ.
               const float cos_vert_angle = corrections.cos_vert_correction;
               const float sin_vert_angle = corrections.sin_vert_correction;
@@ -222,7 +218,6 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
 
               const double time_stamp =
                 block * 55.3 / 1000.0 / 1000.0 + j * 2.665 / 1000.0 / 1000.0;  // +
-              //                                        rclcpp::Time(velodyne_packet.stamp).seconds();
               auto ts = rclcpp::Time(velodyne_packet.stamp).seconds();
               if (ts < first_timestamp) {
                 first_timestamp = ts;
