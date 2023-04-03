@@ -131,21 +131,22 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert(size_t block_id)
       continue;
     }
 
-    switch (packet_.return_mode)
-    {
-    case STRONGEST_RETURN:
-      block_pc->points.emplace_back(build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::STRONGEST)));
-      break;
+    switch (packet_.return_mode) {
+      case STRONGEST_RETURN:
+        block_pc->points.emplace_back(
+          build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::STRONGEST)));
+        break;
 
-    case LAST_RETURN:
-      block_pc->points.emplace_back(build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));
-      break;
-    
-    default:
-      block_pc->points.emplace_back(build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::UNKNOWN)));
-      break;
+      case LAST_RETURN:
+        block_pc->points.emplace_back(
+          build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));
+        break;
+
+      default:
+        block_pc->points.emplace_back(
+          build_point(block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::UNKNOWN)));
+        break;
     }
-
   }
   return block_pc;
 }
@@ -178,8 +179,7 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
       point.intensity = unit.intensity;
       auto another_intensity = another_unit.intensity;
       bool identical_flg = false;
-      if(point.intensity == another_intensity && unit.distance == another_unit.distance)
-      {
+      if (point.intensity == another_intensity && unit.distance == another_unit.distance) {
         /*
   //      std::cout << i << ":identical" << std::endl;
         if(0 < blockid)
@@ -189,7 +189,6 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
         */
         identical_flg = true;
       }
-
 
       double xyDistance = unit.distance * cosf(deg2rad(elev_angle_[unit_id]));
 
@@ -209,19 +208,16 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
       point.time_stamp +=
         (static_cast<double>(block_offset_dual_[block_id] + firing_offset_[unit_id]) / 1000000.0f);
 
-      
-      if (identical_flg){
-          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::IDENTICAL);
+      if (identical_flg) {
+        point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::IDENTICAL);
       } else if (i % 2 == 0) {
-        if (point.intensity < another_intensity)
-        {
+        if (point.intensity < another_intensity) {
           point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::LAST_WEAK);
         } else {
           point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);
         }
       } else {
-        if (point.intensity > another_intensity)
-        {
+        if (point.intensity > another_intensity) {
           point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);
         } else {
           point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::SECOND_STRONGEST);

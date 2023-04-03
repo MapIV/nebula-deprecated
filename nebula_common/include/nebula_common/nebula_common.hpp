@@ -185,7 +185,6 @@ inline uint8_t ReturnModeToInt(const ReturnMode & mode)
   }
 }
 
-
 /// @brief Convert ReturnType enum to string (Overloading the << operator)
 /// @param os
 /// @param arg

@@ -74,15 +74,15 @@ Status HesaiHwInterface::CloudInterfaceStart()
     std::cout << "Starting UDP server on: " << *sensor_configuration_ << std::endl;
     cloud_udp_driver_->init_receiver(
       sensor_configuration_->host_ip, sensor_configuration_->data_port);
-      PrintError("init ok");
+    PrintError("init ok");
     cloud_udp_driver_->receiver()->open();
-      PrintError("open ok");
+    PrintError("open ok");
     cloud_udp_driver_->receiver()->bind();
-      PrintError("bind ok");
+    PrintError("bind ok");
 
     cloud_udp_driver_->receiver()->asyncReceive(
       std::bind(&HesaiHwInterface::ReceiveCloudPacketCallback, this, std::placeholders::_1));
-      PrintError("async receive set");
+    PrintError("async receive set");
   } catch (const std::exception & ex) {
     Status status = Status::UDP_CONNECTION_ERROR;
     std::cerr << status << sensor_configuration_->sensor_ip << ","
@@ -103,47 +103,45 @@ void HesaiHwInterface::ReceiveCloudPacketCallback(const std::vector<uint8_t> & b
 {
   int scan_phase = static_cast<int>(sensor_configuration_->scan_phase * 100.0);
   if (!is_valid_packet_(buffer.size())) {
-      PrintDebug("Invalid Packet: " + std::to_string(buffer.size()));
-      return;
+    PrintDebug("Invalid Packet: " + std::to_string(buffer.size()));
+    return;
   }
-    uint32_t buffer_size = buffer.size();
-    std::array<uint8_t, 1500> packet_data{};
-    std::copy_n(std::make_move_iterator(buffer.begin()), buffer_size, packet_data.begin());
-    pandar_msgs::msg::PandarPacket pandar_packet;
-    pandar_packet.data = packet_data;
-    pandar_packet.size = buffer_size;
-    auto now = std::chrono::system_clock::now();
-    auto now_secs =
-      std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-    auto now_nanosecs =
-      std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
-    pandar_packet.stamp.sec = static_cast<int>(now_secs);
-    pandar_packet.stamp.nanosec =
-      static_cast<int>((now_nanosecs / 1000000000. - static_cast<double>(now_secs)) * 1000000000);
-    scan_cloud_ptr_->packets.emplace_back(pandar_packet);
+  uint32_t buffer_size = buffer.size();
+  std::array<uint8_t, 1500> packet_data{};
+  std::copy_n(std::make_move_iterator(buffer.begin()), buffer_size, packet_data.begin());
+  pandar_msgs::msg::PandarPacket pandar_packet;
+  pandar_packet.data = packet_data;
+  pandar_packet.size = buffer_size;
+  auto now = std::chrono::system_clock::now();
+  auto now_secs = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+  auto now_nanosecs =
+    std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+  pandar_packet.stamp.sec = static_cast<int>(now_secs);
+  pandar_packet.stamp.nanosec =
+    static_cast<int>((now_nanosecs / 1000000000. - static_cast<double>(now_secs)) * 1000000000);
+  scan_cloud_ptr_->packets.emplace_back(pandar_packet);
 
   int current_phase = 0;
   bool comp_flg = false;
 
-    const auto & data = scan_cloud_ptr_->packets.back().data;
-    current_phase = (data[azimuth_index_] & 0xff) + ((data[azimuth_index_ + 1] & 0xff) << 8);
-    if (is_solid_state)
-    {
-      current_phase = (static_cast<int>(current_phase) + 36000 - 0) % 12000;
-      if (current_phase >= prev_phase_ || scan_cloud_ptr_->packets.size() < 2) {
-        prev_phase_ = current_phase;
-      } else {
-        comp_flg = true;
-      }
+  const auto & data = scan_cloud_ptr_->packets.back().data;
+  current_phase = (data[azimuth_index_] & 0xff) + ((data[azimuth_index_ + 1] & 0xff) << 8);
+  if (is_solid_state) {
+    current_phase = (static_cast<int>(current_phase) + 36000 - 0) % 12000;
+    if (current_phase >= prev_phase_ || scan_cloud_ptr_->packets.size() < 2) {
+      prev_phase_ = current_phase;
     } else {
-      current_phase = (static_cast<int>(current_phase) + 36000 - scan_phase) % 36000;
-
-      if (current_phase >= prev_phase_ || scan_cloud_ptr_->packets.size() < 2) {
-        prev_phase_ = current_phase;
-      } else {
-        comp_flg = true;
-      }
+      comp_flg = true;
     }
+  } else {
+    current_phase = (static_cast<int>(current_phase) + 36000 - scan_phase) % 36000;
+
+    if (current_phase >= prev_phase_ || scan_cloud_ptr_->packets.size() < 2) {
+      prev_phase_ = current_phase;
+    } else {
+      comp_flg = true;
+    }
+  }
 
   if (comp_flg) {  // Scan complete
     if (scan_reception_callback_) {

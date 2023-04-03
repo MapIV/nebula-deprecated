@@ -177,7 +177,8 @@ void PandarXTMDecoder::CalcXTPointXYZIT(
         point.time_stamp +
         (static_cast<double>(blockXTMOffsetTriple[blockid] + laserXTMOffset[i]) / 1000000.0f);
     } else if (
-      packet_.return_mode == DUAL_RETURN || packet_.return_mode == DUAL_RETURN_B || packet_.return_mode == DUAL_RETURN_C) {
+      packet_.return_mode == DUAL_RETURN || packet_.return_mode == DUAL_RETURN_B ||
+      packet_.return_mode == DUAL_RETURN_C) {
       point.time_stamp =
         point.time_stamp +
         (static_cast<double>(blockXTMOffsetDual[blockid] + laserXTMOffset[i]) / 1000000.0f);
@@ -187,36 +188,35 @@ void PandarXTMDecoder::CalcXTPointXYZIT(
         (static_cast<double>(blockXTMOffsetSingle[blockid] + laserXTMOffset[i]) / 1000000.0f);
     }
 
-//    point.return_type = packet_.return_mode;
-    switch (packet_.return_mode)
-    {
-    case DUAL_RETURN: // Dual Return (Last, Strongest)
-      if (i % 2 == 0){
-        point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::LAST);
-      } else {
-        point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);
-      }
-      break;
+    //    point.return_type = packet_.return_mode;
+    switch (packet_.return_mode) {
+      case DUAL_RETURN:  // Dual Return (Last, Strongest)
+        if (i % 2 == 0) {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::LAST);
+        } else {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);
+        }
+        break;
 
-    case DUAL_RETURN_B: // Dual Return (Last, First)
-      if (i % 2 == 0){
-        point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::LAST);
-      } else {
-        point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::FIRST);
-      }
-      break;
+      case DUAL_RETURN_B:  // Dual Return (Last, First)
+        if (i % 2 == 0) {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::LAST);
+        } else {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::FIRST);
+        }
+        break;
 
-    case DUAL_RETURN_C: // Dual Return (First, Strongest)
-      if (i % 2 == 0){
-        point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::FIRST);
-      } else {
-        point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);
-      }
-      break;
+      case DUAL_RETURN_C:  // Dual Return (First, Strongest)
+        if (i % 2 == 0) {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::FIRST);
+        } else {
+          point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::STRONGEST);
+        }
+        break;
 
-    default:
-      point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::UNKNOWN);
-      break;
+      default:
+        point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::UNKNOWN);
+        break;
     }
     point.channel = i;
     cld->points.emplace_back(point);

@@ -7,7 +7,6 @@
 
 namespace nebula
 {
-
 /// @brief PTP STATUS struct of PTC_COMMAND_PTP_DIAGNOSTICS
 struct HesaiPtpDiagStatus
 {

@@ -265,8 +265,8 @@ void Vlp16Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
   }
 }
 
-bool Vlp16Decoder::parsePacket(
-  [[maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
+bool Vlp16Decoder::parsePacket([
+  [maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
 {
   return 0;
 }

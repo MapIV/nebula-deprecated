@@ -13,7 +13,6 @@ namespace drivers
 {
 namespace pandar_at
 {
-
 const float blockXTMOffsetTriple[] = {
   5.632f - 50.0f * 1.0f, 5.632f - 50.0f * 1.0f, 5.632f - 50.0f * 1.0f, 5.632f - 50.0f * 0.0f,
   5.632f - 50.0f * 0.0f, 5.632f - 50.0f * 0.0f, 5.632f - 50.0f * 0.0f, 5.632f - 50.0f * 0.0f};

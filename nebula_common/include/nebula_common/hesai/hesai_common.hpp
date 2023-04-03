@@ -166,98 +166,100 @@ struct HesaiCorrection
     resolution = buf[index] & 0xff;
     std::cout << "resolution=" << static_cast<int>(resolution) << std::endl;
     index++;
-    switch (versionMinor)
-    {
-    case 5:
-      for (uint8_t i = 0; i < mirrorNumber; i++) {
-        startFrame[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
+    switch (versionMinor) {
+      case 5:
+        for (uint8_t i = 0; i < mirrorNumber; i++) {
+          startFrame[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
+                          ((buf[index + 2] & 0xff) << 16) | ((buf[index + 3] & 0xff) << 24);
+          index += 4;
+        }
+        for (uint8_t i = 0; i < mirrorNumber; i++) {
+          endFrame[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
                         ((buf[index + 2] & 0xff) << 16) | ((buf[index + 3] & 0xff) << 24);
-        index += 4;
-      }
-      for (uint8_t i = 0; i < mirrorNumber; i++) {
-        endFrame[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
-                      ((buf[index + 2] & 0xff) << 16) | ((buf[index + 3] & 0xff) << 24);
-        index += 4;
-      }
-      for (uint8_t i = 0; i < channelNumber; i++) {
-        azimuth[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
-                    ((buf[index + 2] & 0xff) << 16) | ((buf[index + 3] & 0xff) << 24);
-        index += 4;
-      }
-      for (uint8_t i = 0; i < channelNumber; i++) {
-        elevation[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
-                      ((buf[index + 2] & 0xff) << 16) | ((buf[index + 3] & 0xff) << 24);
-        index += 4;
-      }
-      for (int i = 0; i < channelNumber * 180; i++) {
-        azimuthOffset[i] = buf[index] & 0xff;
-        index++;
-      }
-      for (int i = 0; i < channelNumber * 180; i++) {
-        elevationOffset[i] = buf[index] & 0xff;
-        index++;
-      }
+          index += 4;
+        }
+        for (uint8_t i = 0; i < channelNumber; i++) {
+          azimuth[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
+                       ((buf[index + 2] & 0xff) << 16) | ((buf[index + 3] & 0xff) << 24);
+          index += 4;
+        }
+        for (uint8_t i = 0; i < channelNumber; i++) {
+          elevation[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8 |
+                         ((buf[index + 2] & 0xff) << 16) | ((buf[index + 3] & 0xff) << 24);
+          index += 4;
+        }
+        for (int i = 0; i < channelNumber * 180; i++) {
+          azimuthOffset[i] = buf[index] & 0xff;
+          index++;
+        }
+        for (int i = 0; i < channelNumber * 180; i++) {
+          elevationOffset[i] = buf[index] & 0xff;
+          index++;
+        }
 
-      //230328 add
-      for (uint8_t i = 0; i < mirrorNumber; i++) {
-        startFrame[i] *= resolution;
-        endFrame[i] *= resolution;
-        std::cout << "startFrame[" << static_cast<int>(i) << "]=" << static_cast<int>(startFrame[i]) << std::endl;
-        std::cout << "endFrame[" << static_cast<int>(i) << "]=" << static_cast<int>(endFrame[i]) << std::endl;
-      }
-      for (uint8_t i = 0; i < channelNumber; i++) {
-        azimuth[i] *= resolution;
-        elevation[i] *= resolution;
-      }
-      for (int i = 0; i < channelNumber * 180; i++) {
-        azimuthOffset[i] *= resolution;
-        elevationOffset[i] *= resolution;
-      }
-      break;
-    
-    case 3://not worked...
-      for (uint8_t i = 0; i < mirrorNumber; i++) {
-        startFrame[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8;
-        index += 2;
-      }
-      for (uint8_t i = 0; i < mirrorNumber; i++) {
-        endFrame[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8;
-        index += 2;
-      }
-      for (uint8_t i = 0; i < channelNumber; i++) {
-        azimuth[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8;
-        index += 2;
-      }
-      for (uint8_t i = 0; i < channelNumber; i++) {
-        elevation[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8;
-        index += 2;
-      }
-      for (int i = 0; i < 36000; i++) {
-        azimuthOffset[i] = buf[index] & 0xff;
-        index++;
-      }
-      for (int i = 0; i < 36000; i++) {
-        elevationOffset[i] = buf[index] & 0xff;
-        index++;
-      }
+        //230328 add
+        for (uint8_t i = 0; i < mirrorNumber; i++) {
+          startFrame[i] *= resolution;
+          endFrame[i] *= resolution;
+          std::cout << "startFrame[" << static_cast<int>(i)
+                    << "]=" << static_cast<int>(startFrame[i]) << std::endl;
+          std::cout << "endFrame[" << static_cast<int>(i) << "]=" << static_cast<int>(endFrame[i])
+                    << std::endl;
+        }
+        for (uint8_t i = 0; i < channelNumber; i++) {
+          azimuth[i] *= resolution;
+          elevation[i] *= resolution;
+        }
+        for (int i = 0; i < channelNumber * 180; i++) {
+          azimuthOffset[i] *= resolution;
+          elevationOffset[i] *= resolution;
+        }
+        break;
 
-      for (uint8_t i = 0; i < mirrorNumber; i++) {
-        std::cout << "startFrame[" << static_cast<int>(i) << "]=" << static_cast<int>(startFrame[i]) << std::endl;
-        std::cout << "endFrame[" << static_cast<int>(i) << "]=" << static_cast<int>(endFrame[i]) << std::endl;
-        /*
+      case 3:  //not worked...
+        for (uint8_t i = 0; i < mirrorNumber; i++) {
+          startFrame[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8;
+          index += 2;
+        }
+        for (uint8_t i = 0; i < mirrorNumber; i++) {
+          endFrame[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8;
+          index += 2;
+        }
+        for (uint8_t i = 0; i < channelNumber; i++) {
+          azimuth[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8;
+          index += 2;
+        }
+        for (uint8_t i = 0; i < channelNumber; i++) {
+          elevation[i] = (buf[index] & 0xff) | (buf[index + 1] & 0xff) << 8;
+          index += 2;
+        }
+        for (int i = 0; i < 36000; i++) {
+          azimuthOffset[i] = buf[index] & 0xff;
+          index++;
+        }
+        for (int i = 0; i < 36000; i++) {
+          elevationOffset[i] = buf[index] & 0xff;
+          index++;
+        }
+
+        for (uint8_t i = 0; i < mirrorNumber; i++) {
+          std::cout << "startFrame[" << static_cast<int>(i)
+                    << "]=" << static_cast<int>(startFrame[i]) << std::endl;
+          std::cout << "endFrame[" << static_cast<int>(i) << "]=" << static_cast<int>(endFrame[i])
+                    << std::endl;
+          /*
         startFrame[i] *= 2.56;
         endFrame[i] *= 2.56;
         std::cout << "startFrame[" << static_cast<int>(i) << "]=" << static_cast<int>(startFrame[i]) << std::endl;
         std::cout << "endFrame[" << static_cast<int>(i) << "]=" << static_cast<int>(endFrame[i]) << std::endl;
         */
-      }
+        }
 
-      break;
-    
-    default:
-      break;
+        break;
+
+      default:
+        break;
     }
-
 
     ifs.close();
     return Status::OK;
@@ -307,7 +309,7 @@ inline ReturnMode ReturnModeFromStringHesai(
 {
   switch (sensor_model) {
     case SensorModel::HESAI_PANDARXT32M:
-  case SensorModel::HESAI_PANDARAT128:
+    case SensorModel::HESAI_PANDARAT128:
       if (return_mode == "Last") return ReturnMode::LAST;
       if (return_mode == "Strongest") return ReturnMode::STRONGEST;
       if (return_mode == "LastStrongest") return ReturnMode::DUAL_LAST_STRONGEST;

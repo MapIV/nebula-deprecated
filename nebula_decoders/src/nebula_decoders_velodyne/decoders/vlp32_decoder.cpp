@@ -99,8 +99,7 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
 
       union two_bytes other_return;
       if (dual_return) {
-        other_return.bytes[0] =
-          i % 2 ? raw->blocks[i - 1].data[k] : raw->blocks[i + 1].data[k];
+        other_return.bytes[0] = i % 2 ? raw->blocks[i - 1].data[k] : raw->blocks[i + 1].data[k];
         other_return.bytes[1] =
           i % 2 ? raw->blocks[i - 1].data[k + 1] : raw->blocks[i + 1].data[k + 1];
       }
@@ -108,12 +107,12 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
       if (
         (current_return.bytes[0] == 0 && current_return.bytes[1] == 0) ||
         (dual_return && i % 2 && other_return.bytes[0] == current_return.bytes[0] &&
-          other_return.bytes[1] == current_return.bytes[1])) {
+         other_return.bytes[1] == current_return.bytes[1])) {
         continue;
       }
 
-      float distance =
-        current_return.uint * calibration_configuration_->velodyne_calibration.distance_resolution_m;
+      float distance = current_return.uint *
+                       calibration_configuration_->velodyne_calibration.distance_resolution_m;
       if (distance > 1e-6) {
         distance += corrections.dist_correction;
       }
@@ -222,8 +221,8 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
           const float focal_offset = 256 * (1 - corrections.focal_distance / 13100) *
                                      (1 - corrections.focal_distance / 13100);
           const float focal_slope = corrections.focal_slope;
-          float sqr =
-            (1 - static_cast<float>(current_return.uint) / 65535) * (1 - static_cast<float>(current_return.uint) / 65535);
+          float sqr = (1 - static_cast<float>(current_return.uint) / 65535) *
+                      (1 - static_cast<float>(current_return.uint) / 65535);
           intensity += focal_slope * (std::abs(focal_offset - 256 * sqr));
           intensity = (intensity < min_intensity) ? min_intensity : intensity;
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
@@ -241,13 +240,13 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
               if (
                 (other_return.bytes[0] == 0 && other_return.bytes[1] == 0) ||
                 (other_return.bytes[0] == current_return.bytes[0] &&
-                  other_return.bytes[1] == current_return.bytes[1])) {
+                 other_return.bytes[1] == current_return.bytes[1])) {
                 return_type = drivers::ReturnType::IDENTICAL;
-//                return_type = RETURN_TYPE::DUAL_ONLY;
-//                  std::cout << "DUAL_ONLY" << std::endl;//occured
+                //                return_type = RETURN_TYPE::DUAL_ONLY;
+                //                  std::cout << "DUAL_ONLY" << std::endl;//occured
               } else {
-                const float other_intensity = i % 2 ? raw->blocks[i - 1].data[k + 2]
-                                                        : raw->blocks[i + 1].data[k + 2];
+                const float other_intensity =
+                  i % 2 ? raw->blocks[i - 1].data[k + 2] : raw->blocks[i + 1].data[k + 2];
                 bool first = other_return.uint < current_return.uint ? 0 : 1;
                 bool strongest = other_intensity < intensity ? 1 : 0;
                 if (other_intensity == intensity) {
@@ -255,40 +254,40 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
                 }
                 if (first && strongest) {
                   return_type = drivers::ReturnType::FIRST;
-//                  return_type = RETURN_TYPE::DUAL_STRONGEST_FIRST;
-//                  std::cout << "DUAL_STRONGEST_FIRST" << std::endl;//occured
+                  //                  return_type = RETURN_TYPE::DUAL_STRONGEST_FIRST;
+                  //                  std::cout << "DUAL_STRONGEST_FIRST" << std::endl;//occured
                 } else if (!first && strongest) {
                   return_type = drivers::ReturnType::STRONGEST;
-//                  return_type = RETURN_TYPE::DUAL_STRONGEST_LAST;
-//                  std::cout << "DUAL_STRONGEST_LAST" << std::endl;//occured
+                  //                  return_type = RETURN_TYPE::DUAL_STRONGEST_LAST;
+                  //                  std::cout << "DUAL_STRONGEST_LAST" << std::endl;//occured
                 } else if (first && !strongest) {
                   return_type = drivers::ReturnType::FIRST_WEAK;
-//                  return_type = RETURN_TYPE::DUAL_WEAK_FIRST;
-//                  std::cout << "FIRST_WEAK" << std::endl;//occured
+                  //                  return_type = RETURN_TYPE::DUAL_WEAK_FIRST;
+                  //                  std::cout << "FIRST_WEAK" << std::endl;//occured
                 } else if (!first && !strongest) {
                   return_type = drivers::ReturnType::LAST_WEAK;
-//                  return_type = RETURN_TYPE::DUAL_WEAK_LAST;
-//                  std::cout << "LAST_WEAK" << std::endl;//occured
+                  //                  return_type = RETURN_TYPE::DUAL_WEAK_LAST;
+                  //                  std::cout << "LAST_WEAK" << std::endl;//occured
                 } else {
                   return_type = drivers::ReturnType::UNKNOWN;
-//                  return_type = RETURN_TYPE::INVALID;
-//                  std::cout << "UNKNOWN" << std::endl;//not occur?
+                  //                  return_type = RETURN_TYPE::INVALID;
+                  //                  std::cout << "UNKNOWN" << std::endl;//not occur?
                 }
               }
               break;
             case RETURN_MODE_STRONGEST:
               return_type = drivers::ReturnType::STRONGEST;
-//              return_type = RETURN_TYPE::SINGLE_STRONGEST;
+              //              return_type = RETURN_TYPE::SINGLE_STRONGEST;
               break;
             case RETURN_MODE_LAST:
               return_type = drivers::ReturnType::LAST;
-//              return_type = RETURN_TYPE::SINGLE_LAST;
+              //              return_type = RETURN_TYPE::SINGLE_LAST;
               break;
             default:
               return_type = drivers::ReturnType::UNKNOWN;
-//              return_type = RETURN_TYPE::INVALID;
+              //              return_type = RETURN_TYPE::INVALID;
           }
-//          std::cout << "return_type=" << return_type << std::endl;
+          //          std::cout << "return_type=" << return_type << std::endl;
           drivers::NebulaPoint current_point{};
           current_point.x = x_coord;
           current_point.y = y_coord;
@@ -305,8 +304,8 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
   }
 }
 
-bool Vlp32Decoder::parsePacket(
-  [[maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
+bool Vlp32Decoder::parsePacket([
+  [maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
 {
   return 0;
 }
