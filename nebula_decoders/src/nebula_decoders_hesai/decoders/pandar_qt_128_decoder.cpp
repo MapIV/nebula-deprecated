@@ -94,35 +94,44 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
   drivers::NebulaPointCloudPtr block_pc(new NebulaPointCloud);
   int current_phase;
   int cnt2;
-  for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id++) {
-    if (dual_return) {
-      if (0 < block_id)  //2nd
-      {
-        cnt2 = 0;
-        auto block2_pt = convert(block_id);
-        size_t block1size = block_pc->points.size();
-        for (size_t i = 0; i < block1size; i++) {
-          if (
-            fabsf(
-              packet_.blocks[block_id].units[i].distance - packet_.blocks[0].units[i].distance) >
-            dual_return_distance_threshold_) {
-            block_pc->points.emplace_back(block2_pt->points[i]);
-            cnt2++;
-          }
+  if (dual_return) {
+    for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id += 2) {
+      auto block1_pt = convert(block_id);
+      auto block2_pt = convert(block_id + 1);
+      /*
+      std::cout << "block1_pt->points[" << 0 << "]=" << static_cast<int>(block1_pt->points[0].return_type) << std::endl;
+      std::cout << "block2_pt->points[" << 0 << "]=" << static_cast<int>(block2_pt->points[0].return_type) << std::endl;
+      std::cout << "block1_pt->points.size()=" << static_cast<int>(block1_pt->points.size()) << std::endl;
+      std::cout << "block2_pt->points.size()=" << static_cast<int>(block2_pt->points.size()) << std::endl;
+      */
+      size_t block1size = block1_pt->points.size();
+      cnt2 = 0;
+      for (size_t i = 0; i < block1size; i++) {
+//        std::cout << "dif=" << (packet_.blocks[block_id + 1].units[i].distance - packet_.blocks[block_id].units[i].distance) << std::endl;
+//        std::cout << "block2_pt->points[" << i << "]=" << static_cast<int>(block2_pt->points[i].return_type) << std::endl;
+        if (fabsf(packet_.blocks[block_id + 1].units[i].distance - packet_.blocks[block_id].units[i].distance) > dual_return_distance_threshold_) {
+          block_pc->points.emplace_back(block1_pt->points[i]);
+          block_pc->points.emplace_back(block2_pt->points[i]);
+//          std::cout << "add block2" << std::endl;
+          cnt2++;
+        } else {
+          block1_pt->points[i].return_type = static_cast<uint8_t>(ReturnType::IDENTICAL);
+          block_pc->points.emplace_back(block1_pt->points[i]);
         }
-      } else  //1st
-      {
-        auto block1_pt = convert(block_id);
-        block_pc->points.insert(
-          block_pc->points.end(), block1_pt->points.begin(), block1_pt->points.end());
       }
-    } else  //single
-    {
+//      std::cout << "block1_pt->points.size()=" << static_cast<int>(block1_pt->points.size()) << std::endl;
+//      std::cout << "cnt2=" << cnt2 << std::endl;
+      current_phase =
+        (static_cast<int>(packet_.blocks[block_id + 1].azimuth) - scan_phase_ + 36000) % 36000;
+    }
+  } else  //single
+  {
+    for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id++) {
       block_pc = convert(block_id);
       *block_pc += *block_pc;
+      current_phase =
+        (static_cast<int>(packet_.blocks[block_id].azimuth) - scan_phase_ + 36000) % 36000;
     }
-    current_phase =
-      (static_cast<int>(packet_.blocks[block_id].azimuth) - scan_phase_ + 36000) % 36000;
   }
   if (current_phase > last_phase_ && !has_scanned_) {
     *scan_pc_ += *block_pc;
