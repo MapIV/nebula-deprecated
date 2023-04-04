@@ -37,6 +37,7 @@ nav:
   - Home: index.md
   - Design: design.md
   - About Nebula: about.md
+  - Add Your Sensor: add_sensor.md
   - Nebula Common: nebula_common/links.md
   - Nebula Decoders: nebula_decoders/links.md
   - Nebula HW Interfaces: nebula_hw_interfaces/links.md
