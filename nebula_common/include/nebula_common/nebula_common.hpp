@@ -23,7 +23,9 @@ enum class ReturnType : uint8_t {
   LAST_WEAK,
   IDENTICAL,
   SECOND,
-  SECOND_STRONGEST
+  SECOND_STRONGEST,
+  FIRST_STRONGEST,
+  LAST_STRONGEST
 };
 
 /// @brief Return mode of each LiDAR
@@ -218,6 +220,12 @@ inline std::ostream & operator<<(std::ostream & os, nebula::drivers::ReturnType 
       break;
     case ReturnType::SECOND_STRONGEST:
       os << "SecondStrongest";
+      break;
+    case ReturnType::FIRST_STRONGEST:
+      os << "FirstStrongest";
+      break;
+    case ReturnType::LAST_STRONGEST:
+      os << "LastStrongest";
       break;
   }
   return os;

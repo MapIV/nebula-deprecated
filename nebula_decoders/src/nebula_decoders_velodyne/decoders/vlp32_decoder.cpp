@@ -233,38 +233,54 @@ void Vlp32Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_pa
               if (
                 (other_return.bytes[0] == 0 && other_return.bytes[1] == 0) ||
                 (other_return.bytes[0] == current_return.bytes[0] &&
-                 other_return.bytes[1] == current_return.bytes[1])) {
+                  other_return.bytes[1] == current_return.bytes[1])) {
                 return_type = drivers::ReturnType::IDENTICAL;
+//                return_type = RETURN_TYPE::DUAL_ONLY;
+//                  std::cout << "DUAL_ONLY" << std::endl;//occured
               } else {
-                const float other_intensity =
-                  i % 2 ? raw->blocks[i - 1].data[k + 2] : raw->blocks[i + 1].data[k + 2];
+                const float other_intensity = i % 2 ? raw->blocks[i - 1].data[k + 2]
+                                                        : raw->blocks[i + 1].data[k + 2];
                 bool first = other_return.uint < current_return.uint ? 0 : 1;
                 bool strongest = other_intensity < intensity ? 1 : 0;
                 if (other_intensity == intensity) {
                   strongest = first ? 0 : 1;
                 }
                 if (first && strongest) {
-                  return_type = drivers::ReturnType::FIRST;
+                  return_type = drivers::ReturnType::FIRST_STRONGEST;
+//                  return_type = RETURN_TYPE::DUAL_STRONGEST_FIRST;
+//                  std::cout << "DUAL_STRONGEST_FIRST" << std::endl;//occured
                 } else if (!first && strongest) {
-                  return_type = drivers::ReturnType::STRONGEST;
+                  return_type = drivers::ReturnType::LAST_STRONGEST;
+//                  return_type = RETURN_TYPE::DUAL_STRONGEST_LAST;
+//                  std::cout << "DUAL_STRONGEST_LAST" << std::endl;//occured
                 } else if (first && !strongest) {
                   return_type = drivers::ReturnType::FIRST_WEAK;
+//                  return_type = RETURN_TYPE::DUAL_WEAK_FIRST;
+//                  std::cout << "FIRST_WEAK" << std::endl;//occured
                 } else if (!first && !strongest) {
                   return_type = drivers::ReturnType::LAST_WEAK;
+//                  return_type = RETURN_TYPE::DUAL_WEAK_LAST;
+//                  std::cout << "LAST_WEAK" << std::endl;//occured
                 } else {
                   return_type = drivers::ReturnType::UNKNOWN;
+//                  return_type = RETURN_TYPE::INVALID;
+//                  std::cout << "UNKNOWN" << std::endl;//not occur?
                 }
               }
               break;
             case RETURN_MODE_STRONGEST:
               return_type = drivers::ReturnType::STRONGEST;
+//              return_type = RETURN_TYPE::SINGLE_STRONGEST;
               break;
             case RETURN_MODE_LAST:
               return_type = drivers::ReturnType::LAST;
+//              return_type = RETURN_TYPE::SINGLE_LAST;
               break;
             default:
               return_type = drivers::ReturnType::UNKNOWN;
+//              return_type = RETURN_TYPE::INVALID;
           }
+//          std::cout << "return_type=" << return_type << std::endl;
           drivers::NebulaPoint current_point{};
           current_point.x = x_coord;
           current_point.y = y_coord;
