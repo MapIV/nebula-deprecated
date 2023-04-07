@@ -194,7 +194,7 @@ public:
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION
   /// @param with_run Automatically executes run() of TcpDriver
   /// @return Resulting status
-  Status GetLidarCalib(bool with_run = true);
+  Status GetLidarCalibrationFromSensor(bool with_run = true);
   /// @brief Getting data with PTC_COMMAND_PTP_DIAGNOSTICS (PTP STATUS)
   /// @param target_tcp_driver TcpDriver used
   /// @param with_run Automatically executes run() of TcpDriver

@@ -220,9 +220,9 @@ Status HesaiHwInterface::GetLidarCalibration(
   buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
-  if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetLidarCalibration")) {
-    return GetLidarCalibration(target_tcp_driver, with_run);
-  }
+  //  if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetLidarCalibration")) {
+  //    return GetLidarCalibration(target_tcp_driver, with_run);
+  //  }
   PrintDebug("GetLidarCalibration: start");
 
   target_tcp_driver->asyncSendReceiveHeaderPayload(
@@ -254,7 +254,10 @@ Status HesaiHwInterface::GetLidarCalibration(
       }
       std::cout << std::endl;
 #endif
-      PrintDebug(received_bytes);
+      std::string calib_string =
+        std::string(received_bytes.data(), received_bytes.data() + received_bytes.size());
+      PrintInfo(calib_string);
+      calibration_configuration_->LoadFromString(calib_string);
     },
     [this]() { CheckUnlock(tm_, "GetLidarCalibration"); });
   if (with_run) {
@@ -274,7 +277,7 @@ Status HesaiHwInterface::GetLidarCalib(std::shared_ptr<boost::asio::io_context> 
   auto tcp_driver_local = std::make_shared<::drivers::tcp_driver::TcpDriver>(ctx);
   return GetLidarCalibration(tcp_driver_local, with_run);
 }
-Status HesaiHwInterface::GetLidarCalib(bool with_run)
+Status HesaiHwInterface::GetLidarCalibrationFromSensor(bool with_run)
 {
   if (with_run) {
     if (tcp_driver_->GetIOContext()->stopped()) {

@@ -10,6 +10,7 @@
 #include "nebula_common/nebula_common.hpp"
 #include "nebula_common/nebula_status.hpp"
 #include "nebula_decoders/nebula_decoders_hesai/hesai_driver.hpp"
+#include "nebula_hw_interfaces/nebula_hw_interfaces_hesai/hesai_hw_interface.hpp"
 #include "nebula_ros/common/nebula_driver_ros_wrapper_base.hpp"
 #include "pandar_msgs/msg/pandar_packet.hpp"
 #include "pandar_msgs/msg/pandar_scan.hpp"
@@ -30,6 +31,8 @@ class HesaiDriverRosWrapper final : public rclcpp::Node, NebulaDriverRosWrapperB
   std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr_;
   std::shared_ptr<drivers::HesaiCorrection> correction_cfg_ptr_;
 
+  drivers::HesaiHwInterface hw_interface_;
+
   /// @brief Initializing ros wrapper
   /// @param sensor_configuration SensorConfiguration for this driver
   /// @param calibration_configuration CalibrationConfiguration for this driver
@@ -44,9 +47,9 @@ class HesaiDriverRosWrapper final : public rclcpp::Node, NebulaDriverRosWrapperB
   /// @param correction_configuration CorrectionConfiguration for this driver
   /// @return Resulting status
   Status InitializeDriver(
-    std::shared_ptr<drivers::SensorConfigurationBase> sensor_configuration,
-    std::shared_ptr<drivers::CalibrationConfigurationBase> calibration_configuration,
-    std::shared_ptr<drivers::HesaiCorrection> correction_configuration);
+    const std::shared_ptr<drivers::SensorConfigurationBase> & sensor_configuration,
+    const std::shared_ptr<drivers::CalibrationConfigurationBase> & calibration_configuration,
+    const std::shared_ptr<drivers::HesaiCorrection> & correction_configuration);
 
   /// @brief Get configurations from ros parameters
   /// @param sensor_configuration Output of SensorConfiguration

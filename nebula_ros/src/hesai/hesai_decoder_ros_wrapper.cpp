@@ -5,13 +5,15 @@ namespace nebula
 namespace ros
 {
 HesaiDriverRosWrapper::HesaiDriverRosWrapper(const rclcpp::NodeOptions & options)
-: rclcpp::Node("hesai_driver_ros_wrapper", options)
+: rclcpp::Node("hesai_driver_ros_wrapper", options), hw_interface_()
 {
   drivers::HesaiCalibrationConfiguration calibration_configuration;
   drivers::HesaiSensorConfiguration sensor_configuration;
   drivers::HesaiCorrection correction_configuration;
 
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+  hw_interface_.SetLogger(std::make_shared<rclcpp::Logger>(this->get_logger()));
 
   wrapper_status_ =
     GetParameters(sensor_configuration, calibration_configuration, correction_configuration);
@@ -61,9 +63,6 @@ void HesaiDriverRosWrapper::ReceiveScanMsgCallback(
   auto ros_pc_msg_ptr = std::make_unique<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(*pointcloud, *ros_pc_msg_ptr);
   if (!pointcloud->points.empty()) {
-    //    double first_point_timestamp = pointcloud->points.front().time_stamp;
-    //    ros_pc_msg_ptr->header.stamp =
-    //      rclcpp::Time(SecondsToChronoNanoSeconds(first_point_timestamp).count());
     ros_pc_msg_ptr->header.stamp =
       rclcpp::Time(SecondsToChronoNanoSeconds(std::get<1>(pointcloud_ts)).count());
     if (ros_pc_msg_ptr->header.stamp.sec < 0)  // && false)
@@ -71,7 +70,6 @@ void HesaiDriverRosWrapper::ReceiveScanMsgCallback(
       rclcpp::Clock system_clock(RCL_SYSTEM_TIME);
       ros_pc_msg_ptr->header.stamp = system_clock.now();
       RCLCPP_WARN_STREAM(this->get_logger(), "Timestamp error... use system_clock");
-    } else {
     }
   }
   ros_pc_msg_ptr->header.frame_id = sensor_cfg_ptr_->frame_id;
@@ -89,9 +87,9 @@ Status HesaiDriverRosWrapper::InitializeDriver(
 }
 
 Status HesaiDriverRosWrapper::InitializeDriver(
-  std::shared_ptr<drivers::SensorConfigurationBase> sensor_configuration,
-  std::shared_ptr<drivers::CalibrationConfigurationBase> calibration_configuration,
-  std::shared_ptr<drivers::HesaiCorrection> correction_configuration)
+  const std::shared_ptr<drivers::SensorConfigurationBase> & sensor_configuration,
+  const std::shared_ptr<drivers::CalibrationConfigurationBase> & calibration_configuration,
+  const std::shared_ptr<drivers::HesaiCorrection> & correction_configuration)
 {
   // driver should be initialized here with proper decoder
   driver_ptr_ = std::make_shared<drivers::HesaiDriver>(
@@ -108,6 +106,33 @@ Status HesaiDriverRosWrapper::GetParameters(
   drivers::HesaiCalibrationConfiguration & calibration_configuration,
   drivers::HesaiCorrection & correction_configuration)
 {
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+    descriptor.read_only = true;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "";
+    this->declare_parameter<std::string>("host_ip", "255.255.255.255", descriptor);
+    sensor_configuration.host_ip = this->get_parameter("host_ip").as_string();
+  }
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+    descriptor.read_only = true;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "";
+    this->declare_parameter<std::string>("sensor_ip", "192.168.1.201", descriptor);
+    sensor_configuration.sensor_ip = this->get_parameter("sensor_ip").as_string();
+  }
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
+    descriptor.read_only = true;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "";
+    this->declare_parameter<uint16_t>("data_port", 2368, descriptor);
+    sensor_configuration.data_port = this->get_parameter("data_port").as_int();
+  }
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
     descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
@@ -193,8 +218,19 @@ Status HesaiDriverRosWrapper::GetParameters(
   if (calibration_configuration.calibration_file.empty()) {
     return Status::INVALID_CALIBRATION_FILE;
   } else {
+    RCLCPP_INFO_STREAM(
+      this->get_logger(),
+      "Trying to acquire calibration data from sensor: '" << sensor_configuration.sensor_ip << "'");
+    std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
+      std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration);
+    hw_interface_.SetSensorConfiguration(
+      std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
+    hw_interface_.InitializeTcpDriver(false);
+    hw_interface_.GetLidarCalibrationFromSensor(true);
+
     auto cal_status =
       calibration_configuration.LoadFromFile(calibration_configuration.calibration_file);
+
     if (cal_status != Status::OK) {
       RCLCPP_ERROR_STREAM(
         this->get_logger(),
