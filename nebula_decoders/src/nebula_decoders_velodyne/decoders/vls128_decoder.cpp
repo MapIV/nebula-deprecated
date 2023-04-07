@@ -231,7 +231,6 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
                     (other_return.bytes[0] == 0 && other_return.bytes[1] == 0) ||
                     (other_return.bytes[0] == current_return.bytes[0] &&
                      other_return.bytes[1] == current_return.bytes[1])) {
-//                    return_type = RETURN_TYPE::DUAL_ONLY;
                     return_type = static_cast<uint8_t>(drivers::ReturnType::IDENTICAL);
                   } else {
                     const float other_intensity = block % 2 ? raw->blocks[block - 1].data[k + 2]
@@ -242,33 +241,25 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
                       strongest = first ? 0 : 1;
                     }
                     if (first && strongest) {
-//                      return_type = RETURN_TYPE::DUAL_STRONGEST_FIRST;
                       return_type = static_cast<uint8_t>(drivers::ReturnType::FIRST_STRONGEST);
                     } else if (!first && strongest) {
-//                      return_type = RETURN_TYPE::DUAL_STRONGEST_LAST;
                       return_type = static_cast<uint8_t>(drivers::ReturnType::LAST_STRONGEST);
                     } else if (first && !strongest) {
-//                      return_type = RETURN_TYPE::DUAL_WEAK_FIRST;
                       return_type = static_cast<uint8_t>(drivers::ReturnType::FIRST_WEAK);
                     } else if (!first && !strongest) {
-//                      return_type = RETURN_TYPE::DUAL_WEAK_LAST;
                       return_type = static_cast<uint8_t>(drivers::ReturnType::LAST_WEAK);
                     } else {
-//                      return_type = RETURN_TYPE::INVALID;
                       return_type = static_cast<uint8_t>(drivers::ReturnType::UNKNOWN);
                     }
                   }
                   break;
                 case RETURN_MODE_STRONGEST:
-//                  return_type = RETURN_TYPE::SINGLE_STRONGEST;
                   return_type = static_cast<uint8_t>(drivers::ReturnType::STRONGEST);
                   break;
                 case RETURN_MODE_LAST:
-//                  return_type = RETURN_TYPE::SINGLE_LAST;
                   return_type = static_cast<uint8_t>(drivers::ReturnType::LAST);
                   break;
                 default:
-//                  return_type = RETURN_TYPE::INVALID;
                   return_type = static_cast<uint8_t>(drivers::ReturnType::UNKNOWN);
               }
               drivers::NebulaPoint current_point{};
@@ -289,8 +280,8 @@ void Vls128Decoder::unpack(const velodyne_msgs::msg::VelodynePacket & velodyne_p
   }  // for (uint block = 0; block < static_cast < uint > (BLOCKS_PER_PACKET - (4 * dual_return)); block++)
 }
 
-bool Vls128Decoder::parsePacket([
-  [maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
+bool Vls128Decoder::parsePacket(
+  [[maybe_unused]] const velodyne_msgs::msg::VelodynePacket & velodyne_packet)
 {
   return 0;
 }

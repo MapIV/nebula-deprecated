@@ -401,26 +401,6 @@ rcl_interfaces::msg::SetParametersResult HesaiHwMonitorRosWrapper::paramCallback
   return *result;
 }
 
-/*
-void HesaiHwMonitorRosWrapper::OnHesaiStatusTimer()
-{
-  std::cout << "OnHesaiStatusTimer" << std::endl;
-  if(mtx_status.try_lock()){
-    auto ios = std::make_shared<boost::asio::io_service>();
-    hw_interface_.GetLidarStatus(ios,
-      [this](HesaiLidarStatus &result)
-      {
-  //      std::cout << result << std::endl;
-        current_status_time.reset(new rclcpp::Time(this->get_clock()->now()));
-  //      current_status.reset(&result);
-        current_status.reset(new HesaiLidarStatus(result));
-        mtx_status.unlock();
-      });
-  }else{
-    std::cout << "mtx_status is locked..." << std::endl;
-  }
-}
-*/
 void HesaiHwMonitorRosWrapper::OnHesaiStatusTimer()
 {
   RCLCPP_DEBUG_STREAM(this->get_logger(), "OnHesaiStatusTimer" << std::endl);

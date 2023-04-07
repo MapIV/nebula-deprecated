@@ -58,11 +58,7 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
 #ifdef WITH_DEBUG_STDOUT_HesaiHwInterfaceRosWrapper
   if (false) {
     std::vector<std::thread> thread_pool{};
-    thread_pool.emplace_back([this] {
-      hw_interface_.SetStandbyMode(0);
-      //      auto ios = std::make_shared<boost::asio::io_service>();
-      //      hw_interface_.SetStandbyMode(ios, 0);
-    });
+    thread_pool.emplace_back([this] { hw_interface_.SetStandbyMode(0); });
     thread_pool.emplace_back([this] {
       auto ios = std::make_shared<boost::asio::io_service>();
       hw_interface_.GetLidarCalib(ios);
@@ -87,24 +83,16 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
     thread_pool.emplace_back([this] {
       auto ios = std::make_shared<boost::asio::io_service>();
       hw_interface_.GetInventory(ios);
-      //      hw_interface_.IOServiceRun();
     });
     thread_pool.emplace_back([this] {
       auto ios = std::make_shared<boost::asio::io_service>();
       hw_interface_.GetConfig(ios);
-      //      hw_interface_.IOServiceRun();
     });
     thread_pool.emplace_back([this] {
-      //      auto ios = std::make_shared<boost::asio::io_service>(new boost::asio::io_service(1));
       auto ios = std::make_shared<boost::asio::io_service>();
       hw_interface_.GetLidarStatus(ios);
-      //      hw_interface_.IOServiceRun();
     });
-    thread_pool.emplace_back([this] {
-      hw_interface_.SetStandbyMode(1);
-      //      auto ios = std::make_shared<boost::asio::io_service>();
-      //      hw_interface_.SetStandbyMode(ios, 1);
-    });
+    thread_pool.emplace_back([this] { hw_interface_.SetStandbyMode(1); });
     thread_pool.emplace_back([this] {
       auto ios = std::make_shared<boost::asio::io_service>();
       hw_interface_.GetPtpConfig(ios);
@@ -126,7 +114,6 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
       hw_interface_.GetLidarCalib(ios);
     });
     for (std::thread & th : thread_pool) {
-      //    hw_interface_.IOServiceRun();
       th.join();
     }
   }

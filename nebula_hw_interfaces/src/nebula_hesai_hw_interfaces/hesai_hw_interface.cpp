@@ -19,7 +19,7 @@ Status HesaiHwInterface::SetSensorConfiguration(
   std::shared_ptr<SensorConfigurationBase> sensor_configuration)
 {
   HesaiStatus status = Status::OK;
-  mtu_size_ = 1500;
+  mtu_size_ = MTU_SIZE;
   is_solid_state = false;
   try {
     sensor_configuration_ =
@@ -27,35 +27,45 @@ Status HesaiHwInterface::SetSensorConfiguration(
     if (
       sensor_configuration_->sensor_model == SensorModel::HESAI_PANDAR40P ||
       sensor_configuration_->sensor_model == SensorModel::HESAI_PANDAR40P) {
-      azimuth_index_ = 2;  // 2 + 124 * [0-9]
+      azimuth_index_ = 2;
       is_valid_packet_ = [](size_t packet_size) {
-        return (packet_size == 1262 || packet_size == 1266);
+        return (
+          packet_size == PANDAR40_PACKET_SIZE || packet_size == PANDAR40P_EXTENDED_PACKET_SIZE);
       };
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDARQT64) {
       azimuth_index_ = 12;  // 12 + 258 * [0-3]
-      is_valid_packet_ = [](size_t packet_size) { return (packet_size == 1072); };
+      is_valid_packet_ = [](size_t packet_size) { return (packet_size == PANDARQT64_PACKET_SIZE); };
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDARQT128) {
       azimuth_index_ = 12;  // 12 + 514 * [0-1]
-      is_valid_packet_ = [](size_t packet_size) { return (packet_size == 1127); };  //1099
+      is_valid_packet_ = [](size_t packet_size) {
+        return (packet_size == PANDARQT128_PACKET_SIZE);
+      };
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDARXT32) {
       azimuth_index_ = 12;  // 12 + 130 * [0-7]
-      is_valid_packet_ = [](size_t packet_size) { return (packet_size == 1080); };
+      is_valid_packet_ = [](size_t packet_size) { return (packet_size == PANDARXT32_PACKET_SIZE); };
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDARXT32M) {
       azimuth_index_ = 12;  // 12 + 130 * [0-7]
-      is_valid_packet_ = [](size_t packet_size) { return (packet_size == 820); };
+      is_valid_packet_ = [](size_t packet_size) {
+        return (packet_size == PANDARXT32M_PACKET_SIZE);
+      };
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDARAT128) {
       azimuth_index_ = 12;  // 12 + 4 * 128 * [0-1]
       is_solid_state = true;
-      is_valid_packet_ = [](size_t packet_size) { return (packet_size == 1118); };
+      is_valid_packet_ = [](size_t packet_size) {
+        return (packet_size == PANDARAT128_PACKET_SIZE);
+      };
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDAR64) {
       azimuth_index_ = 8;  // 8 + 192 * [0-5]
       is_valid_packet_ = [](size_t packet_size) {
-        return (packet_size == 1194 || packet_size == 1198);
+        return (
+          packet_size == PANDAR64_PACKET_SIZE || packet_size == PANDAR64_EXTENDED_PACKET_SIZE);
       };
     } else if (sensor_configuration_->sensor_model == SensorModel::HESAI_PANDAR128_E4X) {
       azimuth_index_ = 12;  // 12
       is_valid_packet_ = [](size_t packet_size) {
-        return (packet_size == 1117 || packet_size == 861);
+        return (
+          packet_size == PANDAR128_E4X_EXTENDED_PACKET_SIZE ||
+          packet_size == PANDAR128_E4X_PACKET_SIZE);
       };
     } else {
       status = Status::INVALID_SENSOR_MODEL;
@@ -107,7 +117,7 @@ void HesaiHwInterface::ReceiveCloudPacketCallback(const std::vector<uint8_t> & b
     return;
   }
   uint32_t buffer_size = buffer.size();
-  std::array<uint8_t, 1500> packet_data{};
+  std::array<uint8_t, MTU_SIZE> packet_data{};
   std::copy_n(std::make_move_iterator(buffer.begin()), buffer_size, packet_data.begin());
   pandar_msgs::msg::PandarPacket pandar_packet;
   pandar_packet.data = packet_data;
@@ -198,23 +208,22 @@ boost::property_tree::ptree HesaiHwInterface::ParseJson(const std::string & str)
   return tree;
 }
 
-Status HesaiHwInterface::GetLidarCalib(
+Status HesaiHwInterface::GetLidarCalibration(
   std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, bool with_run)
 {
   std::vector<unsigned char> buf_vec;
-  int len = 0;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x05);  //Cmd PTC_COMMAND_GET_LIDAR_CALIBRATION
-  buf_vec.emplace_back(0x00);
-  buf_vec.emplace_back((len >> 24) & 0xff);
-  buf_vec.emplace_back((len >> 16) & 0xff);
-  buf_vec.emplace_back((len >> 8) & 0xff);
-  buf_vec.emplace_back((len >> 0) & 0xff);
-  if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetLidarCalib")) {
-    return GetLidarCalib(target_tcp_driver, with_run);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_GET_LIDAR_CALIBRATION);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetLidarCalibration")) {
+    return GetLidarCalibration(target_tcp_driver, with_run);
   }
-  PrintDebug("GetLidarCalib: start");
+  PrintDebug("GetLidarCalibration: start");
 
   target_tcp_driver->asyncSendReceiveHeaderPayload(
     buf_vec,
@@ -247,11 +256,11 @@ Status HesaiHwInterface::GetLidarCalib(
 #endif
       PrintDebug(received_bytes);
     },
-    [this]() { CheckUnlock(tm_, "GetLidarCalib"); });
+    [this]() { CheckUnlock(tm_, "GetLidarCalibration"); });
   if (with_run) {
     boost::system::error_code ec = target_tcp_driver->run();
     if (ec) {
-      PrintError("HesaiHwInterface::GetLidarCalib: " + ec.message());
+      PrintError("HesaiHwInterface::GetLidarCalibration: " + ec.message());
     }
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
     std::cout << "ctx->run(): GetLidarCalib" << std::endl;
@@ -263,7 +272,7 @@ Status HesaiHwInterface::GetLidarCalib(
 Status HesaiHwInterface::GetLidarCalib(std::shared_ptr<boost::asio::io_context> ctx, bool with_run)
 {
   auto tcp_driver_local = std::make_shared<::drivers::tcp_driver::TcpDriver>(ctx);
-  return GetLidarCalib(tcp_driver_local, with_run);
+  return GetLidarCalibration(tcp_driver_local, with_run);
 }
 Status HesaiHwInterface::GetLidarCalib(bool with_run)
 {
@@ -272,24 +281,23 @@ Status HesaiHwInterface::GetLidarCalib(bool with_run)
       tcp_driver_->GetIOContext()->restart();
     }
   }
-  return GetLidarCalib(tcp_driver_, with_run);
+  return GetLidarCalibration(tcp_driver_, with_run);
 }
 
 Status HesaiHwInterface::GetPtpDiagStatus(
   std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, bool with_run)
 {
   std::vector<unsigned char> buf_vec;
-  int len = 1;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x06);  //Cmd PTC_COMMAND_PTP_DIAGNOSTICS
-  buf_vec.emplace_back(0x00);
-  buf_vec.emplace_back((len >> 24) & 0xff);
-  buf_vec.emplace_back((len >> 16) & 0xff);
-  buf_vec.emplace_back((len >> 8) & 0xff);
-  buf_vec.emplace_back((len >> 0) & 0xff);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_PTP_DIAGNOSTICS);  //Cmd PTC_COMMAND_PTP_DIAGNOSTICS
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
 
-  buf_vec.emplace_back(0x01);  //PTP STATUS
+  buf_vec.emplace_back(PTC_COMMAND_PTP_STATUS);  //PTP STATUS
 
   if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetPtpDiagStatus")) {
     return GetPtpDiagStatus(target_tcp_driver, with_run);
@@ -328,7 +336,7 @@ Status HesaiHwInterface::GetPtpDiagStatus(
       PrintDebug(received_bytes);
 
       auto response = target_tcp_driver->getPayload();
-      HesaiPtpDiagStatus hesai_ptp_diag_status;
+      HesaiPtpDiagStatus hesai_ptp_diag_status{};
       if (8 < response.size()) {
         int payload_pos = 8;
         hesai_ptp_diag_status.master_offset = static_cast<long long>(response[payload_pos++]) << 56;
@@ -400,16 +408,16 @@ Status HesaiHwInterface::GetPtpDiagPort(
 {
   std::vector<unsigned char> buf_vec;
   int len = 1;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x06);  //Cmd PTC_COMMAND_PTP_DIAGNOSTICS
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_PTP_DIAGNOSTICS);  //Cmd PTC_COMMAND_PTP_DIAGNOSTICS
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
   buf_vec.emplace_back((len >> 0) & 0xff);
 
-  buf_vec.emplace_back(0x02);  //PTP TLV PORT_DATA_SET
+  buf_vec.emplace_back(PTC_COMMAND_PTP_PORT_DATA_SET);  //PTP TLV PORT_DATA_SET
 
   if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetPtpDiagPort")) {
     return GetPtpDiagPort(target_tcp_driver, with_run);
@@ -525,16 +533,16 @@ Status HesaiHwInterface::GetPtpDiagTime(
 {
   std::vector<unsigned char> buf_vec;
   int len = 1;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x06);  //Cmd PTC_COMMAND_PTP_DIAGNOSTICS
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_PTP_DIAGNOSTICS);  //Cmd PTC_COMMAND_PTP_DIAGNOSTICS
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
   buf_vec.emplace_back((len >> 0) & 0xff);
 
-  buf_vec.emplace_back(0x03);  //PTP TLV TIME_STATUS_NP
+  buf_vec.emplace_back(PTC_COMMAND_PTP_TIME_STATUS_NP);  //PTP TLV TIME_STATUS_NP
   if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetPtpDiagTime")) {
     return GetPtpDiagTime(target_tcp_driver, with_run);
   }
@@ -686,16 +694,16 @@ Status HesaiHwInterface::GetPtpDiagGrandmaster(
 {
   std::vector<unsigned char> buf_vec;
   int len = 1;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x06);  //Cmd PTC_COMMAND_PTP_DIAGNOSTICS
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_PTP_DIAGNOSTICS);  //Cmd PTC_COMMAND_PTP_DIAGNOSTICS
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
   buf_vec.emplace_back((len >> 0) & 0xff);
 
-  buf_vec.emplace_back(0x04);  //PTP TLV GRANDMASTER_SETTINGS_NP
+  buf_vec.emplace_back(PTC_COMMAND_PTP_GRANDMASTER_SETTINGS_NP);  //PTP TLV GRANDMASTER_SETTINGS_NP
   if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetPtpDiagGrandmaster")) {
     return GetPtpDiagGrandmaster(target_tcp_driver, with_run);
   }
@@ -789,10 +797,10 @@ Status HesaiHwInterface::GetInventory(
 {
   std::vector<unsigned char> buf_vec;
   int len = 0;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x07);  //Cmd PTC_COMMAND_GET_INVENTORY_INFO
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_GET_INVENTORY_INFO);  //Cmd PTC_COMMAND_GET_INVENTORY_INFO
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -921,10 +929,10 @@ Status HesaiHwInterface::GetConfig(
 {
   std::vector<unsigned char> buf_vec;
   int len = 0;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x08);  //Cmd PTC_COMMAND_GET_CONFIG_INFO
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_GET_CONFIG_INFO);  //Cmd PTC_COMMAND_GET_CONFIG_INFO
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1070,10 +1078,10 @@ Status HesaiHwInterface::GetLidarStatus(
 {
   std::vector<unsigned char> buf_vec;
   int len = 0;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x09);  //Cmd PTC_COMMAND_GET_LIDAR_STATUS
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_GET_LIDAR_STATUS);  //Cmd PTC_COMMAND_GET_LIDAR_STATUS
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1205,10 +1213,10 @@ Status HesaiHwInterface::SetSpinRate(
 {
   std::vector<unsigned char> buf_vec;
   int len = 2;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x17);  //Cmd PTC_COMMAND_SET_SPIN_RATE
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_SPIN_RATE);  //Cmd PTC_COMMAND_SET_SPIN_RATE
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1260,10 +1268,10 @@ Status HesaiHwInterface::SetSyncAngle(
 {
   std::vector<unsigned char> buf_vec;
   int len = 3;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x18);  //Cmd PTC_COMMAND_SET_SYNC_ANGLE
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_SYNC_ANGLE);  //Cmd PTC_COMMAND_SET_SYNC_ANGLE
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1316,10 +1324,10 @@ Status HesaiHwInterface::SetTriggerMethod(
 {
   std::vector<unsigned char> buf_vec;
   int len = 1;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x1b);  //Cmd PTC_COMMAND_SET_TRIGGER_METHOD
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_TRIGGER_METHOD);  //Cmd PTC_COMMAND_SET_TRIGGER_METHOD
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1370,10 +1378,10 @@ Status HesaiHwInterface::SetStandbyMode(
 {
   std::vector<unsigned char> buf_vec;
   int len = 1;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x1c);  //Cmd PTC_COMMAND_SET_STANDBY_MODE
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_STANDBY_MODE);  //Cmd PTC_COMMAND_SET_STANDBY_MODE
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1423,10 +1431,10 @@ Status HesaiHwInterface::SetReturnMode(
 {
   std::vector<unsigned char> buf_vec;
   int len = 1;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x1e);  //Cmd PTC_COMMAND_SET_RETURN_MODE
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_RETURN_MODE);  //Cmd PTC_COMMAND_SET_RETURN_MODE
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1479,10 +1487,10 @@ Status HesaiHwInterface::SetDestinationIp(
 {
   std::vector<unsigned char> buf_vec;
   int len = 8;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x20);  //Cmd PTC_COMMAND_SET_DESTINATION_IP
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_DESTINATION_IP);  //Cmd PTC_COMMAND_SET_DESTINATION_IP
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1546,10 +1554,10 @@ Status HesaiHwInterface::SetControlPort(
 {
   std::vector<unsigned char> buf_vec;
   int len = 15;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x21);  //Cmd PTC_COMMAND_SET_CONTROL_PORT
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_CONTROL_PORT);  //Cmd PTC_COMMAND_SET_CONTROL_PORT
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1625,10 +1633,10 @@ Status HesaiHwInterface::SetLidarRange(
 {
   std::vector<unsigned char> buf_vec;
   int len = 1 + data.size();
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x22);  //Cmd PTC_COMMAND_SET_LIDAR_RANGE
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_LIDAR_RANGE);  //Cmd PTC_COMMAND_SET_LIDAR_RANGE
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1686,10 +1694,10 @@ Status HesaiHwInterface::SetLidarRange(
 {
   std::vector<unsigned char> buf_vec;
   int len = 5;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x22);  //Cmd PTC_COMMAND_SET_LIDAR_RANGE
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_LIDAR_RANGE);  //Cmd PTC_COMMAND_SET_LIDAR_RANGE
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1751,10 +1759,10 @@ Status HesaiHwInterface::GetLidarRange(
 {
   std::vector<unsigned char> buf_vec;
   int len = 0;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x23);  //Cmd PTC_COMMAND_GET_LIDAR_RANGE
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_GET_LIDAR_RANGE);  //Cmd PTC_COMMAND_GET_LIDAR_RANGE
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1881,10 +1889,10 @@ Status HesaiHwInterface::SetPtpConfig(
   } else {
     return Status::ERROR_1;
   }
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x24);  //Cmd PTC_COMMAND_SET_PTP_CONFIG
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_PTP_CONFIG);  //Cmd PTC_COMMAND_SET_PTP_CONFIG
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -1951,10 +1959,10 @@ Status HesaiHwInterface::GetPtpConfig(
 {
   std::vector<unsigned char> buf_vec;
   int len = 0;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x26);  //Cmd PTC_COMMAND_GET_PTP_CONFIG
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_GET_PTP_CONFIG);  //Cmd PTC_COMMAND_GET_PTP_CONFIG
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -2051,10 +2059,10 @@ Status HesaiHwInterface::SendReset(
 {
   std::vector<unsigned char> buf_vec;
   int len = 0;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x25);  //Cmd PTC_COMMAND_RESET
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_RESET);  //Cmd PTC_COMMAND_RESET
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -2103,10 +2111,10 @@ Status HesaiHwInterface::SetRotDir(
 {
   std::vector<unsigned char> buf_vec;
   int len = 1;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x2a);  //Cmd PTC_COMMAND_SET_ROTATE_DIRECTION
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_SET_ROTATE_DIRECTION);  //Cmd PTC_COMMAND_SET_ROTATE_DIRECTION
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);
@@ -2157,10 +2165,10 @@ Status HesaiHwInterface::GetLidarMonitor(
 {
   std::vector<unsigned char> buf_vec;
   int len = 0;
-  buf_vec.emplace_back(0x47);
-  buf_vec.emplace_back(0x74);
-  buf_vec.emplace_back(0x27);  //Cmd PTC_COMMAND_LIDAR_MONITOR
-  buf_vec.emplace_back(0x00);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_LIDAR_MONITOR);  //Cmd PTC_COMMAND_LIDAR_MONITOR
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back((len >> 24) & 0xff);
   buf_vec.emplace_back((len >> 16) & 0xff);
   buf_vec.emplace_back((len >> 8) & 0xff);

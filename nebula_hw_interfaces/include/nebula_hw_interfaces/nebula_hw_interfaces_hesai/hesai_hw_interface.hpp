@@ -23,6 +23,46 @@ namespace nebula
 namespace drivers
 {
 const int PandarTcpCommandPort = 9347;
+const uint8_t PTC_COMMAND_DUMMY_BYTE = 0x00;
+const uint8_t PTC_COMMAND_HEADER_HIGH = 0x47;
+const uint8_t PTC_COMMAND_HEADER_LOW = 0x74;
+const uint8_t PTC_COMMAND_GET_LIDAR_CALIBRATION = 0x05;
+const uint8_t PTC_COMMAND_PTP_DIAGNOSTICS = 0x06;
+const uint8_t PTC_COMMAND_PTP_STATUS = 0x01;
+const uint8_t PTC_COMMAND_PTP_PORT_DATA_SET = 0x02;
+const uint8_t PTC_COMMAND_PTP_TIME_STATUS_NP = 0x03;
+const uint8_t PTC_COMMAND_PTP_GRANDMASTER_SETTINGS_NP = 0x04;
+const uint8_t PTC_COMMAND_GET_INVENTORY_INFO = 0x07;
+const uint8_t PTC_COMMAND_GET_CONFIG_INFO = 0x08;
+const uint8_t PTC_COMMAND_GET_LIDAR_STATUS = 0x09;
+const uint8_t PTC_COMMAND_SET_SPIN_RATE = 0x17;
+const uint8_t PTC_COMMAND_SET_SYNC_ANGLE = 0x18;
+const uint8_t PTC_COMMAND_SET_TRIGGER_METHOD = 0x1b;
+const uint8_t PTC_COMMAND_SET_STANDBY_MODE = 0x1c;
+const uint8_t PTC_COMMAND_SET_RETURN_MODE = 0x1e;
+const uint8_t PTC_COMMAND_SET_DESTINATION_IP = 0x20;
+const uint8_t PTC_COMMAND_SET_CONTROL_PORT = 0x21;
+const uint8_t PTC_COMMAND_SET_LIDAR_RANGE = 0x22;
+const uint8_t PTC_COMMAND_GET_LIDAR_RANGE = 0x23;
+const uint8_t PTC_COMMAND_SET_PTP_CONFIG = 0x24;
+const uint8_t PTC_COMMAND_GET_PTP_CONFIG = 0x26;
+const uint8_t PTC_COMMAND_RESET = 0x25;
+const uint8_t PTC_COMMAND_SET_ROTATE_DIRECTION = 0x2a;
+const uint8_t PTC_COMMAND_LIDAR_MONITOR = 0x27;
+
+const uint16_t PANDARQT64_PACKET_SIZE = 1072;
+const uint16_t PANDARQT128_PACKET_SIZE = 1127;
+const uint16_t PANDARXT32_PACKET_SIZE = 1080;
+const uint16_t PANDARXT32M_PACKET_SIZE = 820;
+const uint16_t PANDARAT128_PACKET_SIZE = 1118;
+const uint16_t PANDAR64_PACKET_SIZE = 1194;
+const uint16_t PANDAR64_EXTENDED_PACKET_SIZE = 1198;
+const uint16_t PANDAR40_PACKET_SIZE = 1262;
+const uint16_t PANDAR40P_EXTENDED_PACKET_SIZE = 1266;
+const uint16_t PANDAR128_E4X_PACKET_SIZE = 861;
+const uint16_t PANDAR128_E4X_EXTENDED_PACKET_SIZE = 1117;
+
+const uint16_t MTU_SIZE = 1500;
 
 /// @brief Hardware interface of hesai driver
 class HesaiHwInterface : NebulaHwInterfaceBase
@@ -49,11 +89,10 @@ private:
   int timeout_ = 2000;
   std::timed_mutex tm_;
   int tm_fail_cnt = 0;
-  int tm_fail_cnt_max = 0;  //1;
+  int tm_fail_cnt_max = 0;
   std::timed_mutex tms_;
   int tms_fail_cnt = 0;
-  int tms_fail_cnt_max = 0;  //1;
-                             //  bool wl = false;
+  int tms_fail_cnt_max = 0;
   bool wl = true;
   bool is_solid_state = false;
   int target_model_no;
@@ -145,7 +184,7 @@ public:
   /// @param target_tcp_driver TcpDriver used
   /// @param with_run Automatically executes run() of TcpDriver
   /// @return Resulting status
-  Status GetLidarCalib(
+  Status GetLidarCalibration(
     std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, bool with_run = true);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION
   /// @param ctx IO Context used

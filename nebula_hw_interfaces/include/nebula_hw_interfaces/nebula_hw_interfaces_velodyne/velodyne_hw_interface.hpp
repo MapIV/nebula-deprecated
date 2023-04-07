@@ -64,8 +64,6 @@ private:
   std::string TARGET_SAVE{"/cgi/save"};
   std::string TARGET_RESET{"/cgi/reset"};
   void str_cb(const std::string & str);
-  //  std::unique_ptr<::drivers::tcp_driver::HttpClientDriver> GetHttpClientDriverOnce(std::shared_ptr<boost::asio::io_context> ctx);
-  //  std::unique_ptr<::drivers::tcp_driver::HttpClientDriver> GetHttpClientDriverOnce();
 
   /// @brief Get a one-off HTTP client to communicate with the hardware
   /// @param ctx IO Context
