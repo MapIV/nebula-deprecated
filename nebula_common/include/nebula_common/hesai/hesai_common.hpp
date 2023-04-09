@@ -130,22 +130,10 @@ struct HesaiCorrection
   uint8_t SHA256[32];
 
   /// @brief Load correction data from file
-  /// @param correction_file path
+  /// @param buf Binary buffer
   /// @return Resulting status
-  inline nebula::Status LoadFromFile(const std::string & correction_file)
+  inline nebula::Status LoadFromBinary(const std::vector<uint8_t> & buf)
   {
-    std::ifstream ifs(correction_file, std::ios::in | std::ios::binary);
-    if (!ifs) {
-      return Status::INVALID_CALIBRATION_FILE;
-    }
-    std::vector<unsigned char> buf;
-    //    int cnt = 0;
-    while (!ifs.eof()) {
-      unsigned char c;
-      ifs.read((char *)&c, sizeof(unsigned char));
-      buf.emplace_back(c);
-    }
-
     size_t index = 0;
     delimiter = (buf[index] & 0xff) << 8 | ((buf[index + 1] & 0xff));
     versionMajor = buf[index + 2] & 0xff;
@@ -260,6 +248,26 @@ struct HesaiCorrection
       default:
         break;
     }
+    return Status::OK;
+  }
+
+  /// @brief Load correction data from file
+  /// @param correction_file path
+  /// @return Resulting status
+  inline nebula::Status LoadFromFile(const std::string & correction_file)
+  {
+    std::ifstream ifs(correction_file, std::ios::in | std::ios::binary);
+    if (!ifs) {
+      return Status::INVALID_CALIBRATION_FILE;
+    }
+    std::vector<unsigned char> buf;
+    //    int cnt = 0;
+    while (!ifs.eof()) {
+      unsigned char c;
+      ifs.read((char *)&c, sizeof(unsigned char));
+      buf.emplace_back(c);
+    }
+    LoadFromBinary(buf);
 
     ifs.close();
     return Status::OK;

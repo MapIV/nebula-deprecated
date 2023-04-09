@@ -185,13 +185,44 @@ public:
   /// @param with_run Automatically executes run() of TcpDriver
   /// @return Resulting status
   Status GetLidarCalibration(
+    std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, std::function<void(const std::vector<uint8_t> & received_bytes)> bytes_callback, bool with_run = true);
+  /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION
+  /// @param bytes_callback callback
+  /// @param ctx IO Context used
+  /// @param with_run Automatically executes run() of TcpDriver
+  /// @return Resulting status
+  Status GetLidarCalibration(
+    std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, std::function<void(const std::string & str)> str_callback, bool with_run = true);
+  /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION
+  /// @param str_callback callback
+  /// @param ctx IO Context used
+  /// @param with_run Automatically executes run() of TcpDriver
+  /// @return Resulting status
+  Status GetLidarCalibration(
     std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, bool with_run = true);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION
   /// @param ctx IO Context used
   /// @param with_run Automatically executes run() of TcpDriver
   /// @return Resulting status
-  Status GetLidarCalib(std::shared_ptr<boost::asio::io_context> ctx, bool with_run = true);
+  Status GetLidarCalibration(std::shared_ptr<boost::asio::io_context> ctx, std::function<void(const std::string & str)> str_callback, bool with_run = true);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION
+  /// @param str_callback callback
+  /// @param with_run Automatically executes run() of TcpDriver
+  /// @return Resulting status
+  Status GetLidarCalibration(std::shared_ptr<boost::asio::io_context> ctx, bool with_run = true);
+  /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION
+  /// @param with_run Automatically executes run() of TcpDriver
+  /// @return Resulting status
+  Status GetLidarCalibrationFromSensor(std::function<void(const std::vector<uint8_t> & received_bytes)> bytes_callback, bool with_run = true);
+  /// @brief Getting data with PTC_COMMAND_PTP_DIAGNOSTICS (PTP STATUS)
+  /// @param target_tcp_driver TcpDriver used
+  /// @param bytes_callback callback
+  /// @param with_run Automatically executes run() of TcpDriver
+  /// @return Resulting status
+  Status GetLidarCalibrationFromSensor(std::function<void(const std::string & str)> str_callback, bool with_run = true);
+  /// @brief Getting data with PTC_COMMAND_PTP_DIAGNOSTICS (PTP STATUS)
+  /// @param target_tcp_driver TcpDriver used
+  /// @param str_callback callback
   /// @param with_run Automatically executes run() of TcpDriver
   /// @return Resulting status
   Status GetLidarCalibrationFromSensor(bool with_run = true);

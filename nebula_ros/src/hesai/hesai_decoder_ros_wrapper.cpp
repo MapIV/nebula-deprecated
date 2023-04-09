@@ -215,35 +215,51 @@ Status HesaiDriverRosWrapper::GetParameters(
   if (sensor_configuration.frame_id.empty() || sensor_configuration.scan_phase > 360) {
     return Status::SENSOR_CONFIG_ERROR;
   }
-  if (calibration_configuration.calibration_file.empty()) {
-    return Status::INVALID_CALIBRATION_FILE;
-  } else {
-    RCLCPP_INFO_STREAM(
-      this->get_logger(),
-      "Trying to acquire calibration data from sensor: '" << sensor_configuration.sensor_ip << "'");
-    std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
-      std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration);
-    hw_interface_.SetSensorConfiguration(
-      std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
-    hw_interface_.InitializeTcpDriver(false);
-    hw_interface_.GetLidarCalibrationFromSensor(true);
-
-    auto cal_status =
-      calibration_configuration.LoadFromFile(calibration_configuration.calibration_file);
-
-    if (cal_status != Status::OK) {
-      RCLCPP_ERROR_STREAM(
+  if (sensor_configuration.sensor_model != drivers::SensorModel::HESAI_PANDARAT128) {
+    if (calibration_configuration.calibration_file.empty()) {
+      return Status::INVALID_CALIBRATION_FILE;
+    } else {
+      RCLCPP_INFO_STREAM(
         this->get_logger(),
-        "Given Calibration File: '" << calibration_configuration.calibration_file << "'");
-      return cal_status;
+        "Trying to acquire calibration data from sensor: '" << sensor_configuration.sensor_ip << "'");
+      std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
+        std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration);
+      hw_interface_.SetSensorConfiguration(
+        std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
+      hw_interface_.InitializeTcpDriver(false);
+  //    hw_interface_.GetLidarCalibrationFromSensor(true);
+      hw_interface_.GetLidarCalibrationFromSensor(
+        [this, &calibration_configuration](const std::string & str) {
+          calibration_configuration.LoadFromString(str);
+        }, true);
+
+      auto cal_status =
+        calibration_configuration.LoadFromFile(calibration_configuration.calibration_file);
+
+      if (cal_status != Status::OK) {
+        RCLCPP_ERROR_STREAM(
+          this->get_logger(),
+          "Given Calibration File: '" << calibration_configuration.calibration_file << "'");
+        return cal_status;
+      }
     }
-  }
-  if (sensor_configuration.sensor_model == drivers::SensorModel::HESAI_PANDARAT128) {
+  } else {
     if (correction_file_path.empty()) {
       RCLCPP_ERROR_STREAM(
         this->get_logger(), "Empty Correction File: '" << correction_file_path << "'");
       return Status::INVALID_CALIBRATION_FILE;
     } else {
+      std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
+        std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration);
+      //*
+      hw_interface_.SetSensorConfiguration(
+        std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
+      hw_interface_.InitializeTcpDriver(false);
+      hw_interface_.GetLidarCalibrationFromSensor(
+        [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
+          correction_configuration.LoadFromBinary(received_bytes);
+        }, true);
+      //*/
       auto cal_status = correction_configuration.LoadFromFile(correction_file_path);
       if (cal_status != Status::OK) {
         RCLCPP_ERROR_STREAM(
