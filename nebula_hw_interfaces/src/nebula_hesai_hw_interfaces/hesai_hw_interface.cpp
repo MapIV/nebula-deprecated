@@ -271,36 +271,43 @@ Status HesaiHwInterface::GetLidarCalibration(
   std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver,
   std::function<void(const std::string & str)> str_callback, bool with_run)
 {
-  return GetLidarCalibration(target_tcp_driver, 
-      [this, str_callback](const std::vector<uint8_t> & received_bytes) {
-        std::string calib_string =
-          std::string(received_bytes.data(), received_bytes.data() + received_bytes.size());
-        PrintInfo(calib_string);
-        str_callback(calib_string);
-      }, with_run);
+  return GetLidarCalibration(
+    target_tcp_driver,
+    [this, str_callback](const std::vector<uint8_t> & received_bytes) {
+      std::string calib_string =
+        std::string(received_bytes.data(), received_bytes.data() + received_bytes.size());
+      PrintInfo(calib_string);
+      str_callback(calib_string);
+    },
+    with_run);
 }
 Status HesaiHwInterface::GetLidarCalibration(
   std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, bool with_run)
 {
-  return GetLidarCalibration(target_tcp_driver, 
-      [this](const std::vector<uint8_t> & received_bytes) {
-        std::string calib_string =
-          std::string(received_bytes.data(), received_bytes.data() + received_bytes.size());
-        PrintInfo(calib_string);
-      }, with_run);
+  return GetLidarCalibration(
+    target_tcp_driver,
+    [this](const std::vector<uint8_t> & received_bytes) {
+      std::string calib_string =
+        std::string(received_bytes.data(), received_bytes.data() + received_bytes.size());
+      PrintInfo(calib_string);
+    },
+    with_run);
 }
-Status HesaiHwInterface::GetLidarCalibration(std::shared_ptr<boost::asio::io_context> ctx,
+Status HesaiHwInterface::GetLidarCalibration(
+  std::shared_ptr<boost::asio::io_context> ctx,
   std::function<void(const std::string & str)> str_callback, bool with_run)
 {
   auto tcp_driver_local = std::make_shared<::drivers::tcp_driver::TcpDriver>(ctx);
   return GetLidarCalibration(tcp_driver_local, str_callback, with_run);
 }
-Status HesaiHwInterface::GetLidarCalibration(std::shared_ptr<boost::asio::io_context> ctx, bool with_run)
+Status HesaiHwInterface::GetLidarCalibration(
+  std::shared_ptr<boost::asio::io_context> ctx, bool with_run)
 {
   auto tcp_driver_local = std::make_shared<::drivers::tcp_driver::TcpDriver>(ctx);
   return GetLidarCalibration(tcp_driver_local, with_run);
 }
-Status HesaiHwInterface::GetLidarCalibrationFromSensor(std::function<void(const std::vector<uint8_t> & received_bytes)> bytes_callback, bool with_run)
+Status HesaiHwInterface::GetLidarCalibrationFromSensor(
+  std::function<void(const std::vector<uint8_t> & received_bytes)> bytes_callback, bool with_run)
 {
   if (with_run) {
     if (tcp_driver_->GetIOContext()->stopped()) {
@@ -309,26 +316,27 @@ Status HesaiHwInterface::GetLidarCalibrationFromSensor(std::function<void(const 
   }
   return GetLidarCalibration(tcp_driver_, bytes_callback, with_run);
 }
-Status HesaiHwInterface::GetLidarCalibrationFromSensor(std::function<void(const std::string & str)> str_callback, bool with_run)
+Status HesaiHwInterface::GetLidarCalibrationFromSensor(
+  std::function<void(const std::string & str)> str_callback, bool with_run)
 {
   if (with_run) {
     if (tcp_driver_->GetIOContext()->stopped()) {
       tcp_driver_->GetIOContext()->restart();
     }
   }
-  return GetLidarCalibration(tcp_driver_,
-      [this, str_callback](const std::vector<uint8_t> & received_bytes) {
-        std::string calib_string =
-          std::string(received_bytes.data(), received_bytes.data() + received_bytes.size());
-        str_callback(calib_string);
-      }, with_run);
+  return GetLidarCalibration(
+    tcp_driver_,
+    [this, str_callback](const std::vector<uint8_t> & received_bytes) {
+      std::string calib_string =
+        std::string(received_bytes.data(), received_bytes.data() + received_bytes.size());
+      str_callback(calib_string);
+    },
+    with_run);
 }
 Status HesaiHwInterface::GetLidarCalibrationFromSensor(bool with_run)
 {
   return GetLidarCalibrationFromSensor(
-    [this](const std::string & str) {
-        PrintDebug(str);
-    }, with_run);
+    [this](const std::string & str) { PrintDebug(str); }, with_run);
 }
 
 Status HesaiHwInterface::GetPtpDiagStatus(
