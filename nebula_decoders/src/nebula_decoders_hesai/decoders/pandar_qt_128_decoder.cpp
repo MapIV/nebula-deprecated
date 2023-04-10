@@ -98,32 +98,21 @@ void PandarQT128Decoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_pa
     for (size_t block_id = 0; block_id < BLOCKS_PER_PACKET; block_id += 2) {
       auto block1_pt = convert(block_id);
       auto block2_pt = convert(block_id + 1);
-      /*
-      std::cout << "block1_pt->points[" << 0 << "]=" << static_cast<int>(block1_pt->points[0].return_type) << std::endl;
-      std::cout << "block2_pt->points[" << 0 << "]=" << static_cast<int>(block2_pt->points[0].return_type) << std::endl;
-      std::cout << "block1_pt->points.size()=" << static_cast<int>(block1_pt->points.size()) << std::endl;
-      std::cout << "block2_pt->points.size()=" << static_cast<int>(block2_pt->points.size()) << std::endl;
-      */
       size_t block1size = block1_pt->points.size();
       cnt2 = 0;
       for (size_t i = 0; i < block1size; i++) {
-        //        std::cout << "dif=" << (packet_.blocks[block_id + 1].units[i].distance - packet_.blocks[block_id].units[i].distance) << std::endl;
-        //        std::cout << "block2_pt->points[" << i << "]=" << static_cast<int>(block2_pt->points[i].return_type) << std::endl;
         if (
           fabsf(
             packet_.blocks[block_id + 1].units[i].distance -
             packet_.blocks[block_id].units[i].distance) > dual_return_distance_threshold_) {
           block_pc->points.emplace_back(block1_pt->points[i]);
           block_pc->points.emplace_back(block2_pt->points[i]);
-          //          std::cout << "add block2" << std::endl;
           cnt2++;
         } else {
           block1_pt->points[i].return_type = static_cast<uint8_t>(ReturnType::IDENTICAL);
           block_pc->points.emplace_back(block1_pt->points[i]);
         }
       }
-      //      std::cout << "block1_pt->points.size()=" << static_cast<int>(block1_pt->points.size()) << std::endl;
-      //      std::cout << "cnt2=" << cnt2 << std::endl;
       current_phase =
         (static_cast<int>(packet_.blocks[block_id + 1].azimuth) - scan_phase_ + 36000) % 36000;
     }

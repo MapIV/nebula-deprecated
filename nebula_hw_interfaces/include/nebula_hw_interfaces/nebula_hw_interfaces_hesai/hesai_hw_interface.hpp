@@ -113,8 +113,6 @@ private:
   /// @param str Received string
   void str_cb(const std::string & str);
 
-  //  std::vector<std::shared_ptr<::drivers::tcp_driver::TcpDriver>> tcp_drivers_status;
-
   /// @brief Lock function during TCP communication
   /// @param tm Mutex
   /// @param fail_cnt # of failures

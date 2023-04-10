@@ -221,9 +221,6 @@ Status HesaiHwInterface::GetLidarCalibration(
   buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
   buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
-  //  if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetLidarCalibration")) {
-  //    return GetLidarCalibration(target_tcp_driver, with_run);
-  //  }
   PrintDebug("GetLidarCalibration: start");
 
   target_tcp_driver->asyncSendReceiveHeaderPayload(
@@ -255,11 +252,7 @@ Status HesaiHwInterface::GetLidarCalibration(
       }
       std::cout << std::endl;
 #endif
-//      std::string calib_string =
-//        std::string(received_bytes.data(), received_bytes.data() + received_bytes.size());
-//      PrintInfo(calib_string);
       bytes_callback(received_bytes);
-//      calibration_configuration_->LoadFromString(calib_string);
     },
     [this]() { CheckUnlock(tm_, "GetLidarCalibration"); });
   if (with_run) {
@@ -2582,7 +2575,6 @@ HesaiStatus HesaiHwInterface::CheckAndSetConfig(
     t.join();
   }
 
-//  tcp_driver_->run();
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
   std::cout << "End CheckAndSetConfig(HesaiLidarRangeAll)!!" << std::endl;
 #endif

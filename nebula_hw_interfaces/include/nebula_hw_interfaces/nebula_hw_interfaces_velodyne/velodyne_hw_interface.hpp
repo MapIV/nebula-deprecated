@@ -45,15 +45,6 @@ private:
   std::shared_ptr<boost::asio::io_context> boost_ctx_;
   std::unique_ptr<::drivers::tcp_driver::HttpClientDriver> http_client_driver_;
 
-  /*
-  inline static constexpr std::string TARGET_STATUS { "cgi/status.json" };
-  inline static constexpr std::string TARGET_DIAG { "cgi/diag.json" };
-  inline static constexpr std::string TARGET_SNAPSHOT { "cgi/snapshot.hdl" };
-  inline static constexpr std::string TARGET_SETTING { "cgi/setting" };
-  inline static constexpr std::string TARGET_FOV { "cgi/setting/fov" };
-  inline static constexpr std::string TARGET_SAVE { "cgi/save" };
-  inline static constexpr std::string TARGET_RESET { "cgi/reset" };
-  */
   std::string TARGET_STATUS{"/cgi/status.json"};
   std::string TARGET_DIAG{"/cgi/diag.json"};
   std::string TARGET_SNAPSHOT{"/cgi/snapshot.hdl"};
