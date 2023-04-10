@@ -47,23 +47,56 @@ You should ideally provide a config file for your specific sensor, but default o
 ## Hesai LiDARs
 Supported models, where sensor_model is the ROS param to be used at launch:
 
-| Model         | sensor_model   | Config   |
-|---------------|----------------|----------|
-| Pandar 64     | Pandar64       | 64.csv   |
-| Pandar 40P    | Pandar40P      | 40p.csv  |
-| Pandar XT 32  | PandarXT32     | xt32.csv |
-| Pandar QT 64  | PandarQT64     | qt.csv   |
-| ------------- | -------------- | -------- |
+| Model         | sensor_model |
+|---------------|--------------|
+| Pandar 64     | Pandar64     |
+| Pandar 40P    | Pandar40P    |
+| Pandar XT32   | PandarXT32   |
+| Pandar XT32M  | PandarXT32M  |
+| Pandar QT64   | PandarQT64   |
+| Pandar QT128  | PandarQT128  |
+| Pandar AT128  | PandarAT128  |
+| Pandar 128E4X | Pandar128E4X |
 
-Supported return modes:
+Supported return modes per model:
 
-| Mode               | return_mode     |
-|--------------------|-----------------|
-| Single (First)     | SingleFirst     |
-| Single (Strongest) | SingleStrongest |
-| Single (Last)      | SingleLast      |
-| Dual               | Dual            | 
-| ------------------ | --------------- |
+| Sensor Model | return_mode    | type   |
+|--------------|----------------|--------|
+| Pandar XT32M | Last           | Single |
+| Pandar XT32M | Strongest      | Single |
+| Pandar XT32M | LastStrongest  | Dual   |
+| Pandar XT32M | First          | Single |
+| Pandar XT32M | LastFirst      | Dual   |
+| Pandar XT32M | FirstStrongest | Dual   |
+| Pandar XT32M | Dual           | Dual   |
+| ---          | ---            | ---    |
+| Pandar AT128 | Last           | Single |
+| Pandar AT128 | Strongest      | Single |
+| Pandar AT128 | LastStrongest  | Dual   |
+| Pandar AT128 | First          | Single |
+| Pandar AT128 | LastFirst      | Dual   |
+| Pandar AT128 | FirstStrongest | Dual   |
+| Pandar AT128 | Dual           | Dual   |
+| ---          | ---            | ---    |
+| Pandar QT128 | Last           | Single |
+| Pandar QT128 | Strongest      | Single |
+| Pandar QT128 | LastStrongest  | Dual   |
+| Pandar QT128 | First          | Single |
+| Pandar QT128 | LastFirst      | Dual   |
+| Pandar QT128 | FirstStrongest | Dual   |
+| Pandar QT128 | Dual           | Dual   |
+| ---          | ---            | ---    |
+| Pandar QT64  | Last           | Single |
+| Pandar QT64  | Dual           | Dual   |
+| Pandar QT64  | First          | Single |
+| ---          | ---            | ---    |
+| Pandar 40P   | Last           | Single |
+| Pandar 40P   | Strongest      | Single |
+| Pandar 40P   | Dual           | Dual   |
+| ---          | ---            | ---    |
+| Pandar 64    | Last           | Single |
+| Pandar 64    | Strongest      | Single |
+| Pandar 64    | Dual           | Dual   |
 
 Common ROS params:
 
