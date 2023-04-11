@@ -256,10 +256,10 @@ Status HesaiDriverRosWrapper::GetParameters(
       hw_interface_.SetSensorConfiguration(
         std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
       hw_interface_.InitializeTcpDriver(false);
-//      hw_interface_.GetLidarCalibrationFromSensor(
-//        [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
-//          correction_configuration.LoadFromBinary(received_bytes);
-//        }, true);
+      //      hw_interface_.GetLidarCalibrationFromSensor(
+      //        [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
+      //          correction_configuration.LoadFromBinary(received_bytes);
+      //        }, true);
       hw_interface_.syncGetLidarCalibrationFromSensor(
         [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
           correction_configuration.LoadFromBinary(received_bytes);
