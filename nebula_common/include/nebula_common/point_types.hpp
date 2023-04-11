@@ -25,6 +25,17 @@ struct PointXYZICATR
   std::uint8_t return_type;
 };
 
+struct PointXYZICAETR
+{
+  PCL_ADD_POINT4D;
+  std::uint8_t intensity;
+  std::uint16_t channel;
+  float azimuth;
+  float elevation;
+  std::uint32_t time_stamp;
+  std::uint8_t return_type;
+};
+
 struct PointXYZIRADT
 {
   PCL_ADD_POINT4D;
