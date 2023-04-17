@@ -224,24 +224,25 @@ Status HesaiDriverRosWrapper::GetParameters(
                               << sensor_configuration.sensor_ip << "'");
       std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
         std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration);
+
       hw_interface_.SetSensorConfiguration(
         std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
-      hw_interface_.InitializeTcpDriver(false);
-      //    hw_interface_.GetLidarCalibrationFromSensor(true);
-      hw_interface_.GetLidarCalibrationFromSensor(
-        [this, &calibration_configuration](const std::string & str) {
-          calibration_configuration.LoadFromString(str);
-        },
-        true);
+      if(hw_interface_.InitializeTcpDriver(false) == Status::OK){
+        hw_interface_.GetLidarCalibrationFromSensor(
+          [this, &calibration_configuration](const std::string & str) {
+            calibration_configuration.LoadFromString(str);
+          },
+          true);
+      }else{
+        auto cal_status =
+          calibration_configuration.LoadFromFile(calibration_configuration.calibration_file);
 
-      auto cal_status =
-        calibration_configuration.LoadFromFile(calibration_configuration.calibration_file);
-
-      if (cal_status != Status::OK) {
-        RCLCPP_ERROR_STREAM(
-          this->get_logger(),
-          "Given Calibration File: '" << calibration_configuration.calibration_file << "'");
-        return cal_status;
+        if (cal_status != Status::OK) {
+          RCLCPP_ERROR_STREAM(
+            this->get_logger(),
+            "Given Calibration File: '" << calibration_configuration.calibration_file << "'");
+          return cal_status;
+        }
       }
     }
   } else {
@@ -252,24 +253,20 @@ Status HesaiDriverRosWrapper::GetParameters(
     } else {
       std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
         std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration);
-      //*
       hw_interface_.SetSensorConfiguration(
         std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
-      hw_interface_.InitializeTcpDriver(false);
-//      hw_interface_.GetLidarCalibrationFromSensor(
-//        [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
-//          correction_configuration.LoadFromBinary(received_bytes);
-//        }, true);
-      hw_interface_.syncGetLidarCalibrationFromSensor(
-        [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
-          correction_configuration.LoadFromBinary(received_bytes);
-        });
-      //*/
-      auto cal_status = correction_configuration.LoadFromFile(correction_file_path);
-      if (cal_status != Status::OK) {
-        RCLCPP_ERROR_STREAM(
-          this->get_logger(), "Given Correction File: '" << correction_file_path << "'");
-        return cal_status;
+      if(hw_interface_.InitializeTcpDriver(false) == Status::OK){
+        hw_interface_.syncGetLidarCalibrationFromSensor(
+          [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
+            correction_configuration.LoadFromBinary(received_bytes);
+          });
+      }else{
+        auto cal_status = correction_configuration.LoadFromFile(correction_file_path);
+        if (cal_status != Status::OK) {
+          RCLCPP_ERROR_STREAM(
+            this->get_logger(), "Given Correction File: '" << correction_file_path << "'");
+          return cal_status;
+        }
       }
     }
   }

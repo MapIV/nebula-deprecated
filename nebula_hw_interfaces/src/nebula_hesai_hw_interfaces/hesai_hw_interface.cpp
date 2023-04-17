@@ -187,12 +187,16 @@ Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
   tcp_driver_->init_socket(
     sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
     PandarTcpCommandPort);
-  tcp_driver_->open();
+  if(!tcp_driver_->open()){
+    return Status::ERROR_1;
+  }
   if (setup_sensor) {
     tcp_driver_s_->init_socket(
       sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
       PandarTcpCommandPort);
-    tcp_driver_s_->open();
+    if(!tcp_driver_s_->open()){
+      return Status::ERROR_1;
+    }
   }
   return Status::OK;
 }
