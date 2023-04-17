@@ -182,13 +182,15 @@ public:
   /// @param target_tcp_driver TcpDriver used
   /// @return Resulting status
   Status syncGetLidarCalibration(
-    std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, std::function<void(const std::vector<uint8_t> & received_bytes)> bytes_callback);
+    std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver,
+    std::function<void(const std::vector<uint8_t> & received_bytes)> bytes_callback);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION (sync)
   /// @param bytes_callback callback
   /// @param ctx IO Context used
   /// @return Resulting status
   Status syncGetLidarCalibration(
-    std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, std::function<void(const std::string & str)> str_callback);
+    std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver,
+    std::function<void(const std::string & str)> str_callback);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION (sync)
   /// @param str_callback callback
   /// @param ctx IO Context used
@@ -198,19 +200,23 @@ public:
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION (sync)
   /// @param ctx IO Context used
   /// @return Resulting status
-  Status syncGetLidarCalibration(std::shared_ptr<boost::asio::io_context> ctx, std::function<void(const std::string & str)> str_callback);
+  Status syncGetLidarCalibration(
+    std::shared_ptr<boost::asio::io_context> ctx,
+    std::function<void(const std::string & str)> str_callback);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION (sync)
   /// @param str_callback callback
   /// @return Resulting status
   Status syncGetLidarCalibration(std::shared_ptr<boost::asio::io_context> ctx);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION (sync)
   /// @return Resulting status
-  Status syncGetLidarCalibrationFromSensor(std::function<void(const std::vector<uint8_t> & received_bytes)> bytes_callback);
+  Status syncGetLidarCalibrationFromSensor(
+    std::function<void(const std::vector<uint8_t> & received_bytes)> bytes_callback);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION (sync)
   /// @param target_tcp_driver TcpDriver used
   /// @param bytes_callback callback
   /// @return Resulting status
-  Status syncGetLidarCalibrationFromSensor(std::function<void(const std::string & str)> str_callback);
+  Status syncGetLidarCalibrationFromSensor(
+    std::function<void(const std::string & str)> str_callback);
   /// @brief Getting data with PTC_COMMAND_GET_LIDAR_CALIBRATION (sync)
   /// @param target_tcp_driver TcpDriver used
   /// @param str_callback callback
