@@ -81,6 +81,7 @@ private:
   std::string target_topic;
   int out_num;
   int skip_num;
+  bool only_xyz;
 };
 
 }  // namespace ros

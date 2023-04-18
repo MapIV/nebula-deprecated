@@ -62,6 +62,7 @@ private:
   std::string correction_file_path;
   int out_num;
   int skip_num;
+  bool only_xyz;
 };
 
 }  // namespace ros

@@ -203,6 +203,15 @@ Status HesaiRosOfflineExtractBag::GetParameters(
   }
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type = 1;
+    descriptor.read_only = true;
+    descriptor.dynamic_typing = false;
+    descriptor.additional_constraints = "";
+    this->declare_parameter<bool>("only_xyz", false, descriptor);
+    only_xyz = this->get_parameter("only_xyz").as_bool();
+  }
+  {
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
     descriptor.type = 4;
     descriptor.read_only = true;
     descriptor.dynamic_typing = false;
@@ -261,6 +270,7 @@ Status HesaiRosOfflineExtractBag::ReadBag()
   std::cout << target_topic << std::endl;
   std::cout << out_num << std::endl;
   std::cout << skip_num << std::endl;
+  std::cout << only_xyz << std::endl;
 
   rcpputils::fs::path o_dir(out_path);
   auto target_topic_name = target_topic;
@@ -325,7 +335,13 @@ Status HesaiRosOfflineExtractBag::ReadBag()
         cnt++;
         if (skip_num < cnt) {
           out_cnt++;
-          writer.writeBinary((o_dir / fn).string(), *pointcloud);
+          if (only_xyz) {
+            pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
+            pcl::copyPointCloud(*pointcloud, cloud_xyz);
+            writer.writeBinary((o_dir / fn).string(), cloud_xyz);
+          } else {
+            writer.writeBinary((o_dir / fn).string(), *pointcloud);
+          }
           //          writer.writeASCII((o_dir / fn).string(), *pointcloud);
         }
         if (out_num <= out_cnt) {
