@@ -227,13 +227,13 @@ Status HesaiDriverRosWrapper::GetParameters(
 
       hw_interface_.SetSensorConfiguration(
         std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
-      if(hw_interface_.InitializeTcpDriver(false) == Status::OK){
+      if (hw_interface_.InitializeTcpDriver(false) == Status::OK) {
         hw_interface_.GetLidarCalibrationFromSensor(
           [this, &calibration_configuration](const std::string & str) {
             calibration_configuration.LoadFromString(str);
           },
           true);
-      }else{
+      } else {
         auto cal_status =
           calibration_configuration.LoadFromFile(calibration_configuration.calibration_file);
 
@@ -255,12 +255,12 @@ Status HesaiDriverRosWrapper::GetParameters(
         std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration);
       hw_interface_.SetSensorConfiguration(
         std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
-      if(hw_interface_.InitializeTcpDriver(false) == Status::OK){
+      if (hw_interface_.InitializeTcpDriver(false) == Status::OK) {
         hw_interface_.syncGetLidarCalibrationFromSensor(
           [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
             correction_configuration.LoadFromBinary(received_bytes);
           });
-      }else{
+      } else {
         auto cal_status = correction_configuration.LoadFromFile(correction_file_path);
         if (cal_status != Status::OK) {
           RCLCPP_ERROR_STREAM(
