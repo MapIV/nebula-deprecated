@@ -43,7 +43,7 @@ if(BUILD_TESTING)
 
     add_definitions(-D_SRC_RESOURCES_DIR_PATH="${PROJECT_SOURCE_DIR}/data/")
     # TODO: FIX this path to point to nebula_decoders/calibration
-    add_definitions(-D_SRC_CALIBRATION_DIR_PATH="${PROJECT_SOURCE_DIR}/calibration/")
+    add_definitions(-D_SRC_CALIBRATION_DIR_PATH="${PROJECT_SOURCE_DIR}/../nebula_decoders/calibration/")
 
     set(NEBULA_TEST_DEPENDENCIES
             rclcpp

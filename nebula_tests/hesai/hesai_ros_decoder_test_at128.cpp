@@ -163,7 +163,7 @@ Status HesaiRosDecoderTest::GetParameters(
     descriptor.dynamic_typing = false;
     descriptor.additional_constraints = "";
     this->declare_parameter<std::string>(
-      "bag_path", (bag_root_dir / "at128" / "1671446145045082648").string(), descriptor);
+      "bag_path", (bag_root_dir / "at128" / "1679653308406038376").string(), descriptor);
     bag_path = this->get_parameter("bag_path").as_string();
     std::cout << bag_path << std::endl;
   }
@@ -259,6 +259,18 @@ void checkPCDs(nebula::drivers::NebulaPointCloudPtr pp1, nebula::drivers::Nebula
   }
 }
 
+void checkPCDs(nebula::drivers::NebulaPointCloudPtr pp1, pcl::PointCloud<pcl::PointXYZ>::Ptr pp2)
+{
+  EXPECT_EQ(pp1->points.size(), pp2->points.size());
+  for (uint32_t i = 0; i < pp1->points.size(); i++) {
+    auto p1 = pp1->points[i];
+    auto p2 = pp2->points[i];
+    EXPECT_FLOAT_EQ(p1.x, p2.x);
+    EXPECT_FLOAT_EQ(p1.y, p2.y);
+    EXPECT_FLOAT_EQ(p1.z, p2.z);
+  }
+}
+
 void HesaiRosDecoderTest::ReadBag()
 {
   rosbag2_storage::StorageOptions storage_options;
@@ -286,7 +298,8 @@ void HesaiRosDecoderTest::ReadBag()
   converter_options.output_serialization_format = format;  //"cdr";
   rclcpp::Serialization<pandar_msgs::msg::PandarScan> serialization;
   nebula::drivers::NebulaPointCloudPtr pointcloud(new nebula::drivers::NebulaPointCloud);
-  nebula::drivers::NebulaPointCloudPtr ref_pointcloud(new nebula::drivers::NebulaPointCloud);
+  //nebula::drivers::NebulaPointCloudPtr ref_pointcloud(new nebula::drivers::NebulaPointCloud);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr ref_pointcloud(new pcl::PointCloud<pcl::PointXYZ>);
   {
     rosbag2_cpp::Reader bag_reader(std::make_unique<rosbag2_cpp::readers::SequentialReader>());
     bag_reader.open(storage_options, converter_options);
@@ -320,7 +333,8 @@ void HesaiRosDecoderTest::ReadBag()
           std::cout << rt << " loaded: " << target_pcd_path << std::endl;
           checkPCDs(pointcloud, ref_pointcloud);
           check_cnt++;
-          ref_pointcloud.reset(new nebula::drivers::NebulaPointCloud);
+          //ref_pointcloud.reset(new nebula::drivers::NebulaPointCloud);
+          ref_pointcloud.reset(new pcl::PointCloud<pcl::PointXYZ>);
         }
         pointcloud.reset(new nebula::drivers::NebulaPointCloud);
       }
