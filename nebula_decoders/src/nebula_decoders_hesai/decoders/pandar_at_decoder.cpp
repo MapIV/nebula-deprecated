@@ -96,7 +96,7 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
       field = (field + 1) % correction_configuration_->frameNumber;
       count++;
     }
-    if (0 <= last_field_ && last_field_ != field) {
+    if (0 == last_field_ && last_field_ != field) {
       *overflow_pc_ += *block_pc;
       has_scanned_ = true;
     } else {
