@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 2 # https://github.com/codecov/codecov-action/issues/190#issuecomment-790729633
       - name: Update image
-        run: apt update && apt upgrade -y && rosdep update
+        run: apt update && rosdep update
         shell: bash
       - name: Prepare Workspace
         run: mkdir -p src && mv `find -maxdepth 1 -not -name . -not -name src` src/
