@@ -170,7 +170,6 @@ drivers::NebulaPointCloudPtr Pandar64Decoder::convert_dual(size_t block_id)
   size_t odd_block_id = block_id + 1;
   const auto & even_block = packet_.blocks[even_block_id];
   const auto & odd_block = packet_.blocks[odd_block_id];
-  auto sensor_return_mode = sensor_configuration_->return_mode;
 
   for (size_t unit_id = 0; unit_id < LASER_COUNT; ++unit_id) {
     const auto & even_unit = even_block.units[unit_id];

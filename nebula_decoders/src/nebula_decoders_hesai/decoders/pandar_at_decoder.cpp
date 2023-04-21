@@ -81,8 +81,6 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
   }
 
   for (int block_id = 0; block_id < packet_.header.chBlockNumber; ++block_id) {
-    int azimuthGap = 0;      /* To do */
-    double timestampGap = 0; /* To do */
     int Azimuth = static_cast<int>(
       packet_.blocks[block_id].azimuth * LIDAR_AZIMUTH_UNIT +
       packet_.blocks[block_id].fine_azimuth);

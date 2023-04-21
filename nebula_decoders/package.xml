@@ -17,6 +17,7 @@
     <depend>pandar_msgs</depend>
     <depend>velodyne_msgs</depend>
     <depend>nebula_common</depend>
+    <depend>angles</depend>
     <depend>yaml-cpp</depend>
     <depend>pcl_conversions</depend>
     <depend>libpcl-all-dev</depend>
