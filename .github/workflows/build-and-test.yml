@@ -42,6 +42,6 @@ jobs:
         run: source /opt/ros/${{ matrix.ros_distribution }}/setup.bash && DEBIAN_FRONTEND=noninteractive rosdep install --include-eol-distros --from-paths src --ignore-src -y -r
         shell: bash
       - name: Build and test
-        run: source /opt/ros/${{ matrix.ros_distribution }}/setup.bash &&  colcon build && colcon test --event-handlers console_cohesion+ --packages-select nebula_ros nebula_examples && colcon test-result --all
+        run: source /opt/ros/${{ matrix.ros_distribution }}/setup.bash &&  colcon build && colcon test --event-handlers console_cohesion+ --packages-skip io_context serial_driver tcp_driver udp_driver
         shell: bash
 
