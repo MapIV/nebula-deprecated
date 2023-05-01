@@ -24,7 +24,8 @@ struct PointXYZICATR
   float azimuth;
   std::uint32_t time_stamp;
   std::uint8_t return_type;
-};
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
 
 struct PointXYZICAETR
 {
@@ -35,7 +36,8 @@ struct PointXYZICAETR
   float elevation;
   std::uint32_t time_stamp;
   std::uint8_t return_type;
-};
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
 
 struct PointXYZIRADT
 {
@@ -49,7 +51,7 @@ struct PointXYZIRADT
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
 
-using NebulaPoint = PointXYZICATR;
+using NebulaPoint = PointXYZICAETR;
 using NebulaPointPtr = std::shared_ptr<NebulaPoint>;
 using NebulaPointCloud = pcl::PointCloud<NebulaPoint>;
 using NebulaPointCloudPtr = pcl::PointCloud<NebulaPoint>::Ptr;
@@ -72,6 +74,12 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
   nebula::drivers::PointXYZICATR,
   (float, x, x)(float, y, y)(float, z, z)(std::uint8_t, intensity, intensity)(
     std::uint16_t, channel, channel)(float, azimuth, azimuth)(
+    std::uint32_t, time_stamp, time_stamp)(std::uint8_t, return_type, return_type))
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+  nebula::drivers::PointXYZICAETR,
+  (float, x, x)(float, y, y)(float, z, z)(std::uint8_t, intensity, intensity)(
+    std::uint16_t, channel, channel)(float, azimuth, azimuth)(float, elevation, elevation)(
     std::uint32_t, time_stamp, time_stamp)(std::uint8_t, return_type, return_type))
 
 #endif
