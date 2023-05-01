@@ -119,7 +119,7 @@ drivers::NebulaPoint Pandar40Decoder::build_point(
   bool dual_return = (packet_.return_mode == DUAL_RETURN);
   NebulaPoint point{};
 
-  float xyDistance = unit.distance * cos_elevation_angle_[unit_id]);
+  float xyDistance = unit.distance * cos_elevation_angle_[unit_id];
 
   point.x =
     xyDistance *

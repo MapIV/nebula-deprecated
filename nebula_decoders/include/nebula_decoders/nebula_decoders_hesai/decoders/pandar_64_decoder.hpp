@@ -57,6 +57,8 @@ private:
   std::array<float, LASER_COUNT> azimuth_offset_{};
   std::array<float, LASER_COUNT> elevation_angle_rad_{};
   std::array<float, LASER_COUNT> azimuth_offset_rad_{};
+  std::array<float, LASER_COUNT> cos_elevation_angle_{};
+  std::array<float, LASER_COUNT> sin_elevation_angle_{};
 
     std::array<float, MAX_AZIMUTH_STEPS> block_azimuth_rad_{};
 
