@@ -125,7 +125,7 @@ drivers::NebulaPoint Pandar40Decoder::build_point(
   point.y =
     xyDistance *
     cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
-  point.z = static_cast<float>(unit.distance * sinf(deg2rad(elevation_angle_[unit_id])));
+  point.z = static_cast<float>(unit.distance * sinf(elevation_angle_rad_[unit_id]));
 
   point.intensity = unit.intensity;
   point.channel = unit_id;
