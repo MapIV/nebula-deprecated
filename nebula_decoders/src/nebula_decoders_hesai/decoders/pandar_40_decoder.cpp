@@ -38,6 +38,8 @@ Pandar40Decoder::Pandar40Decoder(
     azimuth_offset_[laser] = calibration_configuration->azimuth_offset_map[laser];
     elevation_angle_rad_[laser] = deg2rad(elevation_angle_[laser]);
     azimuth_offset_rad_[laser] = deg2rad(azimuth_offset_[laser]);
+    cos_elevation_angle_[laser] = cosf(elevation_angle_rad_[laser]);
+    sin_elevation_angle_[laser] = sinf(elevation_angle_rad_[laser]);
   }
   for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS ; i++) { // precalculate sensor azimuth, unit 0.01 deg
     block_azimuth_rad_[i] = deg2rad(i/100.);
@@ -117,7 +119,7 @@ drivers::NebulaPoint Pandar40Decoder::build_point(
   bool dual_return = (packet_.return_mode == DUAL_RETURN);
   NebulaPoint point{};
 
-  float xyDistance = unit.distance * cosf(elevation_angle_rad_[unit_id]);
+  float xyDistance = unit.distance * cos_elevation_angle_[unit_id]);
 
   point.x =
     xyDistance *
@@ -125,7 +127,7 @@ drivers::NebulaPoint Pandar40Decoder::build_point(
   point.y =
     xyDistance *
     cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
-  point.z = unit.distance * sinf(elevation_angle_rad_[unit_id]);
+  point.z = unit.distance * sin_elevation_angle_[unit_id];
 
   point.intensity = unit.intensity;
   point.channel = unit_id;
