@@ -125,11 +125,12 @@ drivers::NebulaPoint Pandar40Decoder::build_point(
   point.y =
     xyDistance *
     cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
-  point.z = static_cast<float>(unit.distance * sinf(elevation_angle_rad_[unit_id]));
+  point.z = unit.distance * sinf(elevation_angle_rad_[unit_id]);
 
   point.intensity = unit.intensity;
   point.channel = unit_id;
-  point.azimuth = block.azimuth + std::round(azimuth_offset_[unit_id] * 100.0f);
+  point.azimuth = block_azimuth_rad_[block_id] + azimuth_offset_rad_[unit_id];
+  point.elevation = elevation_angle_rad_[unit_id];
   point.return_type = return_type;
   point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
 

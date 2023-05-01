@@ -126,7 +126,8 @@ drivers::NebulaPoint Pandar64Decoder::build_point(
 
   point.intensity = unit.intensity;
   point.channel = unit_id;
-  point.azimuth = static_cast<float>(block.azimuth) + std::round(azimuth_offset_[unit_id] * 100.0f);
+  point.azimuth = block_azimuth_rad_[block_id] + azimuth_offset_rad_[unit_id];
+  point.elevation = elevation_angle_rad_[unit_id];
   point.return_type = return_type;
   point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
   point.time_stamp +=
