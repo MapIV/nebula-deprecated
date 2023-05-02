@@ -25,7 +25,10 @@ struct PointXYZICATR
   std::uint32_t time_stamp;
   std::uint8_t return_type;
 };
-
+/**
+ * This point type is not using PCL_ADD_POINT4D to avoid the addition of a 32-bit dummy word.
+ * The fields are ordered to meet the SSE alignment.
+ */
 struct PointXYZICAETR
 {
   float x;
