@@ -43,7 +43,7 @@ PandarXTMDecoder::PandarXTMDecoder(
   for (int i = 0; i < MAX_AZIMUTH_DEGREE_NUM; ++i) {
     sin_azimuth_angle_[i] = sinf(i * M_PI / 18000);
     cos_azimuth_angle_[i] = cosf(i * M_PI / 18000);
-    block_azimuth_rad_[i] = deg2rad(i/100.);
+    block_azimuth_rad_[i] = deg2rad(i / 100.);
   }
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
   dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
@@ -136,7 +136,6 @@ void PandarXTMDecoder::CalcXTPointXYZIT(
     int azimuth = static_cast<int>(azimuth_offset_[i] * 100 + block->azimuth);
     if (azimuth < 0) azimuth += 36000;
     if (azimuth >= 36000) azimuth -= 36000;
-
 
     float xyDistance = unit.distance * cos_elevation_angle_[i];
     point.x = xyDistance * sin_azimuth_angle_[azimuth];

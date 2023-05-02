@@ -60,7 +60,7 @@ private:
   std::array<float, LASER_COUNT> cos_elevation_angle_{};
   std::array<float, LASER_COUNT> sin_elevation_angle_{};
 
-    std::array<float, MAX_AZIMUTH_STEPS> block_azimuth_rad_{};
+  std::array<float, MAX_AZIMUTH_STEPS> block_azimuth_rad_{};
 
   std::array<float, LASER_COUNT> firing_time_offset_{};
 

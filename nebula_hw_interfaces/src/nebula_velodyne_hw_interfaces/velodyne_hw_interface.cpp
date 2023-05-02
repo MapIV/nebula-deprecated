@@ -604,7 +604,8 @@ VelodyneStatus VelodyneHwInterface::SetReturnTypeAsync(nebula::drivers::ReturnMo
     default:
       return VelodyneStatus::INVALID_RETURN_MODE_ERROR;
   }
-  hcd->asyncPost([this](const std::string & str) { StringCallback(str); }, TARGET_SETTING, body_str);
+  hcd->asyncPost(
+    [this](const std::string & str) { StringCallback(str); }, TARGET_SETTING, body_str);
   ctx->run();
   return Status::WAITING_FOR_SENSOR_RESPONSE;
 }
@@ -649,7 +650,8 @@ VelodyneStatus VelodyneHwInterface::LaserOnAsync()
   }
 
   std::string body_str = "laser=on";
-  hcd->asyncPost([this](const std::string & str) { StringCallback(str); }, TARGET_SETTING, body_str);
+  hcd->asyncPost(
+    [this](const std::string & str) { StringCallback(str); }, TARGET_SETTING, body_str);
   ctx->run();
   return Status::WAITING_FOR_SENSOR_RESPONSE;
 }
@@ -664,7 +666,8 @@ VelodyneStatus VelodyneHwInterface::LaserOffAsync()
   }
 
   std::string body_str = "laser=off";
-  hcd->asyncPost([this](const std::string & str) { StringCallback(str); }, TARGET_SETTING, body_str);
+  hcd->asyncPost(
+    [this](const std::string & str) { StringCallback(str); }, TARGET_SETTING, body_str);
   ctx->run();
   return Status::WAITING_FOR_SENSOR_RESPONSE;
 }
@@ -679,7 +682,8 @@ VelodyneStatus VelodyneHwInterface::LaserOnOffAsync(bool on)
   }
 
   std::string body_str = (boost::format("laser=%s") % (on ? "on" : "off")).str();
-  hcd->asyncPost([this](const std::string & str) { StringCallback(str); }, TARGET_SETTING, body_str);
+  hcd->asyncPost(
+    [this](const std::string & str) { StringCallback(str); }, TARGET_SETTING, body_str);
   ctx->run();
   return Status::WAITING_FOR_SENSOR_RESPONSE;
 }

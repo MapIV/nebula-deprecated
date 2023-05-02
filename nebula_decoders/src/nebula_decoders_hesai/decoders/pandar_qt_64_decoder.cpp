@@ -39,8 +39,8 @@ PandarQT64Decoder::PandarQT64Decoder(
     cos_elevation_angle_[laser] = cosf(elevation_angle_rad_[laser]);
     sin_elevation_angle_[laser] = sinf(elevation_angle_rad_[laser]);
   }
-  for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS ; i++) { // precalculate sensor azimuth, unit 0.01 deg
-    block_azimuth_rad_[i] = deg2rad(i/100.);
+  for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS; i++) {  // precalculate sensor azimuth, unit 0.01 deg
+    block_azimuth_rad_[i] = deg2rad(i / 100.);
   }
 
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
@@ -119,12 +119,8 @@ drivers::NebulaPoint PandarQT64Decoder::build_point(
 
   float xyDistance = unit.distance * cos_elevation_angle_[unit_id];
 
-  point.x =
-      xyDistance *
-          sinf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
-  point.y =
-      xyDistance *
-          cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
+  point.x = xyDistance * sinf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
+  point.y = xyDistance * cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
   point.z = unit.distance * sin_elevation_angle_[unit_id];
 
   point.intensity = unit.intensity;
@@ -136,7 +132,8 @@ drivers::NebulaPoint PandarQT64Decoder::build_point(
   point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
   point.time_stamp +=
     dual_return
-      ? (static_cast<double>(block_time_offset_dual_[block_id] + firing_offset_[unit_id]) / 1000000.0f)
+      ? (static_cast<double>(block_time_offset_dual_[block_id] + firing_offset_[unit_id]) /
+         1000000.0f)
       : (static_cast<double>(block_time_offset_single_[block_id] + firing_offset_[unit_id]) /
          1000000.0f);
 
@@ -191,19 +188,16 @@ drivers::NebulaPointCloudPtr PandarQT64Decoder::convert_dual(size_t block_id)
     if (
       (abs(even_unit.distance - odd_unit.distance) < dual_return_distance_threshold_) &&
       odd_usable) {
-      block_pc->push_back(build_point(
-        odd_block_id, unit_id,
-        static_cast<uint8_t>(drivers::ReturnType::IDENTICAL)));
+      block_pc->push_back(
+        build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::IDENTICAL)));
     } else {
       if (even_usable) {
-        block_pc->push_back(build_point(
-          even_block_id, unit_id,
-          static_cast<uint8_t>(drivers::ReturnType::FIRST)));
+        block_pc->push_back(
+          build_point(even_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::FIRST)));
       }
       if (odd_usable) {
-        block_pc->push_back(build_point(
-          odd_block_id, unit_id,
-          static_cast<uint8_t>(drivers::ReturnType::LAST)));
+        block_pc->push_back(
+          build_point(odd_block_id, unit_id, static_cast<uint8_t>(drivers::ReturnType::LAST)));
       }
     }
     //    }

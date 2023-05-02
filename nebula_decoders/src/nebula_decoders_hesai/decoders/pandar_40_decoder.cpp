@@ -18,13 +18,14 @@ Pandar40Decoder::Pandar40Decoder(
   sensor_configuration_ = sensor_configuration;
   sensor_calibration_ = calibration_configuration;
 
-  vertical_laser_firing_order_ = {7, 19, 14, 26, 6, 18, 4, 32, 36, 0, 10, 22, 17, 29, 9, 21, 5, 33, 37, 1,
-                                  13, 25, 20, 30, 12, 8, 24, 34, 38, 2, 16, 28, 23, 31, 15, 11, 27, 35, 39, 3};
+  vertical_laser_firing_order_ = {7,  19, 14, 26, 6,  18, 4,  32, 36, 0,  10, 22, 17, 29,
+                                  9,  21, 5,  33, 37, 1,  13, 25, 20, 30, 12, 8,  24, 34,
+                                  38, 2,  16, 28, 23, 31, 15, 11, 27, 35, 39, 3};
 
-  firing_time_offset_ = {42.22, 28.47, 16.04, 3.62, 45.49, 31.74, 47.46, 54.67, 20.62, 33.71,
-                         40.91, 8.19, 20.62, 27.16, 50.73, 8.19, 14.74, 36.98, 45.49, 52.7,
-                         23.89, 31.74, 38.95, 11.47, 18.65, 25.19, 48.76, 6.23, 12.77, 35.01,
-                         21.92, 9.5, 43.52, 29.77, 17.35, 4.92, 42.22, 28.47, 16.04, 3.62};
+  firing_time_offset_ = {42.22, 28.47, 16.04, 3.62,  45.49, 31.74, 47.46, 54.67, 20.62, 33.71,
+                         40.91, 8.19,  20.62, 27.16, 50.73, 8.19,  14.74, 36.98, 45.49, 52.7,
+                         23.89, 31.74, 38.95, 11.47, 18.65, 25.19, 48.76, 6.23,  12.77, 35.01,
+                         21.92, 9.5,   43.52, 29.77, 17.35, 4.92,  42.22, 28.47, 16.04, 3.62};
 
   for (size_t block = 0; block < BLOCKS_PER_PACKET; ++block) {
     block_time_offset_single_return_[block] =
@@ -41,8 +42,8 @@ Pandar40Decoder::Pandar40Decoder(
     cos_elevation_angle_[laser] = cosf(elevation_angle_rad_[laser]);
     sin_elevation_angle_[laser] = sinf(elevation_angle_rad_[laser]);
   }
-  for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS ; i++) { // precalculate sensor azimuth, unit 0.01 deg
-    block_azimuth_rad_[i] = deg2rad(i/100.);
+  for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS; i++) {  // precalculate sensor azimuth, unit 0.01 deg
+    block_azimuth_rad_[i] = deg2rad(i / 100.);
   }
 
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
@@ -121,12 +122,8 @@ drivers::NebulaPoint Pandar40Decoder::build_point(
 
   float xyDistance = unit.distance * cos_elevation_angle_[unit_id];
 
-  point.x =
-    xyDistance *
-    sinf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
-  point.y =
-    xyDistance *
-    cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
+  point.x = xyDistance * sinf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
+  point.y = xyDistance * cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
   point.z = unit.distance * sin_elevation_angle_[unit_id];
 
   point.intensity = unit.intensity;
@@ -137,10 +134,12 @@ drivers::NebulaPoint Pandar40Decoder::build_point(
   point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
 
   point.time_stamp -=
-    dual_return
-      ? (static_cast<double>(block_time_offset_dual_return_[block_id] + firing_time_offset_[unit_id]) / 1000000.0f)
-      : (static_cast<double>(block_time_offset_single_return_[block_id] + firing_time_offset_[unit_id]) /
-         1000000.0f);
+    dual_return ? (static_cast<double>(
+                     block_time_offset_dual_return_[block_id] + firing_time_offset_[unit_id]) /
+                   1000000.0f)
+                : (static_cast<double>(
+                     block_time_offset_single_return_[block_id] + firing_time_offset_[unit_id]) /
+                   1000000.0f);
 
   return point;
 }
@@ -180,8 +179,10 @@ drivers::NebulaPointCloudPtr Pandar40Decoder::convert_dual(size_t block_id)
     const auto & even_unit = even_block.units[unit_id];
     const auto & odd_unit = odd_block.units[unit_id];
 
-    bool even_usable = (even_unit.distance < MIN_RANGE || even_unit.distance > MAX_RANGE) ? false : true;
-    bool odd_usable = (odd_unit.distance < MIN_RANGE || odd_unit.distance > MAX_RANGE) ? false : true;
+    bool even_usable =
+      (even_unit.distance < MIN_RANGE || even_unit.distance > MAX_RANGE) ? false : true;
+    bool odd_usable =
+      (odd_unit.distance < MIN_RANGE || odd_unit.distance > MAX_RANGE) ? false : true;
 
     // maybe always dual return mode in convert_dual
     // If the two returns are too close, only return the last one

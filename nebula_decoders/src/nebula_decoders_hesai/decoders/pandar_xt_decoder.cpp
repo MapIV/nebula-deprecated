@@ -32,8 +32,8 @@ PandarXTDecoder::PandarXTDecoder(
     elevation_angle_rad_[laser] = deg2rad(elevation_angle_[laser]);
     azimuth_offset_rad_[laser] = deg2rad(azimuth_offset_[laser]);
   }
-  for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS ; i++) { // precalculate sensor azimuth, unit 0.01 deg
-    block_azimuth_rad_[i] = deg2rad(i/100.);
+  for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS; i++) {  // precalculate sensor azimuth, unit 0.01 deg
+    block_azimuth_rad_[i] = deg2rad(i / 100.);
   }
 
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
@@ -101,12 +101,8 @@ drivers::NebulaPoint PandarXTDecoder::build_point(int block_id, int unit_id, uin
 
   float xyDistance = unit.distance * cosf(elevation_angle_rad_[unit_id]);
 
-  point.x =
-      xyDistance *
-          sinf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
-  point.y =
-      xyDistance *
-          cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
+  point.x = xyDistance * sinf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
+  point.y = xyDistance * cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
   point.z = unit.distance * sinf(elevation_angle_rad_[unit_id]);
 
   point.intensity = unit.intensity;
@@ -117,8 +113,10 @@ drivers::NebulaPoint PandarXTDecoder::build_point(int block_id, int unit_id, uin
   point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
   point.time_stamp +=
     dual_return
-      ? (static_cast<double>(block_offset_dual_return_[block_id] + firing_time_offset_[unit_id]) / 1000000.0f)
-      : (static_cast<double>(block_time_offset_single_return_[block_id] + firing_time_offset_[unit_id]) /
+      ? (static_cast<double>(block_offset_dual_return_[block_id] + firing_time_offset_[unit_id]) /
+         1000000.0f)
+      : (static_cast<double>(
+           block_time_offset_single_return_[block_id] + firing_time_offset_[unit_id]) /
          1000000.0f);
 
   return point;
@@ -190,12 +188,8 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
 
       float xyDistance = unit.distance * cosf(elevation_angle_rad_[unit_id]);
 
-      point.x =
-          xyDistance *
-              sinf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
-      point.y =
-          xyDistance *
-              cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
+      point.x = xyDistance * sinf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
+      point.y = xyDistance * cosf(azimuth_offset_rad_[unit_id] + block_azimuth_rad_[block.azimuth]);
       point.z = unit.distance * sinf(elevation_angle_rad_[unit_id]);
 
       point.channel = unit_id;
@@ -204,7 +198,8 @@ drivers::NebulaPointCloudPtr PandarXTDecoder::convert_dual(size_t block_id)
       point.time_stamp = (static_cast<double>(packet_.usec)) / 1000000.0;
 
       point.time_stamp +=
-        (static_cast<double>(block_offset_dual_return_[block_id] + firing_time_offset_[unit_id]) / 1000000.0f);
+        (static_cast<double>(block_offset_dual_return_[block_id] + firing_time_offset_[unit_id]) /
+         1000000.0f);
 
       if (identical_flg) {
         point.return_type = static_cast<uint8_t>(nebula::drivers::ReturnType::IDENTICAL);

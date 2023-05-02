@@ -26,8 +26,8 @@ Pandar128E4XDecoder::Pandar128E4XDecoder(
     cos_elevation_angle_[laser] = cosf(elevation_angle_rad_[laser]);
     sin_elevation_angle_[laser] = sinf(elevation_angle_rad_[laser]);
   }
-  for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS ; i++) { // precalculate sensor azimuth, unit 0.01 deg
-    block_azimuth_rad_[i] = deg2rad(i/100.);
+  for (uint32_t i = 0; i < MAX_AZIMUTH_STEPS; i++) {  // precalculate sensor azimuth, unit 0.01 deg
+    block_azimuth_rad_[i] = deg2rad(i / 100.);
   }
   scan_phase_ = static_cast<uint16_t>(sensor_configuration_->scan_phase * 100.0f);
   dual_return_distance_threshold_ = sensor_configuration_->dual_return_distance_threshold;
@@ -127,14 +127,11 @@ drivers::NebulaPoint Pandar128E4XDecoder::build_point(
 {
   NebulaPoint point{};
 
-  float xyDistance = static_cast<float>(block.distance) * DISTANCE_UNIT * cos_elevation_angle_[laser_id];
+  float xyDistance =
+    static_cast<float>(block.distance) * DISTANCE_UNIT * cos_elevation_angle_[laser_id];
 
-  point.x =
-      xyDistance *
-          sinf(azimuth_offset_rad_[laser_id] + block_azimuth_rad_[azimuth]);
-  point.y =
-      xyDistance *
-          cosf(azimuth_offset_rad_[laser_id] + block_azimuth_rad_[azimuth]);
+  point.x = xyDistance * sinf(azimuth_offset_rad_[laser_id] + block_azimuth_rad_[azimuth]);
+  point.y = xyDistance * cosf(azimuth_offset_rad_[laser_id] + block_azimuth_rad_[azimuth]);
   point.z = static_cast<float>(block.distance) * DISTANCE_UNIT * sin_elevation_angle_[laser_id];
   point.intensity = block.reflectivity;
   point.channel = laser_id;
