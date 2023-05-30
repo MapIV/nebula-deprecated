@@ -51,6 +51,8 @@ PandarATDecoder::PandarATDecoder(
   last_phase_ = 0;
   has_scanned_ = false;
   scan_timestamp_ = -1;
+  last_azimuth_ = -1;
+  max_azimuth_ = -1;
   last_field_ = -1;
 
   scan_pc_.reset(new NebulaPointCloud);
@@ -64,11 +66,11 @@ std::tuple<drivers::NebulaPointCloudPtr, double> PandarATDecoder::get_pointcloud
   return std::make_tuple(scan_pc_, scan_timestamp_);
 }
 
-void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
+int PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet)
 {
   if (!parsePacket(pandar_packet)) {
     std::cout << "!parsePacket(pandar_packet)" << std::endl;
-    return;
+    return -1;
   }
 
   if (has_scanned_) {
@@ -85,6 +87,7 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
       packet_.blocks[block_id].fine_azimuth);
 
     auto block_pc = convert(block_id);
+    //*
     int count = 0, field = 0;
     while (count < correction_configuration_->frameNumber &&
            (((Azimuth + MAX_AZI_LEN - correction_configuration_->startFrame[field]) % MAX_AZI_LEN +
@@ -96,6 +99,13 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
       count++;
     }
     if (0 == last_field_ && last_field_ != field) {
+    //*/
+//    std::cout << Azimuth << ", " << last_azimuth_ << std::endl;
+//    if (has_scanned_ || Azimuth < last_azimuth_ / 2 || (0 < max_azimuth_ && max_azimuth_ <= Azimuth)) {
+//    if (has_scanned_ || Azimuth < last_azimuth_ / 2) {
+      if (max_azimuth_ < Azimuth){
+        max_azimuth_ = Azimuth;
+      }
       *overflow_pc_ += *block_pc;
       has_scanned_ = true;
     } else {
@@ -104,6 +114,7 @@ void PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packe
     last_azimuth_ = Azimuth;
     last_field_ = field;
   }
+  return last_azimuth_;
 }
 
 #if defined(ROS_DISTRO_FOXY) || defined(ROS_DISTRO_GALACTIC)
