@@ -8,6 +8,8 @@
 #include "nebula_decoders/nebula_decoders_hesai/decoders/pandar_xtm_decoder.hpp"
 #include "nebula_decoders/nebula_decoders_hesai/hesai_driver.hpp"
 
+//#define WITH_DEBUG_STDCOUT_HESAI_CLIENT // Use std::cout messages for debugging
+
 namespace nebula
 {
 namespace drivers
@@ -79,8 +81,10 @@ std::tuple<drivers::NebulaPointCloudPtr, double> HesaiDriver::ConvertScanToPoint
         cnt++;
       }
     }
+#ifdef WITH_DEBUG_STDCOUT_HESAI_CLIENT
     //for checking
     std::cout << "last_azimuth in this pandar_scan: " << last_azimuth << ", has_scaned: " << cnt << std::endl;
+#endif
   }
   return pointcloud;
 }
