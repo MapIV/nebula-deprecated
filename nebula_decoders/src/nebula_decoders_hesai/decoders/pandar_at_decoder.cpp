@@ -98,7 +98,8 @@ int PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet
       field = (field + 1) % correction_configuration_->frameNumber;
       count++;
     }
-    if (0 == last_field_ && last_field_ != field) {
+//    if (0 == last_field_ && last_field_ != field) {
+    if (last_field_ != field) {
     //*/
 //    std::cout << Azimuth << ", " << last_azimuth_ << std::endl;
 //    if (has_scanned_ || Azimuth < last_azimuth_ / 2 || (0 < max_azimuth_ && max_azimuth_ <= Azimuth)) {
@@ -114,6 +115,7 @@ int PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet
     last_azimuth_ = Azimuth;
     last_field_ = field;
   }
+//  std::cout << "last_field_: " << last_field_ << std::endl;
   return last_azimuth_;
 }
 
