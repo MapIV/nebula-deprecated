@@ -82,7 +82,7 @@ int PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet
   }
 
   for (int block_id = 0; block_id < packet_.header.chBlockNumber; ++block_id) {
-    int Azimuth = static_cast<int>(
+    int azimuth = static_cast<int>(
       packet_.blocks[block_id].azimuth * LIDAR_AZIMUTH_UNIT +
       packet_.blocks[block_id].fine_azimuth);
 
@@ -90,32 +90,26 @@ int PandarATDecoder::unpack(const pandar_msgs::msg::PandarPacket & pandar_packet
     //*
     int count = 0, field = 0;
     while (count < correction_configuration_->frameNumber &&
-           (((Azimuth + MAX_AZI_LEN - correction_configuration_->startFrame[field]) % MAX_AZI_LEN +
-             (correction_configuration_->endFrame[field] + MAX_AZI_LEN - Azimuth) % MAX_AZI_LEN) !=
+           (((azimuth + MAX_AZI_LEN - correction_configuration_->startFrame[field]) % MAX_AZI_LEN +
+             (correction_configuration_->endFrame[field] + MAX_AZI_LEN - azimuth) % MAX_AZI_LEN) !=
             (correction_configuration_->endFrame[field] + MAX_AZI_LEN -
              correction_configuration_->startFrame[field]) %
               MAX_AZI_LEN)) {
       field = (field + 1) % correction_configuration_->frameNumber;
       count++;
     }
-//    if (0 == last_field_ && last_field_ != field) {
     if (last_field_ != field) {
-    //*/
-//    std::cout << Azimuth << ", " << last_azimuth_ << std::endl;
-//    if (has_scanned_ || Azimuth < last_azimuth_ / 2 || (0 < max_azimuth_ && max_azimuth_ <= Azimuth)) {
-//    if (has_scanned_ || Azimuth < last_azimuth_ / 2) {
-      if (max_azimuth_ < Azimuth){
-        max_azimuth_ = Azimuth;
+      if (max_azimuth_ < azimuth){
+        max_azimuth_ = azimuth;
       }
       *overflow_pc_ += *block_pc;
       has_scanned_ = true;
     } else {
       *scan_pc_ += *block_pc;
     }
-    last_azimuth_ = Azimuth;
+    last_azimuth_ = azimuth;
     last_field_ = field;
   }
-//  std::cout << "last_field_: " << last_field_ << std::endl;
   return last_azimuth_;
 }
 
