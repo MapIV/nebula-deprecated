@@ -73,9 +73,8 @@ std::tuple<drivers::NebulaPointCloudPtr, double> HesaiDriver::ConvertScanToPoint
   std::tuple<drivers::NebulaPointCloudPtr, double> pointcloud;
   if (driver_status_ == nebula::Status::OK) {
     int cnt = 0;
-    int last_azimuth = -1;
     for (auto & packet : pandar_scan->packets) {
-      last_azimuth = scan_decoder_->unpack(packet);
+      scan_decoder_->unpack(packet);
       if (scan_decoder_->hasScanned()) {
         pointcloud = scan_decoder_->get_pointcloud();
         cnt++;
