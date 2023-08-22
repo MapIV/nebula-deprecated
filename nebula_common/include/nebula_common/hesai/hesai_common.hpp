@@ -64,7 +64,7 @@ struct HesaiCalibrationConfiguration : CalibrationConfigurationBase
     return Status::OK;
   }
 
-  /// @brief Loading calibration data (not used)
+  /// @brief Loading calibration data
   /// @param calibration_content
   /// @return Resulting status
   inline nebula::Status LoadFromString(const std::string & calibration_content)
@@ -79,11 +79,20 @@ struct HesaiCalibrationConfiguration : CalibrationConfigurationBase
     int laser_id;
     float elevation;
     float azimuth;
-    while (!ss.eof()) {
-      ss >> laser_id >> sep >> elevation >> sep >> azimuth;
+
+    std::string line;
+    while (std::getline(ss, line)) {
+      if (line.empty()) {
+        continue;
+      }
+      std::stringstream line_ss;
+      line_ss << line;
+      line_ss >> laser_id >> sep >> elevation >> sep >> azimuth;
       elev_angle_map[laser_id - 1] = elevation;
       azimuth_offset_map[laser_id - 1] = azimuth;
+//      std::cout << "laser_id=" << laser_id << ", elevation=" << elevation << ", azimuth=" << azimuth << std::endl;
     }
+//    std::cout << "LoadFromString fin" << std::endl;
     return Status::OK;
   }
 

@@ -1,5 +1,7 @@
 #include "nebula_hw_interfaces/nebula_hw_interfaces_hesai/hesai_hw_interface.hpp"
 
+//#define WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+
 namespace nebula
 {
 namespace drivers
@@ -13,6 +15,47 @@ HesaiHwInterface::HesaiHwInterface()
   tcp_driver_s_{new ::drivers::tcp_driver::TcpDriver(m_owned_ctx_s)},
   scan_cloud_ptr_{std::make_unique<pandar_msgs::msg::PandarScan>()}
 {
+}
+HesaiHwInterface::~HesaiHwInterface()
+{
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+  std::cout << ".......................st: HesaiHwInterface::~HesaiHwInterface()" << std::endl;
+#endif
+  if(tcp_driver_)
+  {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    std::cout << ".......................tcp_driver_ is avaiable" << std::endl;
+#endif
+    if(tcp_driver_ && tcp_driver_->isOpen())
+    {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+      std::cout << ".......................st: tcp_driver_->close();" << std::endl;
+#endif
+      tcp_driver_->close();
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+      std::cout << ".......................ed: tcp_driver_->close();" << std::endl;
+#endif
+    }
+  }
+  if(tcp_driver_s_)
+  {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    std::cout << ".......................tcp_driver_s_ is avaiable" << std::endl;
+#endif
+    if(tcp_driver_s_->isOpen())
+    {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+      std::cout << ".......................st: tcp_driver_s_->close();" << std::endl;
+#endif
+      tcp_driver_s_->close();
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+      std::cout << ".......................ed: tcp_driver_s_->close();" << std::endl;
+#endif
+    }
+  }
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+  std::cout << ".......................ed: HesaiHwInterface::~HesaiHwInterface()" << std::endl;
+#endif
 }
 
 Status HesaiHwInterface::SetSensorConfiguration(
@@ -84,11 +127,23 @@ Status HesaiHwInterface::CloudInterfaceStart()
     std::cout << "Starting UDP server on: " << *sensor_configuration_ << std::endl;
     cloud_udp_driver_->init_receiver(
       sensor_configuration_->host_ip, sensor_configuration_->data_port);
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    PrintError("init ok");
+#endif
     cloud_udp_driver_->receiver()->open();
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    PrintError("open ok");
+#endif
     cloud_udp_driver_->receiver()->bind();
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    PrintError("bind ok");
+#endif
 
     cloud_udp_driver_->receiver()->asyncReceive(
       std::bind(&HesaiHwInterface::ReceiveCloudPacketCallback, this, std::placeholders::_1));
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    PrintError("async receive set");
+#endif
   } catch (const std::exception & ex) {
     Status status = Status::UDP_CONNECTION_ERROR;
     std::cerr << status << sensor_configuration_->sensor_ip << ","
@@ -178,12 +233,22 @@ Status HesaiHwInterface::GetCalibrationConfiguration(
 Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
 {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
-  std::cout << "HesaiHwInterface::InitializeTcpDriver" << std::endl;
+  std::cout << "HesaiHwInterface::InitializeTcpDriver, setup_sensor=" << setup_sensor << std::endl;
+  std::cout << "st: tcp_driver_->init_socket" << std::endl;
+  std::cout << "sensor_configuration_->sensor_ip=" << sensor_configuration_->sensor_ip << std::endl;
+  std::cout << "sensor_configuration_->host_ip=" << sensor_configuration_->host_ip << std::endl;
+  std::cout << "PandarTcpCommandPort=" << PandarTcpCommandPort << std::endl;
 #endif
   tcp_driver_->init_socket(
     sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
     PandarTcpCommandPort);
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+  std::cout << "ed: tcp_driver_->init_socket" << std::endl;
+#endif
   if (!tcp_driver_->open()) {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+  std::cout << "!tcp_driver_->open()" << std::endl;
+#endif
     return Status::ERROR_1;
   }
   if (setup_sensor) {
@@ -191,6 +256,9 @@ Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
       sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
       PandarTcpCommandPort);
     if (!tcp_driver_s_->open()) {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    std::cout << "!tcp_driver_s_->open()" << std::endl;
+#endif
       return Status::ERROR_1;
     }
   }

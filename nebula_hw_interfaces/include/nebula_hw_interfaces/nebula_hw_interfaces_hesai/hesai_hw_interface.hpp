@@ -166,6 +166,8 @@ private:
 public:
   /// @brief Constructor
   HesaiHwInterface();
+  /// @brief Destructor
+  ~HesaiHwInterface();
   /// @brief Initializing tcp_driver for TCP communication
   /// @param setup_sensor Whether to also initialize tcp_driver for sensor configuration
   /// @return Resulting status

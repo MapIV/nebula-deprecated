@@ -18,10 +18,8 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
   hw_interface_.SetLogger(std::make_shared<rclcpp::Logger>(this->get_logger()));
   std::shared_ptr<drivers::SensorConfigurationBase> sensor_cfg_ptr =
     std::make_shared<drivers::HesaiSensorConfiguration>(sensor_configuration_);
-  if (this->setup_sensor) {
-    hw_interface_.SetSensorConfiguration(
-      std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
-  }
+  hw_interface_.SetSensorConfiguration(
+    std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
 #if not defined(TEST_PCAP)
   hw_interface_.InitializeTcpDriver(this->setup_sensor);
 
