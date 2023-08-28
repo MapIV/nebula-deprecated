@@ -1,6 +1,6 @@
 #include "nebula_hw_interfaces/nebula_hw_interfaces_hesai/hesai_hw_interface.hpp"
 
-#define WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+//#define WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
 
 namespace nebula
 {
@@ -236,7 +236,7 @@ Status HesaiHwInterface::GetCalibrationConfiguration(
   return Status::ERROR_1;
 }
 
-Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor, bool retry)
+Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
 {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
   std::cout << "HesaiHwInterface::InitializeTcpDriver, setup_sensor=" << setup_sensor << std::endl;
@@ -245,21 +245,12 @@ Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor, bool retry)
   std::cout << "sensor_configuration_->host_ip=" << sensor_configuration_->host_ip << std::endl;
   std::cout << "PandarTcpCommandPort=" << PandarTcpCommandPort << std::endl;
 #endif
-  if(!retry)
-  {
-    tcp_driver_->init_socket(
-      sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
-      PandarTcpCommandPort);
+  tcp_driver_->init_socket(
+    sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
+    PandarTcpCommandPort);
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
-    std::cout << "ed: tcp_driver_->init_socket" << std::endl;
+  std::cout << "ed: tcp_driver_->init_socket" << std::endl;
 #endif
-  }
-  else
-  {
-#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
-    std::cout << "skip: tcp_driver_->init_socket" << std::endl;
-#endif
-  }
   if (!tcp_driver_->open()) {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
   std::cout << "!tcp_driver_->open()" << std::endl;

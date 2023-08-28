@@ -57,54 +57,12 @@ HesaiHwMonitorRosWrapper::HesaiHwMonitorRosWrapper(const rclcpp::NodeOptions & o
       break;
   }
 
-  /*
-  Status rt = hw_interface_.InitializeTcpDriver();
-  while(rt == Status::ERROR_1)
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    rt = hw_interface_.InitializeTcpDriver();
-  }
-  if(rt != Status::ERROR_1){
-    std::vector<std::thread> thread_pool{};
-    thread_pool.emplace_back([this] {
-      hw_interface_.GetInventory(  // ios,
-        [this](HesaiInventory & result) {
-          current_inventory.reset(new HesaiInventory(result));
-          current_inventory_time.reset(new rclcpp::Time(this->get_clock()->now()));
-          std::cout << "HesaiInventory" << std::endl;
-          std::cout << result << std::endl;
-          info_model = result.get_str_model();
-          info_serial = std::string(result.sn.begin(), result.sn.end());
-          hw_interface_.SetTargetModel(result.model);
-          RCLCPP_INFO_STREAM(this->get_logger(), "Model:" << info_model);
-          RCLCPP_INFO_STREAM(this->get_logger(), "Serial:" << info_serial);
-          InitializeHesaiDiagnostics();
-        });
-    });
-    for (std::thread & th : thread_pool) {
-      th.join();
-    }
-  }
-  else
-  {
-    RCLCPP_ERROR_STREAM(get_logger(), "Failed to get model from sensor... Set from config: " << sensor_cfg_ptr->sensor_model);
-    std::stringstream ss;
-    ss << sensor_cfg_ptr->sensor_model;
-    info_model = ss.str();
-    info_serial = "-";
-    hw_interface_.SetTargetModel(sensor_cfg_ptr->sensor_model);
-    InitializeHesaiDiagnostics();
-  }
-  */
-
   hw_interface_.SetLogger(std::make_shared<rclcpp::Logger>(this->get_logger()));
   hw_interface_.SetSensorConfiguration(
     std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
-  bool retry = false;
-  while(hw_interface_.InitializeTcpDriver(false, retry) == Status::ERROR_1)
+  while(hw_interface_.InitializeTcpDriver(false) == Status::ERROR_1)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(8000));// >5000
-//    retry = true;
   }
   std::vector<std::thread> thread_pool{};
   thread_pool.emplace_back([this] {

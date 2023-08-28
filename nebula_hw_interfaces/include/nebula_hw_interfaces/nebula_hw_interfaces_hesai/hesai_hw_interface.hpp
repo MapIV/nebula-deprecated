@@ -170,9 +170,8 @@ public:
   ~HesaiHwInterface();
   /// @brief Initializing tcp_driver for TCP communication
   /// @param setup_sensor Whether to also initialize tcp_driver for sensor configuration
-  /// @param retry Skip tcp_driver_->init_socket
   /// @return Resulting status
-  Status InitializeTcpDriver(bool setup_sensor = true, bool retry = false);
+  Status InitializeTcpDriver(bool setup_sensor = true);
   /// @brief Closes the TcpDriver and related resources
   /// @return Status result
   Status FinalizeTcpDriver();
