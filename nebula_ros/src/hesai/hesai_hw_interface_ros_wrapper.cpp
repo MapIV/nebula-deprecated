@@ -21,22 +21,77 @@ HesaiHwInterfaceRosWrapper::HesaiHwInterfaceRosWrapper(const rclcpp::NodeOptions
   hw_interface_.SetSensorConfiguration(
     std::static_pointer_cast<drivers::SensorConfigurationBase>(sensor_cfg_ptr));
 #if not defined(TEST_PCAP)
-  hw_interface_.InitializeTcpDriver(this->setup_sensor);
+  auto rt = hw_interface_.InitializeTcpDriver(this->setup_sensor);
 
-  std::vector<std::thread> thread_pool{};
-  thread_pool.emplace_back([this] {
-    hw_interface_.GetInventory(  // ios,
-      [this](HesaiInventory & result) {
-        std::cout << result << std::endl;
-        hw_interface_.SetTargetModel(result.model);
+  if(rt != Status::ERROR_1){
+    try{// not worked well
+      /*
+      // sync w try-catch
+      std::exception_ptr ep;
+      std::vector<std::thread> thread_pool{};
+      thread_pool.emplace_back([this, &ep] {
+        try{
+          hw_interface_.syncGetInventory(  // ios,
+            [this](HesaiInventory & result) {
+              std::cout << result << std::endl;
+              hw_interface_.SetTargetModel(result.model);
+            });
+        }
+        catch (...)
+        {
+          std::cout << "catch (...) in child" << std::endl;
+          RCLCPP_ERROR_STREAM(get_logger(), "Failed to get model from sensor...");
+          ep = std::current_exception();
+        }
       });
-  });
-  for (std::thread & th : thread_pool) {
-    th.join();
+      for (std::thread & th : thread_pool) {
+        th.join();
+        if(ep){
+          std::rethrow_exception(ep);
+        }
+      }
+      */
+      /*
+      // sync w try-catch
+      hw_interface_.syncGetInventory(  // ios,
+        [this](HesaiInventory & result) {
+          std::cout << "Model from sensor:(sync) " << result << std::endl;
+        RCLCPP_ERROR_STREAM(get_logger(), "Callback syncGetInventory");
+          hw_interface_.SetTargetModel(result.model);
+        });
+      */
+
+      // async wo try-catch
+//      std::cout << "Model from config(async): " << sensor_cfg_ptr->sensor_model << std::endl;
+      std::vector<std::thread> thread_pool{};
+        thread_pool.emplace_back([this] {
+          hw_interface_.GetInventory(  // ios,
+            [this](HesaiInventory & result) {
+//              std::cout << "HesaiInventory from sensor(async): " << result << std::endl;
+//              std::cout << "Model from sensor(async): " << result.model << std::endl;
+              RCLCPP_INFO_STREAM(get_logger(), result);
+              hw_interface_.SetTargetModel(result.model);
+            });
+        });
+        for (std::thread & th : thread_pool) {
+          th.join();
+        }
+
+    }
+    catch (...)// It doesn't work... 
+    {
+      std::cout << "catch (...) in parent" << std::endl;
+      RCLCPP_ERROR_STREAM(get_logger(), "Failed to get model from sensor...");
+    }
+    if (this->setup_sensor) {
+      hw_interface_.CheckAndSetConfig();
+      updateParameters();
+    }
   }
-  if (this->setup_sensor) {
-    hw_interface_.CheckAndSetConfig();
-    updateParameters();
+  else
+  {
+    RCLCPP_ERROR_STREAM(get_logger(), "Failed to get model from sensor... Set from config: " << sensor_cfg_ptr->sensor_model);
+    hw_interface_.SetTargetModel(sensor_cfg_ptr->sensor_model);
   }
 #endif
 

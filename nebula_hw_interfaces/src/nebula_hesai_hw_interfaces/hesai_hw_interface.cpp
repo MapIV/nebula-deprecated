@@ -1032,6 +1032,135 @@ Status HesaiHwInterface::GetPtpDiagGrandmaster(bool with_run)
   return GetPtpDiagGrandmaster(tcp_driver_, with_run);
 }
 
+Status HesaiHwInterface::syncGetInventory(
+  std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver,
+  std::function<void(HesaiInventory & result)> callback)
+{
+  std::cout << "Status HesaiHwInterface::syncGetInventory(std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver, std::function<void(HesaiInventory & result)> callback)" << std::endl;
+  std::vector<unsigned char> buf_vec;
+  int len = 0;
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_HIGH);
+  buf_vec.emplace_back(PTC_COMMAND_HEADER_LOW);
+  buf_vec.emplace_back(PTC_COMMAND_GET_INVENTORY_INFO);  // Cmd PTC_COMMAND_GET_INVENTORY_INFO
+  buf_vec.emplace_back(PTC_COMMAND_DUMMY_BYTE);
+  buf_vec.emplace_back((len >> 24) & 0xff);
+  buf_vec.emplace_back((len >> 16) & 0xff);
+  buf_vec.emplace_back((len >> 8) & 0xff);
+  buf_vec.emplace_back((len >> 0) & 0xff);
+
+  if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetInventory")) {
+    return syncGetInventory(target_tcp_driver, callback);
+  }
+
+  // It doesn't work even when the sensor is not connected...
+  if(!target_tcp_driver){
+    PrintError("!target_tcp_driver");
+    return Status::ERROR_1;
+  }
+
+  // It doesn't work even when the sensor is not connected...
+  if(!target_tcp_driver->isOpen()){
+    PrintError("!target_tcp_driver->isOpen()");
+    return Status::ERROR_1;
+  }
+
+  PrintDebug("syncGetInventory: start");
+
+  target_tcp_driver->syncSendReceiveHeaderPayload(
+    buf_vec,
+    [this](const std::vector<uint8_t> & received_bytes) {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+      for (const auto & b : received_bytes) {
+        std::cout << static_cast<int>(b) << ", ";
+      }
+      std::cout << std::endl;
+#endif
+      PrintDebug(received_bytes);
+    },
+    [this, target_tcp_driver, callback](const std::vector<uint8_t> & received_bytes) {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+      for (const auto & b : received_bytes) {
+        std::cout << static_cast<int>(b) << ", ";
+      }
+      std::cout << std::endl;
+
+      std::cout << "syncGetInventory getHeader: ";
+      for (const auto & b : target_tcp_driver->getHeader()) {
+        std::cout << static_cast<int>(b) << ", ";
+      }
+      std::cout << std::endl;
+      std::cout << "syncGetInventory getPayload: ";
+      for (const auto & b : target_tcp_driver->getPayload()) {
+        std::cout << static_cast<char>(b);
+      }
+      std::cout << std::endl;
+#endif
+      auto response = target_tcp_driver->getPayload();
+      HesaiInventory hesai_inventory;
+      if (8 < response.size()) {
+        int payload_pos = 8;
+        for (size_t i = 0; i < hesai_inventory.sn.size(); i++) {
+          hesai_inventory.sn[i] = response[payload_pos++];
+        }
+        for (size_t i = 0; i < hesai_inventory.date_of_manufacture.size(); i++) {
+          hesai_inventory.date_of_manufacture[i] = response[payload_pos++];
+        }
+        for (size_t i = 0; i < hesai_inventory.mac.size(); i++) {
+          hesai_inventory.mac[i] = response[payload_pos++];
+        }
+        for (size_t i = 0; i < hesai_inventory.sw_ver.size(); i++) {
+          hesai_inventory.sw_ver[i] = response[payload_pos++];
+        }
+        for (size_t i = 0; i < hesai_inventory.hw_ver.size(); i++) {
+          hesai_inventory.hw_ver[i] = response[payload_pos++];
+        }
+        for (size_t i = 0; i < hesai_inventory.control_fw_ver.size(); i++) {
+          hesai_inventory.control_fw_ver[i] = response[payload_pos++];
+        }
+        for (size_t i = 0; i < hesai_inventory.sensor_fw_ver.size(); i++) {
+          hesai_inventory.sensor_fw_ver[i] = response[payload_pos++];
+        }
+        hesai_inventory.angle_offset = response[payload_pos++] << 8;
+        hesai_inventory.angle_offset = hesai_inventory.angle_offset | response[payload_pos++];
+        hesai_inventory.model = static_cast<int>(response[payload_pos++]);
+        hesai_inventory.motor_type = static_cast<int>(response[payload_pos++]);
+        hesai_inventory.num_of_lines = static_cast<int>(response[payload_pos++]);
+        for (size_t i = 0; i < hesai_inventory.reserved.size(); i++) {
+          hesai_inventory.reserved[i] = static_cast<unsigned char>(response[payload_pos++]);
+        }
+        callback(hesai_inventory);
+      }
+    },
+    [this]() { CheckUnlock(tm_, "syncGetInventory"); });
+
+  return Status::OK;
+}
+Status HesaiHwInterface::syncGetInventory(
+  std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver)
+{
+  return syncGetInventory(target_tcp_driver,
+    [this](HesaiInventory & result) { std::cout << result << std::endl; });
+}
+Status HesaiHwInterface::syncGetInventory(
+  std::shared_ptr<boost::asio::io_context> ctx,
+  std::function<void(HesaiInventory & result)> callback)
+{
+  auto tcp_driver_local = std::make_shared<::drivers::tcp_driver::TcpDriver>(ctx);
+  return syncGetInventory(tcp_driver_local, callback);
+}
+Status HesaiHwInterface::syncGetInventory(std::shared_ptr<boost::asio::io_context> ctx)
+{
+  auto tcp_driver_local = std::make_shared<::drivers::tcp_driver::TcpDriver>(ctx);
+  return syncGetInventory(tcp_driver_local);
+}
+Status HesaiHwInterface::syncGetInventory(std::function<void(HesaiInventory & result)> callback)
+{
+  return syncGetInventory(
+    tcp_driver_, [this, callback](HesaiInventory & result) {
+      callback(result);
+    });
+}
+
 Status HesaiHwInterface::GetInventory(
   std::shared_ptr<::drivers::tcp_driver::TcpDriver> target_tcp_driver,
   std::function<void(HesaiInventory & result)> callback, bool with_run)
@@ -3015,7 +3144,57 @@ HesaiStatus HesaiHwInterface::CheckAndSetConfig()
   return Status::WAITING_FOR_SENSOR_RESPONSE;
 }
 
+/*
+0: Pandar40P
+2: Pandar64
+3: Pandar 128
+15: PandarQT
+17: Pandar40M
+20: PandarMind64 (Pandar64)
+25: Pandar XT32
+26: Pandar XT16
+32: QT128C2X
+38: ?
+40: AT128?
+48: ?
+*/
+int HesaiHwInterface::NebulaModelToHesaiModelNo(nebula::drivers::SensorModel model)
+{
+
+  switch (model) {
+    case SensorModel::HESAI_PANDAR40P:
+      return 0;
+    case SensorModel::HESAI_PANDAR64:
+      return 2;
+    case SensorModel::HESAI_PANDARQT64://check required
+      return 15;
+    case SensorModel::HESAI_PANDAR40M:
+      return 17;
+    case SensorModel::HESAI_PANDARXT32:
+      return 25;
+    case SensorModel::HESAI_PANDARXT32M://check required
+      return 25;
+    case SensorModel::HESAI_PANDARQT128:
+      return 32;
+    case SensorModel::HESAI_PANDARAT128:
+      return 40;
+    case SensorModel::HESAI_PANDAR128_E3X://check required
+      return 40;
+    case SensorModel::HESAI_PANDAR128_E4X://check required
+      return 40;
+    case SensorModel::VELODYNE_VLS128:
+    case SensorModel::VELODYNE_HDL64:
+    case SensorModel::VELODYNE_VLP32:
+    case SensorModel::VELODYNE_VLP32MR:
+    case SensorModel::VELODYNE_HDL32:
+    case SensorModel::VELODYNE_VLP16:
+    case SensorModel::UNKNOWN:
+      return -1;
+  }
+  return -1;
+}
 void HesaiHwInterface::SetTargetModel(int model) { target_model_no = model; }
+void HesaiHwInterface::SetTargetModel(nebula::drivers::SensorModel model) { target_model_no = NebulaModelToHesaiModelNo(model); }
 
 bool HesaiHwInterface::UseHttpSetSpinRate(int model)
 {
