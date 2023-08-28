@@ -1,6 +1,6 @@
 #include "nebula_hw_interfaces/nebula_hw_interfaces_hesai/hesai_hw_interface.hpp"
 
-//#define WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+#define WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
 
 namespace nebula
 {
@@ -36,6 +36,9 @@ HesaiHwInterface::~HesaiHwInterface()
       std::cout << ".......................ed: tcp_driver_->close();" << std::endl;
 #endif
     }
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    std::cout << ".......................ed: if(tcp_driver_)" << std::endl;
+#endif
   }
   if(tcp_driver_s_)
   {
@@ -52,6 +55,9 @@ HesaiHwInterface::~HesaiHwInterface()
       std::cout << ".......................ed: tcp_driver_s_->close();" << std::endl;
 #endif
     }
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    std::cout << ".......................ed: if(tcp_driver_s_)" << std::endl;
+#endif
   }
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
   std::cout << ".......................ed: HesaiHwInterface::~HesaiHwInterface()" << std::endl;
@@ -230,7 +236,7 @@ Status HesaiHwInterface::GetCalibrationConfiguration(
   return Status::ERROR_1;
 }
 
-Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
+Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor, bool retry)
 {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
   std::cout << "HesaiHwInterface::InitializeTcpDriver, setup_sensor=" << setup_sensor << std::endl;
@@ -239,16 +245,27 @@ Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
   std::cout << "sensor_configuration_->host_ip=" << sensor_configuration_->host_ip << std::endl;
   std::cout << "PandarTcpCommandPort=" << PandarTcpCommandPort << std::endl;
 #endif
-  tcp_driver_->init_socket(
-    sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
-    PandarTcpCommandPort);
+  if(!retry)
+  {
+    tcp_driver_->init_socket(
+      sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
+      PandarTcpCommandPort);
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
-  std::cout << "ed: tcp_driver_->init_socket" << std::endl;
+    std::cout << "ed: tcp_driver_->init_socket" << std::endl;
 #endif
+  }
+  else
+  {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    std::cout << "skip: tcp_driver_->init_socket" << std::endl;
+#endif
+  }
   if (!tcp_driver_->open()) {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
   std::cout << "!tcp_driver_->open()" << std::endl;
 #endif
+//    tcp_driver_->close();
+    tcp_driver_->closeSync();
     return Status::ERROR_1;
   }
   if (setup_sensor) {
@@ -259,6 +276,8 @@ Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
     std::cout << "!tcp_driver_s_->open()" << std::endl;
 #endif
+//      tcp_driver_s_->close();
+      tcp_driver_s_->closeSync();
       return Status::ERROR_1;
     }
   }
@@ -3172,16 +3191,16 @@ int HesaiHwInterface::NebulaModelToHesaiModelNo(nebula::drivers::SensorModel mod
       return 17;
     case SensorModel::HESAI_PANDARXT32:
       return 25;
-    case SensorModel::HESAI_PANDARXT32M://check required
-      return 25;
     case SensorModel::HESAI_PANDARQT128:
       return 32;
-    case SensorModel::HESAI_PANDARAT128:
-      return 40;
+    case SensorModel::HESAI_PANDARXT32M:
+      return 38;
     case SensorModel::HESAI_PANDAR128_E3X://check required
       return 40;
     case SensorModel::HESAI_PANDAR128_E4X://check required
       return 40;
+    case SensorModel::HESAI_PANDARAT128:
+      return 48;
     case SensorModel::VELODYNE_VLS128:
     case SensorModel::VELODYNE_HDL64:
     case SensorModel::VELODYNE_VLP32:
