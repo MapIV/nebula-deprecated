@@ -57,7 +57,7 @@ void HesaiDriverRosWrapper::ReceiveScanMsgCallback(
   const pandar_msgs::msg::PandarScan::SharedPtr scan_msg)
 {
   auto t_start = std::chrono::high_resolution_clock::now();
-
+  RCLCPP_INFO_STREAM(get_logger(), scan_msg->packets.size());
   std::tuple<nebula::drivers::NebulaPointCloudPtr, double> pointcloud_ts =
     driver_ptr_->ConvertScanToPointcloud(scan_msg);
   nebula::drivers::NebulaPointCloudPtr pointcloud = std::get<0>(pointcloud_ts);
