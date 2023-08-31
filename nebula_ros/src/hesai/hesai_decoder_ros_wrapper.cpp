@@ -308,10 +308,15 @@ Status HesaiDriverRosWrapper::GetParameters(
       }
     }
   } else { // sensor_configuration.sensor_model == drivers::SensorModel::HESAI_PANDARAT128
+    run_local = false;
     std::future<void> future = std::async(std::launch::async, [this, &correction_configuration, &run_local]() {
     if (hw_interface_.InitializeTcpDriver(false) == Status::OK) {
       hw_interface_.syncGetLidarCalibrationFromSensor(
         [this, &correction_configuration](const std::vector<uint8_t> & received_bytes) {
+          RCLCPP_INFO_STREAM(get_logger(), "AT128 calibration size:" << received_bytes.size() << "\n");
+          for(const auto& byte: received_bytes) {
+            RCLCPP_INFO(get_logger(),"%d, ", byte);
+          }
           correction_configuration.LoadFromBinary(received_bytes);
         });
       }else{
