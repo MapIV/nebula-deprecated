@@ -226,12 +226,12 @@ void PandarATDecoder::convert(size_t block_id, NebulaPointCloudPtr & out_pc) {
   CalcXTPointXYZIT(block_id, static_cast<int>(packet_.header.chLaserNumber), out_pc);
 }
 
-drivers::NebulaPointCloudPtr PandarATDecoder::convert(size_t block_id)
+drivers::NebulaPointCloudPtr PandarATDecoder::convert([[maybe_unused]]size_t block_id)
 {
   throw std::runtime_error("Not implemented");
 }
 
-drivers::NebulaPointCloudPtr PandarATDecoder::convert_dual(size_t block_id)
+drivers::NebulaPointCloudPtr PandarATDecoder::convert_dual([[maybe_unused]]size_t block_id)
 {
   throw std::runtime_error("Not implemented");
 }
