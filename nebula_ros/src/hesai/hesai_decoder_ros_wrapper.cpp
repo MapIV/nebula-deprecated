@@ -265,10 +265,18 @@ Status HesaiDriverRosWrapper::GetParameters(
                           << sensor_configuration.sensor_ip << "'");
   std::cout << "Trying to acquire calibration data from sensor: '" << sensor_configuration.sensor_ip << "'" << std::endl;
   if (sensor_configuration.sensor_model != drivers::SensorModel::HESAI_PANDARAT128) {
-    std::future<void> future = std::async(std::launch::async, [this, &calibration_configuration, &run_local]() {
+    std::string calibration_file_path;
+    if (!calibration_configuration.calibration_file.empty()) {
+      int ext_pos = calibration_configuration.calibration_file.find_last_of('.');
+      calibration_file_path += calibration_configuration.calibration_file.substr(0, ext_pos);
+      calibration_file_path += "_from_sensor";
+      calibration_file_path += calibration_configuration.calibration_file.substr(ext_pos, calibration_configuration.calibration_file.size() - ext_pos);
+    }
+    std::future<void> future = std::async(std::launch::async, [this, &calibration_configuration, &calibration_file_path, &run_local]() {
       if (hw_interface_.InitializeTcpDriver(false) == Status::OK) {
         hw_interface_.GetLidarCalibrationFromSensor(
-          [this, &calibration_configuration](const std::string & str) {
+          [this, &calibration_configuration, &calibration_file_path](const std::string & str) {
+            calibration_configuration.SaveFileFromString(calibration_file_path, str);
             calibration_configuration.LoadFromString(str);
           },
           true);
@@ -285,25 +293,45 @@ Status HesaiDriverRosWrapper::GetParameters(
       RCLCPP_INFO_STREAM(
         this->get_logger(), "Acquired calibration data from sensor: '"
                               << sensor_configuration.sensor_ip << "'");
+      RCLCPP_INFO_STREAM(
+        this->get_logger(), "The calibration has been saved in '"
+                              << calibration_file_path << "'");
     }
     if(run_local) {
-      if (calibration_configuration.calibration_file.empty()) {
-        RCLCPP_ERROR_STREAM(
-          this->get_logger(), "Empty Calibration_file File: '" << calibration_configuration.calibration_file << "'");
-        return Status::INVALID_CALIBRATION_FILE;
+      bool run_org = false;
+      if (calibration_file_path.empty()) {
+        run_org = true;
       } else {
         auto cal_status =
-          calibration_configuration.LoadFromFile(calibration_configuration.calibration_file);
+          calibration_configuration.LoadFromFile(calibration_file_path);
 
         if (cal_status != Status::OK) {
-          RCLCPP_ERROR_STREAM(
-            this->get_logger(),
-            "Given Calibration File: '" << calibration_configuration.calibration_file << "'");
-          return cal_status;
+          run_org = true;
         }else{
           RCLCPP_INFO_STREAM(
             this->get_logger(), "Load calibration data from: '"
-                                  << calibration_configuration.calibration_file << "'");
+                                  << calibration_file_path << "'");
+        }
+      }
+      if(run_org) {
+        if (calibration_configuration.calibration_file.empty()) {
+          RCLCPP_ERROR_STREAM(
+            this->get_logger(), "Empty Calibration_file File: '" << calibration_configuration.calibration_file << "'");
+          return Status::INVALID_CALIBRATION_FILE;
+        } else {
+          auto cal_status =
+            calibration_configuration.LoadFromFile(calibration_configuration.calibration_file);
+
+          if (cal_status != Status::OK) {
+            RCLCPP_ERROR_STREAM(
+              this->get_logger(),
+              "Given Calibration File: '" << calibration_configuration.calibration_file << "'");
+            return cal_status;
+          }else{
+            RCLCPP_INFO_STREAM(
+              this->get_logger(), "Load calibration data from: '"
+                                    << calibration_configuration.calibration_file << "'");
+          }
         }
       }
     }

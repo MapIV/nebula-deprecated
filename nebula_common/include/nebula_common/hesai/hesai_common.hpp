@@ -116,6 +116,22 @@ struct HesaiCalibrationConfiguration : CalibrationConfigurationBase
 
     return Status::OK;
   }
+
+  /// @brief Saving calibration data from string
+  /// @param calibration_file
+  /// @param calibration_string
+  /// @return Resulting status
+  inline nebula::Status SaveFileFromString(const std::string & calibration_file, const std::string & calibration_string)
+  {
+    std::ofstream ofs(calibration_file);
+    if (!ofs) {
+      return Status::CANNOT_SAVE_FILE;
+    }
+    ofs << calibration_string;
+    ofs.close();
+
+    return Status::OK;
+  }
 };
 
 /// @brief struct for Hesai correction configuration (for AT)
