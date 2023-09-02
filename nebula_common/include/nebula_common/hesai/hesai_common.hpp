@@ -118,8 +118,8 @@ struct HesaiCalibrationConfiguration : CalibrationConfigurationBase
   }
 
   /// @brief Saving calibration data from string
-  /// @param calibration_file
-  /// @param calibration_string
+  /// @param calibration_file path
+  /// @param calibration_string calibration string
   /// @return Resulting status
   inline nebula::Status SaveFileFromString(const std::string & calibration_file, const std::string & calibration_string)
   {
@@ -296,6 +296,24 @@ struct HesaiCorrection
     LoadFromBinary(buf);
 
     ifs.close();
+    return Status::OK;
+  }
+
+  /// @brief Save correction data from binary buffer
+  /// @param correction_file path
+  /// @param buf correction binary
+  /// @return Resulting status
+  inline nebula::Status SaveFileFromBinary(const std::string & correction_file, const std::vector<uint8_t> & buf)
+  {
+    std::ofstream ofs(correction_file, std::ios::out | std::ios::binary | std::ios::trunc);
+    if (!ofs) {
+      return Status::CANNOT_SAVE_FILE;
+    }
+    for(uint8_t i=0; i<buf.size(); i++)
+    {
+      ofs.write((char *)&buf[i], sizeof(unsigned char));
+    }
+    ofs.close();
     return Status::OK;
   }
 
