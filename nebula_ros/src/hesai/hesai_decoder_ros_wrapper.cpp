@@ -362,7 +362,7 @@ Status HesaiDriverRosWrapper::GetParameters(
     }
     std::future<void> future = std::async(std::launch::async, [this, &correction_configuration, &correction_file_path_from_sensor, &run_local]() {
     if (hw_interface_.InitializeTcpDriver(false) == Status::OK) {
-      hw_interface_.syncGetLidarCalibrationFromSensor(
+      hw_interface_.GetLidarCalibrationFromSensor(
         [this, &correction_configuration, &correction_file_path_from_sensor, &run_local](const std::vector<uint8_t> & received_bytes) {
           RCLCPP_INFO_STREAM(get_logger(), "AT128 calibration size:" << received_bytes.size() << "\n");
           for(const auto& byte: received_bytes) {
