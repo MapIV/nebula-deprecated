@@ -352,7 +352,7 @@ Status HesaiDriverRosWrapper::GetParameters(
       }
     }
   } else { // sensor_configuration.sensor_model == drivers::SensorModel::HESAI_PANDARAT128
-    run_local = false; // ...?
+    run_local = true;
     std::string correction_file_path_from_sensor;
     if (!correction_file_path.empty()) {
       int ext_pos = correction_file_path.find_last_of('.');
@@ -363,7 +363,7 @@ Status HesaiDriverRosWrapper::GetParameters(
     std::future<void> future = std::async(std::launch::async, [this, &correction_configuration, &correction_file_path_from_sensor, &run_local]() {
     if (hw_interface_.InitializeTcpDriver(false) == Status::OK) {
       hw_interface_.syncGetLidarCalibrationFromSensor(
-        [this, &correction_configuration, &correction_file_path_from_sensor](const std::vector<uint8_t> & received_bytes) {
+        [this, &correction_configuration, &correction_file_path_from_sensor, &run_local](const std::vector<uint8_t> & received_bytes) {
           RCLCPP_INFO_STREAM(get_logger(), "AT128 calibration size:" << received_bytes.size() << "\n");
           for(const auto& byte: received_bytes) {
             RCLCPP_INFO(get_logger(),"%d, ", byte);
@@ -375,16 +375,19 @@ Status HesaiDriverRosWrapper::GetParameters(
           }
           else
           {
-            RCLCPP_ERROR_STREAM(get_logger(), "SaveFileFromBinary failed:" << correction_file_path_from_sensor << "\n");
+            RCLCPP_ERROR_STREAM(get_logger(), "SaveFileFromBinary failed:" << correction_file_path_from_sensor << ". Falling back to offline calibration file.");
+            run_local = true;
           }
           rt = correction_configuration.LoadFromBinary(received_bytes);
           if(rt == Status::OK)
           {
             RCLCPP_INFO_STREAM(get_logger(), "LoadFromBinary success" << "\n");
+            run_local = false;
           }
           else
           {
-            RCLCPP_ERROR_STREAM(get_logger(), "LoadFromBinary failed" << "\n");
+            RCLCPP_ERROR_STREAM(get_logger(), "LoadFromBinary failed" << ". Falling back to offline calibration file.");
+            run_local = true;
           }
         });
       }else{
@@ -440,7 +443,7 @@ Status HesaiDriverRosWrapper::GetParameters(
         }
       }
     }
-  }
+  } // end AT128
   // Do not use outside of this location
   hw_interface_.~HesaiHwInterface();
   RCLCPP_INFO_STREAM(this->get_logger(), "SensorConfig:" << sensor_configuration);
