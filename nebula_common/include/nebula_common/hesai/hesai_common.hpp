@@ -160,7 +160,11 @@ struct HesaiCorrection
   /// @return Resulting status
   inline nebula::Status LoadFromBinary(const std::vector<uint8_t> & buf)
   {
-    size_t index = 0;
+    size_t index;
+    for (index = 0; index < buf.size()-1; index++) {
+      if(buf[index]==0xee && buf[index+1]==0xff)
+        break;
+    }
     delimiter = (buf[index] & 0xff) << 8 | ((buf[index + 1] & 0xff));
     versionMajor = buf[index + 2] & 0xff;
     versionMinor = buf[index + 3] & 0xff;
