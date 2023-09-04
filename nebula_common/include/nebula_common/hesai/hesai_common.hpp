@@ -128,6 +128,7 @@ struct HesaiCalibrationConfiguration : CalibrationConfigurationBase
       return Status::CANNOT_SAVE_FILE;
     }
     ofs << calibration_string;
+//    std::cout << calibration_string << std::endl;
     ofs.close();
 
     return Status::OK;
@@ -305,7 +306,7 @@ struct HesaiCorrection
   /// @return Resulting status
   inline nebula::Status SaveFileFromBinary(const std::string & correction_file, const std::vector<uint8_t> & buf)
   {
-    std::ofstream ofs(correction_file, std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream ofs(correction_file, std::ios::trunc | std::ios::binary);
     if (!ofs) {
       return Status::CANNOT_SAVE_FILE;
     }

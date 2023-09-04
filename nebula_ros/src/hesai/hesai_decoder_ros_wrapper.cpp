@@ -276,8 +276,24 @@ Status HesaiDriverRosWrapper::GetParameters(
       if (hw_interface_.InitializeTcpDriver(false) == Status::OK) {
         hw_interface_.GetLidarCalibrationFromSensor(
           [this, &calibration_configuration, &calibration_file_path_from_sensor](const std::string & str) {
-            calibration_configuration.SaveFileFromString(calibration_file_path_from_sensor, str);
-            calibration_configuration.LoadFromString(str);
+            auto rt = calibration_configuration.SaveFileFromString(calibration_file_path_from_sensor, str);
+            if(rt == Status::OK)
+            {
+              RCLCPP_INFO_STREAM(get_logger(), "SaveFileFromString success:" << calibration_file_path_from_sensor << "\n");
+            }
+            else
+            {
+              RCLCPP_ERROR_STREAM(get_logger(), "SaveFileFromString failed:" << calibration_file_path_from_sensor << "\n");
+            }
+            rt = calibration_configuration.LoadFromString(str);
+            if(rt == Status::OK)
+            {
+              RCLCPP_INFO_STREAM(get_logger(), "LoadFromString success:" << str << "\n");
+            }
+            else
+            {
+              RCLCPP_ERROR_STREAM(get_logger(), "LoadFromString failed:" << str << "\n");
+            }
           },
           true);
       }else{
@@ -352,8 +368,24 @@ Status HesaiDriverRosWrapper::GetParameters(
           for(const auto& byte: received_bytes) {
             RCLCPP_INFO(get_logger(),"%d, ", byte);
           }
-          correction_configuration.SaveFileFromBinary(correction_file_path_from_sensor, received_bytes);
-          correction_configuration.LoadFromBinary(received_bytes);
+          auto rt = correction_configuration.SaveFileFromBinary(correction_file_path_from_sensor, received_bytes);
+          if(rt == Status::OK)
+          {
+            RCLCPP_INFO_STREAM(get_logger(), "SaveFileFromBinary success:" << correction_file_path_from_sensor << "\n");
+          }
+          else
+          {
+            RCLCPP_ERROR_STREAM(get_logger(), "SaveFileFromBinary failed:" << correction_file_path_from_sensor << "\n");
+          }
+          rt = correction_configuration.LoadFromBinary(received_bytes);
+          if(rt == Status::OK)
+          {
+            RCLCPP_INFO_STREAM(get_logger(), "LoadFromBinary success" << "\n");
+          }
+          else
+          {
+            RCLCPP_ERROR_STREAM(get_logger(), "LoadFromBinary failed" << "\n");
+          }
         });
       }else{
         run_local = true;
