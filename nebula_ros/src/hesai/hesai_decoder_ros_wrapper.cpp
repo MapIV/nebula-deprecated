@@ -338,7 +338,7 @@ Status HesaiDriverRosWrapper::GetParameters(
   } else { // sensor_configuration.sensor_model == drivers::SensorModel::HESAI_PANDARAT128
     run_local = false; // ...?
     std::string correction_file_path_from_sensor;
-    if (correction_file_path.empty()) {
+    if (!correction_file_path.empty()) {
       int ext_pos = correction_file_path.find_last_of('.');
       correction_file_path_from_sensor += correction_file_path.substr(0, ext_pos);
       correction_file_path_from_sensor += "_from_sensor";
