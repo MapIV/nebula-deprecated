@@ -306,16 +306,30 @@ struct HesaiCorrection
   /// @return Resulting status
   inline nebula::Status SaveFileFromBinary(const std::string & correction_file, const std::vector<uint8_t> & buf)
   {
+    std::cerr << "Saving in:" << correction_file << "\n";
     std::ofstream ofs(correction_file, std::ios::trunc | std::ios::binary);
     if (!ofs) {
+      std::cerr << "Could not create file:" << correction_file << "\n";
       return Status::CANNOT_SAVE_FILE;
     }
-    for(uint8_t i=0; i<buf.size(); i++)
-    {
-      ofs.write((char *)&buf[i], sizeof(unsigned char));
+    std::cerr << "Writing start...." << buf.size() << "\n";
+    bool sop_received = false;
+    for (const auto &byte : buf) {
+      if (!sop_received) {
+        if (byte == 0xEE) {
+          std::cerr << "SOP received....\n";
+          sop_received = true;
+        }
+      }
+      if(sop_received) {
+        ofs << byte;
+      }
     }
+    std::cerr << "Closing file\n";
     ofs.close();
-    return Status::OK;
+    if(sop_received)
+      return Status::OK;
+    return Status::INVALID_CALIBRATION_FILE;
   }
 
   static const int STEP3 = 200 * 256;
