@@ -364,9 +364,11 @@ Status HesaiDriverRosWrapper::GetParameters(
       hw_interface_.GetLidarCalibrationFromSensor(
         [this, &correction_configuration, &correction_file_path_from_sensor, &run_local](const std::vector<uint8_t> & received_bytes) {
           RCLCPP_INFO_STREAM(get_logger(), "AT128 calibration size:" << received_bytes.size() << "\n");
+          /*
           for(const auto& byte: received_bytes) {
             RCLCPP_INFO(get_logger(),"%d, ", byte);
           }
+          */
           auto rt = correction_configuration.SaveFileFromBinary(correction_file_path_from_sensor, received_bytes);
           if(rt == Status::OK)
           {

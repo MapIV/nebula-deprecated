@@ -313,7 +313,7 @@ Status HesaiHwInterface::syncGetLidarCalibration(
   //  if (!CheckLock(tm_, tm_fail_cnt, tm_fail_cnt_max, "GetLidarCalibration")) {
   //    return GetLidarCalibration(target_tcp_driver, with_run);
   //  }
-  PrintDebug("GetLidarCalibration: start");
+  PrintDebug("syncGetLidarCalibration: start");
 
   target_tcp_driver->syncSendReceiveHeaderPayload(
     buf_vec,
@@ -323,8 +323,8 @@ Status HesaiHwInterface::syncGetLidarCalibration(
         std::cout << static_cast<int>(b) << ", ";
       }
       std::cout << std::endl;
-#endif
       PrintDebug(received_bytes);
+#endif
     },
     [this, target_tcp_driver, bytes_callback](const std::vector<uint8_t> & received_bytes) {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
@@ -427,8 +427,8 @@ Status HesaiHwInterface::GetLidarCalibration(
         std::cout << static_cast<int>(b) << ", ";
       }
       std::cout << std::endl;
-#endif
       PrintDebug(received_bytes);
+#endif
     },
     [this, target_tcp_driver, bytes_callback](const std::vector<uint8_t> & received_bytes) {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
