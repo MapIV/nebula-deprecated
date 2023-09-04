@@ -260,6 +260,7 @@ Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
     return Status::ERROR_1;
   }
   if (setup_sensor) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     tcp_driver_s_->init_socket(
       sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
       PandarTcpCommandPort);
