@@ -259,7 +259,7 @@ Status HesaiHwInterface::InitializeTcpDriver(bool setup_sensor)
     tcp_driver_->closeSync();
     return Status::ERROR_1;
   }
-  if (setup_sensor) {
+  if (setup_sensor && tcp_driver_s_) {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     tcp_driver_s_->init_socket(
       sensor_configuration_->sensor_ip, PandarTcpCommandPort, sensor_configuration_->host_ip,
@@ -318,7 +318,7 @@ Status HesaiHwInterface::syncGetLidarCalibration(
 
   target_tcp_driver->syncSendReceiveHeaderPayload(
     buf_vec,
-    [this](const std::vector<uint8_t> & received_bytes) {
+    [this]([[maybe_unused]]const std::vector<uint8_t> & received_bytes) {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
       for (const auto & b : received_bytes) {
         std::cout << static_cast<int>(b) << ", ";
@@ -422,7 +422,7 @@ Status HesaiHwInterface::GetLidarCalibration(
 
   target_tcp_driver->asyncSendReceiveHeaderPayload(
     buf_vec,
-    [this](const std::vector<uint8_t> & received_bytes) {
+    [this]([[maybe_unused]]const std::vector<uint8_t> & received_bytes) {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
       for (const auto & b : received_bytes) {
         std::cout << static_cast<int>(b) << ", ";
@@ -1088,7 +1088,7 @@ Status HesaiHwInterface::syncGetInventory(
 #endif
       PrintDebug(received_bytes);
     },
-    [this, target_tcp_driver, callback](const std::vector<uint8_t> & received_bytes) {
+    [this, target_tcp_driver, callback]([[maybe_unused]]const std::vector<uint8_t> & received_bytes) {
 #ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
       for (const auto & b : received_bytes) {
         std::cout << static_cast<int>(b) << ", ";
@@ -1636,7 +1636,7 @@ Status HesaiHwInterface::SetSpinRate(
 Status HesaiHwInterface::SetSpinRate(uint16_t rpm, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -1692,7 +1692,7 @@ Status HesaiHwInterface::SetSyncAngle(
 Status HesaiHwInterface::SetSyncAngle(int sync_angle, int angle, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -1746,7 +1746,7 @@ Status HesaiHwInterface::SetTriggerMethod(
 Status HesaiHwInterface::SetTriggerMethod(int trigger_method, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -1799,7 +1799,7 @@ Status HesaiHwInterface::SetStandbyMode(
 Status HesaiHwInterface::SetStandbyMode(int standby_mode, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -1822,12 +1822,11 @@ Status HesaiHwInterface::SetReturnMode(
   buf_vec.emplace_back((len >> 0) & 0xff);
 
   buf_vec.emplace_back((return_mode >> 0) & 0xff);
-
+  PrintDebug("SetReturnMode: start" + std::to_string(return_mode));
   if (!CheckLock(tms_, tms_fail_cnt, tms_fail_cnt_max, "SetReturnMode")) {
     return SetReturnMode(target_tcp_driver, return_mode, with_run);
   }
-  PrintDebug("SetReturnMode: start");
-
+  PrintDebug("SetReturnMode: asyncSend");
   target_tcp_driver->asyncSend(buf_vec, [this]() { CheckUnlock(tms_, "SetReturnMode"); });
   if (with_run) {
     boost::system::error_code ec = target_tcp_driver->run();
@@ -1838,7 +1837,7 @@ Status HesaiHwInterface::SetReturnMode(
     std::cout << "ctx->run(): SetReturnMode" << std::endl;
 #endif
   }
-
+  PrintDebug("SetReturnMode: done");
   return Status::WAITING_FOR_SENSOR_RESPONSE;
 }
 Status HesaiHwInterface::SetReturnMode(
@@ -1854,7 +1853,7 @@ Status HesaiHwInterface::SetReturnMode(int return_mode, bool with_run)
 {
   //*
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -1920,7 +1919,7 @@ Status HesaiHwInterface::SetDestinationIp(
   int dest_ip_1, int dest_ip_2, int dest_ip_3, int dest_ip_4, int port, int gps_port, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -1999,7 +1998,7 @@ Status HesaiHwInterface::SetControlPort(
   bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -2062,7 +2061,7 @@ Status HesaiHwInterface::SetLidarRange(
 Status HesaiHwInterface::SetLidarRange(int method, std::vector<unsigned char> data, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -2127,7 +2126,7 @@ Status HesaiHwInterface::SetLidarRange(
 Status HesaiHwInterface::SetLidarRange(int start, int end, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -2305,7 +2304,7 @@ Status HesaiHwInterface::SetClockSource(int clock_source, bool with_run)
 {
   //*
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -2382,7 +2381,7 @@ Status HesaiHwInterface::SetPtpConfig(
   int logMinDelayReqInterval, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -2484,7 +2483,7 @@ Status HesaiHwInterface::GetPtpConfig(std::shared_ptr<boost::asio::io_context> c
 Status HesaiHwInterface::GetPtpConfig(bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -2535,7 +2534,7 @@ Status HesaiHwInterface::SendReset(bool with_run)
 {
   //*
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -2589,7 +2588,7 @@ Status HesaiHwInterface::SetRotDir(
 Status HesaiHwInterface::SetRotDir(int mode, bool with_run)
 {
   if (with_run) {
-    if (tcp_driver_s_->GetIOContext()->stopped()) {
+    if (tcp_driver_s_ && tcp_driver_s_->GetIOContext()->stopped()) {
       tcp_driver_s_->GetIOContext()->restart();
     }
   }
@@ -2907,13 +2906,18 @@ HesaiStatus HesaiHwInterface::CheckAndSetConfig(
   if (sensor_configuration->return_mode != current_return_mode) {
     std::stringstream ss;
     ss << current_return_mode;
-    PrintInfo("current lidar return_mode: " + ss.str());
+    PrintInfo("Current LiDAR return_mode: " + ss.str());
     std::stringstream ss2;
     ss2 << sensor_configuration->return_mode;
-    PrintInfo("current configuration return_mode: " + ss2.str());
+    PrintInfo("Current Configuration return_mode: " + ss2.str());
     std::thread t([this, sensor_configuration] {
-      SetReturnMode(nebula::drivers::IntFromReturnModeHesai(
-        sensor_configuration->return_mode, sensor_configuration->sensor_model));
+      auto return_mode_int = nebula::drivers::IntFromReturnModeHesai(
+        sensor_configuration->return_mode, sensor_configuration->sensor_model);
+      if (return_mode_int < 0) {
+        PrintError("Invalid Return Mode for this sensor. Please check your settings. Falling back to Dual mode.");
+        return_mode_int = 2;
+      }
+      SetReturnMode(return_mode_int);
     });
     t.join();
   }
@@ -3295,10 +3299,14 @@ bool HesaiHwInterface::CheckLock(
       fail_cnt++;
       if (fail_cnt_max < fail_cnt) {
         tm.unlock();
-        tcp_driver_->close();
-        tcp_driver_->open();
-        tcp_driver_s_->close();
-        tcp_driver_s_->open();
+        if (tcp_driver_) {
+          tcp_driver_->close();
+          tcp_driver_->open();
+        }
+        if (tcp_driver_s_) {
+          tcp_driver_s_->close();
+          tcp_driver_s_->open();
+        }
       }
       else {
         return true;
