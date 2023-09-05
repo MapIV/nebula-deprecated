@@ -2,6 +2,11 @@
 
 //#define WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
 
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+#include <chrono>
+#include <ctime>
+#endif
+
 namespace nebula
 {
 namespace drivers
@@ -3294,17 +3299,41 @@ bool HesaiHwInterface::CheckLock(
   std::timed_mutex & tm, int & fail_cnt, const int & fail_cnt_max, std::string name)
 {
   if (wl) {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+//    std::chrono::time_point start_time = std::chrono::steady_clock::now();
+    std::chrono::system_clock::time_point start_time = std::chrono::system_clock::now();
+    std::time_t stt = std::chrono::system_clock::to_time_t(start_time);
+    const std::tm* stlt = std::localtime(&stt);
+    std::cout << "try_lock_for: start at " << std::put_time(stlt, "%c") << std::endl;
+/*
+    std::chrono::system_clock::time_point test_time = std::chrono::system_clock::now();
+    std::time_t tst = std::chrono::system_clock::to_time_t(test_time);
+    const std::tm* tslt = std::localtime(&tst);
+    std::cerr << "try_lock_for: test at " << std::put_time(tslt, "%c") << std::endl;
+    auto dur_test = test_time - start_time;
+    std::cerr << "test: " << name << " : " << std::chrono::duration_cast<std::chrono::milliseconds>(dur_test).count() << std::endl;
+*/
+#endif
     if (!tm.try_lock_for(std::chrono::milliseconds(timeout_))) {
+#ifdef WITH_DEBUG_STDOUT_HESAI_HW_INTERFACE
+    std::cout << "if (!tm.try_lock_for(std::chrono::milliseconds(" << timeout_ << "))) {" << std::endl;
+    std::chrono::system_clock::time_point end_time = std::chrono::system_clock::now();
+    std::time_t edt = std::chrono::system_clock::to_time_t(end_time);
+    const std::tm* edlt = std::localtime(&edt);
+    std::cerr << "try_lock_for: end at " << std::put_time(edlt, "%c") << std::endl;
+    auto dur = end_time - start_time;
+    std::cerr << "timeout: " << name << " : " << std::chrono::duration_cast<std::chrono::milliseconds>(dur).count() << std::endl;
+#endif
       PrintDebug("timeout: " + name);
       fail_cnt++;
       if (fail_cnt_max < fail_cnt) {
         tm.unlock();
         if (tcp_driver_) {
-          tcp_driver_->close();
+          tcp_driver_->closeSync();
           tcp_driver_->open();
         }
         if (tcp_driver_s_) {
-          tcp_driver_s_->close();
+          tcp_driver_s_->closeSync();
           tcp_driver_s_->open();
         }
       }
