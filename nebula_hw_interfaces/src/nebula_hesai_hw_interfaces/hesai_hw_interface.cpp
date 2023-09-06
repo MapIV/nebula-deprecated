@@ -3328,11 +3328,11 @@ bool HesaiHwInterface::CheckLock(
       fail_cnt++;
       if (fail_cnt_max < fail_cnt) {
         tm.unlock();
-        if (tcp_driver_) {
+        if (tcp_driver_ && tcp_driver_->isOpen()) {
           tcp_driver_->closeSync();
           tcp_driver_->open();
         }
-        if (tcp_driver_s_) {
+        if (tcp_driver_s_ && tcp_driver_s_->isOpen()) {
           tcp_driver_s_->closeSync();
           tcp_driver_s_->open();
         }
