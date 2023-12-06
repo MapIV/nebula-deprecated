@@ -15,6 +15,12 @@
 #include <velodyne_msgs/msg/velodyne_packet.hpp>
 #include <velodyne_msgs/msg/velodyne_scan.hpp>
 
+
+#include <nebula_decoders/nebula_decoders_velodyne/decoders/pointcloudXYZIRADT.hpp>
+#include <nebula_decoders/nebula_decoders_velodyne/decoders/pointcloudXYZIRCAEDT.hpp>
+#include <nebula_decoders/nebula_decoders_velodyne/decoders/rawdata.hpp>
+#include "nebula_decoders/nebula_decoders_velodyne/decoders/output_builder.hpp"
+
 namespace nebula
 {
 namespace ros
@@ -66,6 +72,13 @@ class VelodyneDriverRosWrapper final : public rclcpp::Node, NebulaDriverRosWrapp
     std::unique_ptr<sensor_msgs::msg::PointCloud2> pointcloud,
     const rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr & publisher);
 
+//////////////////////////
+  // Buffer for overflow points
+  drivers::NebulaPointCloud _overflow_buffer;
+
+  std::shared_ptr<drivers::RawData> data_;
+//////////////////////////
+
 public:
   explicit VelodyneDriverRosWrapper(const rclcpp::NodeOptions & options);
 
@@ -75,6 +88,12 @@ public:
   /// @brief Get current status of this driver
   /// @return Current status
   Status GetStatus();
+
+//////////////////////////
+  /// @brief Callback for VelodyneScan subscriber
+  /// @param scan_msg Received VelodyneScan
+  void ReceiveScanMsgCallbackAW(const velodyne_msgs::msg::VelodyneScan::SharedPtr scan_msg);
+//////////////////////////
 };
 
 }  // namespace ros

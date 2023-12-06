@@ -17,6 +17,12 @@
 #include <stdexcept>
 #include <string>
 
+/*
+#include <nebula_decoders/nebula_decoders_velodyne/decoders/pointcloudXYZIRADT.hpp>
+#include <nebula_decoders/nebula_decoders_velodyne/decoders/pointcloudXYZIRCAEDT.hpp>
+#include <nebula_decoders/nebula_decoders_velodyne/decoders/rawdata.hpp>
+*/
+
 namespace nebula
 {
 namespace drivers
@@ -29,6 +35,9 @@ private:
   Status driver_status_;
   /// @brief Decoder according to the model
   std::shared_ptr<drivers::VelodyneScanDecoder> scan_decoder_;
+
+  /// @brief SensorConfiguration for this decoder
+  std::shared_ptr<drivers::VelodyneSensorConfiguration> sensor_configuration_;
 
 public:
   VelodyneDriver() = delete;
@@ -54,6 +63,21 @@ public:
   /// @return tuple of Point cloud and timestamp
   std::tuple<drivers::NebulaPointCloudPtr, double> ConvertScanToPointcloud(
     const std::shared_ptr<velodyne_msgs::msg::VelodyneScan> & velodyne_scan);
+
+/*
+  /////////////////////////////
+
+  /// @brief Convert VelodyneScan message to point cloud
+  /// @param velodyne_scan Message
+  /// @return tuple of Point cloud and timestamp
+  std::tuple<drivers::NebulaPointCloudPtr, double> ConvertScanToPointcloudAW(
+    const std::shared_ptr<velodyne_msgs::msg::VelodyneScan> & velodyne_scan);
+
+  // Buffer for overflow points
+  drivers::NebulaPointCloud _overflow_buffer;
+
+  std::shared_ptr<drivers::RawData> data_;
+*/
 };
 
 }  // namespace drivers
