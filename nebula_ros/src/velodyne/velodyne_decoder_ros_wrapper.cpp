@@ -57,11 +57,11 @@ VelodyneDriverRosWrapper::VelodyneDriverRosWrapper(const rclcpp::NodeOptions & o
   data_ = std::make_shared<drivers::RawData>(this);
   std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
   data_->setup();
-  std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+  std::cout << "start: setParameters!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
   data_->setParameters(
-    sensor_configuration.cloud_min_angle * 100, sensor_configuration.cloud_max_angle * 100, 0.0, 2.0 * M_PI);
+    0.9, 250.0, 0.0, 2.0 * M_PI);
 //    sensor_configuration.cloud_min_angle, sensor_configuration.cloud_max_angle, 0.0, 2.0 * M_PI);
-  std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+  std::cout << "end: setParameters!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
 }
 

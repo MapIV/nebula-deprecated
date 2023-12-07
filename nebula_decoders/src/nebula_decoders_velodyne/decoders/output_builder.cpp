@@ -50,16 +50,16 @@ OutputBuilder::OutputBuilder(size_t output_max_points_num, const VelodyneScan & 
   if (xyzircaedt_activated_) {
     init_output_msg<PointXYZIRCAEDT>(*output_xyzircaedt_, output_max_points_num, scan_msg);
 
-    offsets_xyziradt_.x_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "x")].offset;
-    offsets_xyziradt_.y_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "y")].offset;
-    offsets_xyziradt_.z_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "z")].offset;
-    offsets_xyziradt_.intensity_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "intensity")].offset;
-    offsets_xyziradt_.return_type_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "return_type")].offset;
-    offsets_xyziradt_.ring_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "channel")].offset;
-    offsets_xyziradt_.azimuth_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "azimuth")].offset;
-    offsets_xyziradt_.azimuth_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "elevation")].offset;
-    offsets_xyziradt_.distance_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "distance")].offset;
-    offsets_xyziradt_.time_stamp_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "time_stamp")].offset;
+    offsets_xyzircaedt_.x_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "x")].offset;
+    offsets_xyzircaedt_.y_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "y")].offset;
+    offsets_xyzircaedt_.z_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "z")].offset;
+    offsets_xyzircaedt_.intensity_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "intensity")].offset;
+    offsets_xyzircaedt_.return_type_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "return_type")].offset;
+    offsets_xyzircaedt_.channel_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "channel")].offset;
+    offsets_xyzircaedt_.azimuth_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "azimuth")].offset;
+    offsets_xyzircaedt_.elevation_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "elevation")].offset;
+    offsets_xyzircaedt_.distance_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "distance")].offset;
+    offsets_xyzircaedt_.time_stamp_offset = output_xyzircaedt_->fields[pcl::getFieldIndex(*output_xyzircaedt_, "time_stamp")].offset;
   }
 }
 

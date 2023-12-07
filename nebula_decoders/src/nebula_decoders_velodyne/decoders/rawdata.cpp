@@ -149,6 +149,7 @@ namespace drivers
       vls_128_laser_azimuth_cache[i] = (VLS128_CHANNEL_DURATION / VLS128_SEQ_DURATION) *
         (i + i / 8);
     }
+    std::cout << "*****************************************" << std::endl;
 
     return 0;
   }

@@ -31,6 +31,19 @@ struct PointXYZICATR
  */
 struct PointXYZIRCAEDT
 {
+  PCL_ADD_POINT4D;
+  std::uint8_t intensity;
+  std::uint8_t return_type;
+  std::uint16_t channel;
+  float azimuth;
+  float elevation;
+  float distance;
+  std::uint32_t time_stamp;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+/*
+struct PointXYZIRCAEDT
+{
   float x;
   float y;
   float z;
@@ -42,6 +55,7 @@ struct PointXYZIRCAEDT
   float distance;
   std::uint32_t time_stamp;
 };
+*/
 
 struct PointXYZIRADT
 {
