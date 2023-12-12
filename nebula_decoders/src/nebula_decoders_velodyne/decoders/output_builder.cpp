@@ -2,6 +2,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 #include "nebula_decoders/nebula_decoders_velodyne/decoders/output_builder.hpp"
+#include <random>
 
 namespace nebula
 {
@@ -114,10 +115,12 @@ std::unique_ptr<sensor_msgs::msg::PointCloud2> OutputBuilder::move_xyzircaedt_ou
   if (!xyzircaedt_activated_ || output_xyzircaedt_moved_) {
     return std::unique_ptr<sensor_msgs::msg::PointCloud2>(nullptr);
   }
+  std::random_device rnd;
+  std::cout << "move_xyzircaedt_output " << rnd() << std::endl;
 
   output_xyzircaedt_->data.resize(output_xyzircaedt_data_size_);
 
-  double time_stamp = *reinterpret_cast<double *>(&output_xyzircaedt_->data[offsets_xyziradt_.time_stamp_offset]);
+  double time_stamp = *reinterpret_cast<double *>(&output_xyzircaedt_->data[offsets_xyzircaedt_.time_stamp_offset]);
   auto stamp = rclcpp::Time(std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::duration<double>(time_stamp)).count());
   output_xyzircaedt_->header.stamp = stamp;
@@ -229,6 +232,8 @@ void OutputBuilder::addPoint(
     point->return_type = return_type;
     point->time_stamp = time_stamp;
 
+//    std::cout << "PointXYZIRADT: " << point->x << ", " << point->y << ", " << point->z << std::endl;
+
     output_xyziradt_data_size_ += output_xyziradt_->point_step;
     output_xyziradt_->width++;
     output_xyziradt_->row_step += output_xyziradt_->point_step;
@@ -275,6 +280,8 @@ void OutputBuilder::addPoint(
     point->elevation = elevation;
     point->distance = distance;
     point->time_stamp = time_stamp;
+
+//    std::cout << "PointXYZIRCAEDT: " << point->x << ", " << point->y << ", " << point->z << std::endl;
 
     output_xyzircaedt_data_size_ += output_xyzircaedt_->point_step;
     output_xyzircaedt_->width++;

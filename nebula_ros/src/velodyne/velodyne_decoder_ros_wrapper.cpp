@@ -1,4 +1,5 @@
 #include "nebula_ros/velodyne/velodyne_decoder_ros_wrapper.hpp"
+#include <random>
 
 #define USE_AWF
 
@@ -139,9 +140,13 @@ void VelodyneDriverRosWrapper::ReceiveScanMsgCallbackAW(
     // Add the overflow buffer points
     for (size_t i = 0; i < _overflow_buffer.points.size(); ++i) {
       auto &point = _overflow_buffer.points[i];
+      /*
       output_builder.addPoint(point.x, point.y, point.z, point.return_type,
 //            point.ring, point.azimuth, point.distance, point.intensity, point.time_stamp);
           point.channel, point.azimuth, point.distance, point.intensity, point.time_stamp);
+          */
+      output_builder.addPoint(point.x, point.y, point.z, point.intensity, point.return_type,
+          point.channel, point.azimuth, point.elevation, point.distance, point.time_stamp);
     }
     // Reset overflow buffer
     _overflow_buffer.points.clear();
@@ -211,6 +216,8 @@ void VelodyneDriverRosWrapper::ReceiveScanMsgCallbackAW(
   if (output_builder.xyzircaedt_is_activated()) {
     auto msg = output_builder.move_xyzircaedt_output();
     if (msg->data.size() == 0) msg->header.stamp = scan_msg->packets[0].stamp;
+    std::random_device rnd;
+    std::cout << "PublishCloud " << msg->data.size() << ":" << rnd() << std::endl;
     PublishCloud(std::move(msg), nebula_points_pub_);
   }
 /*

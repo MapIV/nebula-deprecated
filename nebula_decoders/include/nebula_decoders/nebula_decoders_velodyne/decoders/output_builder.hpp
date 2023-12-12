@@ -94,7 +94,8 @@ class OutputBuilder : public drivers::DataContainerBase {
 
 //    if (std::is_same<PointT, PointXYZIRADT>::value) pcl_conversions::fromPCL(xyziradt_fields_, msg.fields);
 //    if (std::is_same<PointT, PointXYZIR>::value) pcl_conversions::fromPCL(xyzir_fields_, msg.fields);
-    pcl_conversions::fromPCL(xyziradt_fields_, msg.fields);
+//    pcl_conversions::fromPCL(xyziradt_fields_, msg.fields);
+    pcl_conversions::fromPCL(xyzircaedt_fields_, msg.fields);
 
     // https://github.com/PointCloudLibrary/pcl/blob/b551ee47b24e90cfb430ee4474f569e1411cd7bc/common/include/pcl/PCLPointCloud2.h#L25-L26
     static_assert(BOOST_ENDIAN_BIG_BYTE || BOOST_ENDIAN_LITTLE_BYTE, "unable to determine system endianness");

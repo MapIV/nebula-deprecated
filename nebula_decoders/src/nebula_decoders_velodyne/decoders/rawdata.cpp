@@ -111,7 +111,8 @@ namespace drivers
   int RawData::setup()
   {
     // get path to angles.config file for this device
-    if (!node_ptr_->get_parameter("calibration", config_.calibrationFile)) {
+//    if (!node_ptr_->get_parameter("calibration", config_.calibrationFile)) {
+    if (!node_ptr_->get_parameter("calibration_file", config_.calibrationFile)) {
       RCLCPP_ERROR_STREAM(
         node_ptr_->get_logger(), "No calibration angles specified! Using test values!");
 
@@ -375,15 +376,23 @@ namespace drivers
               return_type = RETURN_TYPE::INVALID;
           }
           if (is_invalid_distance) {
+//            data.addPoint(
+//              x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
+//              raw->blocks[i].rotation, 0,
+//              intensity, time_stamp);
             data.addPoint(
-              x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
-              raw->blocks[i].rotation, 0,
-              intensity, time_stamp);
+              x_coord, y_coord, z_coord, intensity, return_type, corrections.laser_ring,
+              raw->blocks[i].rotation, 0.0, 0,
+              time_stamp);
           } else {
+//            data.addPoint(
+//              x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
+//              raw->blocks[i].rotation, distance,
+//              intensity, time_stamp);
             data.addPoint(
-              x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
-              raw->blocks[i].rotation, distance,
-              intensity, time_stamp);
+              x_coord, y_coord, z_coord, intensity, return_type, corrections.laser_ring,
+              raw->blocks[i].rotation, 0.0, distance,
+              time_stamp);
           }
         }
       }
@@ -567,13 +576,19 @@ namespace drivers
                     return_type = RETURN_TYPE::INVALID;
                 }
                 if (is_invalid_distance) {
+//                  data.addPoint(
+//                    x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
+//                    azimuth_corrected, 0, intensity, time_stamp);
                   data.addPoint(
-                    x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
-                    azimuth_corrected, 0, intensity, time_stamp);
+                    x_coord, y_coord, z_coord, intensity, return_type, corrections.laser_ring,
+                    azimuth_corrected, 0.0, 0, time_stamp);
                 } else {
+//                  data.addPoint(
+//                    x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
+//                    azimuth_corrected, distance, intensity, time_stamp);
                   data.addPoint(
-                    x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
-                    azimuth_corrected, distance, intensity, time_stamp);
+                    x_coord, y_coord, z_coord, intensity, return_type, corrections.laser_ring,
+                    azimuth_corrected, 0.0, distance, time_stamp);
                 }
               }
             }
@@ -778,13 +793,19 @@ namespace drivers
                   return_type = RETURN_TYPE::INVALID;
               }
               if (is_invalid_distance) {
+//                data.addPoint(
+//                  x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
+//                  azimuth_corrected, 0, intensity, time_stamp);
                 data.addPoint(
-                  x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
-                  azimuth_corrected, 0, intensity, time_stamp);
+                  x_coord, y_coord, z_coord, intensity, return_type, corrections.laser_ring,
+                  azimuth_corrected, 0.0, 0, time_stamp);
               } else {
+//                data.addPoint(
+//                  x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
+//                  azimuth_corrected, distance, intensity, time_stamp);
                 data.addPoint(
-                  x_coord, y_coord, z_coord, return_type, corrections.laser_ring,
-                  azimuth_corrected, distance, intensity, time_stamp);
+                  x_coord, y_coord, z_coord, intensity, return_type, corrections.laser_ring,
+                  azimuth_corrected, 0.0, distance, time_stamp);
               }
             }
           }
