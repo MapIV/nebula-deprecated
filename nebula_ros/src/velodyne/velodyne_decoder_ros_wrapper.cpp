@@ -216,8 +216,6 @@ void VelodyneDriverRosWrapper::ReceiveScanMsgCallbackAW(
   if (output_builder.xyzircaedt_is_activated()) {
     auto msg = output_builder.move_xyzircaedt_output();
     if (msg->data.size() == 0) msg->header.stamp = scan_msg->packets[0].stamp;
-    std::random_device rnd;
-    std::cout << "PublishCloud " << msg->data.size() << ":" << rnd() << std::endl;
     PublishCloud(std::move(msg), nebula_points_pub_);
   }
 /*

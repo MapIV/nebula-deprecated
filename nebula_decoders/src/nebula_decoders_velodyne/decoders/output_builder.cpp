@@ -115,8 +115,6 @@ std::unique_ptr<sensor_msgs::msg::PointCloud2> OutputBuilder::move_xyzircaedt_ou
   if (!xyzircaedt_activated_ || output_xyzircaedt_moved_) {
     return std::unique_ptr<sensor_msgs::msg::PointCloud2>(nullptr);
   }
-  std::random_device rnd;
-  std::cout << "move_xyzircaedt_output " << rnd() << std::endl;
 
   output_xyzircaedt_->data.resize(output_xyzircaedt_data_size_);
 
